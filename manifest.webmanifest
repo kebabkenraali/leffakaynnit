@@ -1,0 +1,13 @@
+{
+  "name": "Leffakäynnit – Finnkino Premium",
+  "short_name": "Leffakäynnit",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14111a",
+  "theme_color": "#14111a",
+  "lang": "fi",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
