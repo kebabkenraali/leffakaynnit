@@ -338,7 +338,17 @@ sForm.addEventListener('submit', (e) => {
 
 // ---------- Varmuuskopio ----------
 
-function download(name, content, type) {
+async function download(name, content, type) {
+  // Puhelimessa jakovalikko, josta voi valita "Tallenna OneDriveen"
+  const file = new File([content], name, { type });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: name });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = Object.assign(document.createElement('a'), { href: url, download: name });
   document.body.append(a);
@@ -421,10 +431,11 @@ function rowsFromWorkbook(XLSX, wb) {
     const grid = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: '' });
     const hi = grid.findIndex((row) => row.some((c) => /elokuva/i.test(String(c))));
     if (hi < 0) continue;
-    const head = grid[hi].map((c) => String(c).toLowerCase());
+    // Ääkköset pois, jotta "Paiva" ja "Päivä" tunnistetaan samoin
+    const head = grid[hi].map((c) => String(c).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''));
     const col = (re) => head.findIndex((h) => re.test(h));
     const c = {
-      date: col(/päivä|pvm|date/),
+      date: col(/paiva|pvm|date/),
       title: col(/elokuva/),
       snacks: col(/herku|karkk/),
       other: col(/muut/),
@@ -481,11 +492,12 @@ $('#xlsx-file').addEventListener('change', async (e) => {
     render();
 
     const { seasonStart, seasonEnd } = state.settings;
-    const outside = added.filter((v) => v.date < seasonStart || v.date > seasonEnd);
+    const today = todayIso();
+    const outside = added.filter((v) => v.date < seasonStart || v.date > seasonEnd || v.date > today);
     result.innerHTML =
       `Tuotiin ${added.length} käyntiä välilehdeltä “${esc(found.sheet)}”.` +
       (outside.length
-        ? `<br><span class="bad">Huom: ${outside.length} käynnin päivä on kauden ulkopuolella – tarkista: ` +
+        ? `<br><span class="bad">Huom: ${outside.length} käynnin päivä on kauden ulkopuolella tai tulevaisuudessa – tarkista: ` +
           outside.map((v) => `${esc(v.title)} (${fmtDate(v.date)})`).join(', ') + '</span>'
         : '');
   } catch (err) {
