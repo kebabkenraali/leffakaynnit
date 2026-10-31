@@ -130,4 +130,52 @@ Pull requestit ovat tervetulleita! Ehdota parannuksia tai raportoi bugeja Issues
 
 ---
 
-**Versio**: 2026.09 (sisältää pilvitallennuksen ja paikka-masterdatan)
+## 🛠️ Työkalut ja tekniikat
+
+Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI-avustettua kehitystyönkulkuja:
+
+### Kehitysympäristö ja työkalut
+- **Cline (AI Coding Agent)** – Koodin generointi, refaktorointi, debuggaus ja arkkitehtuurisuunnittelu
+- **Visual Studio Code** – Pääkehitysympäristö
+- **Git & GitHub** – Versiohallinta ja GitHub Pages -hostaus
+- **Chrome/Edge DevTools** – Debuggaus, PWA-testaus, performance-profilointi
+
+### Frontend-tekniikat
+- **Vanilla JavaScript (ES6+)** – Ei frameworkseja, kevyttä ja nopeaa
+- **HTML5 + CSS3** – Semanttinen HTML, CSS Custom Properties (teemat), Grid/Flexbox
+- **Progressive Web App (PWA)** – `manifest.webmanifest`, Service Worker (`sw.js`)
+- **File System Access API** – Pilvikansio-valinta (OneDrive, Google Drive, Dropbox)
+- **Web Share API** – Mobiililaitteiden jakovalikko
+- **OPFS (Origin Private File System)** – Tiedostokäsittely selaimessa
+- **localStorage** – Paikallinen tietovarasto
+- **SheetJS (xlsx)** – Excel-tiedostojen lukeminen CDN:stä
+
+### Arkkitehtuuri
+- **Single Page Application (SPA)** – Ilman build-työkaluja tai bundlereita
+- **Offline-first** – Service Worker välimuistaa kaikki staattiset resurssit
+- **Modulaarinen rakenne** – Yksi `app.js` modulaarilla funktioilla (laskenta, tallennus, renderöinti, I/O)
+- **Tilaan perustuva renderöinti** – `state` objekti → `compute` → `render`
+
+### Laskentamalli
+- **Kumulatiivinen keskihinta** – `movieAt = vuosimaksu / käynnit`, `totalAt = (vuosimaksu + herkut) / käynnit`
+- **Break-even analyysi** – `ceil(vuosimaksu / sarjalippu_hinta)`
+- **Projektiot** – Lineaarinen extrapolaatio nykyisestä nopeudesta kauden loppuun
+- **Aika-akselinen visualisointi** – SVG-kaavio kauden aikajanalla (ei käyntinumero)
+
+### Laadunvarmistus
+- **TypeScript-tyyppinen JSDoc** – Funktioiden parametrit ja paluuarvot dokumentoitu
+- **Virheenkäsittely** – `try/catch` kaikissa I/O-operaatioissa, käyttäjäystävälliset toast-viestit
+- **Graceful degradation** – File System Access API ei tue kaikki selainta → fallback Web Share API:hin
+
+---
+
+## 👤 Tekijä ja AI-avustus
+
+**Kehittäjä**: [kebabkenraali](https://github.com/kebabkenraali)  
+**AI-avustus**: [Cline](https://cline.bot) – autonominen koodausagentti, joka on kirjoittanut ja refaktoroinut suuren osan koodista, suunnitellut arkkitehtuuria, korjannut bugeja ja dokumentoinut ominaisuuksia.
+
+> *Tämä projekti demonstroi miten moderni AI-avustettu kehitysnopeus yhdistettynä vanillan web-tekniikoihin voi tuottaa tuotantovalmiin, offline-toimivan PWA-sovelluksen ilman monimutkaisia build-ketjuja.*
+
+---
+
+**Versio**: 2026.09 (sisältää pilvitallennuksen, paikka-masterdatan ja aikakaavio)
