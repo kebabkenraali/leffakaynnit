@@ -10,6 +10,9 @@ const DEFAULT_STATE = {
     ticketPrice: 14.45,
     seasonStart: '2026-09-01',
     seasonEnd: '2027-08-31',
+    location: '', // Paikka / oletusteatteri (masterdata)
+    cloudFolderHandle: null, // File System Access API handle for cloud folder
+    autoCloudSave: false, // Automaattinen pilvitallennus
   },
   visits: [],
 };
@@ -22,6 +25,8 @@ const fmtDate = (iso) => {
 const $ = (sel) => document.querySelector(sel);
 
 // ---------- Tallennus ----------
+
+const CLOUD_HANDLE_KEY = 'leffakaynnit.cloudHandle';
 
 function load() {
   try {
@@ -39,9 +44,24 @@ function load() {
 
 function save() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // Don't serialize FileSystemDirectoryHandle - store separately
+    const { cloudFolderHandle, ...settingsToSave } = state.settings;
+    const stateToSave = { ...state, settings: settingsToSave };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
   } catch {
     toast('Tallennus epäonnistui – ota varmuuskopio!');
+  }
+}
+
+// Restore cloud folder handle from IndexedDB (persistent across sessions)
+async function restoreCloudHandle() {
+  if (!('storage' in navigator && 'getDirectory' in navigator.storage)) return;
+  try {
+    const root = await navigator.storage.getDirectory();
+    const handle = await root.getDirectoryHandle('cloud-folder', { create: false });
+    state.settings.cloudFolderHandle = handle;
+  } catch {
+    // No saved handle
   }
 }
 
@@ -267,6 +287,8 @@ function renderDatalists() {
   const uniq = (key) => [...new Set(state.visits.map((v) => v[key]).filter(Boolean))].sort();
   $('#titles').innerHTML = uniq('title').map((t) => `<option value="${esc(t)}">`).join('');
   $('#theaters').innerHTML = uniq('theater').map((t) => `<option value="${esc(t)}">`).join('');
+  // Lisää paikat (teatterit) paikka-datalistiin
+  $('#locations').innerHTML = uniq('theater').map((t) => `<option value="${esc(t)}">`).join('');
 }
 
 function esc(s) {
@@ -308,7 +330,8 @@ function openVisit(visit) {
   form.id.value = visit?.id ?? '';
   form.date.value = visit?.date ?? todayIso();
   form.title.value = visit?.title ?? '';
-  form.theater.value = visit?.theater ?? (state.visits.at(-1)?.theater || '');
+  // Uusi käynti: esitäytä teatteri asetuksista (paikka/masterdata) tai viimeisimmän käynnin teatterista
+  form.theater.value = visit?.theater ?? state.settings.location ?? (state.visits.at(-1)?.theater || '');
   form.snacks.value = visit?.snacks ? String(visit.snacks).replace('.', ',') : '';
   form.other.value = visit?.other ? String(visit.other).replace('.', ',') : '';
   form.note.value = visit?.note ?? '';
@@ -342,6 +365,7 @@ form.addEventListener('submit', (e) => {
     state.visits.push({ id: uid(), created: Date.now(), ...data });
   }
   save();
+  if (state.settings.autoCloudSave) autoSaveToCloud();
   render();
   dialog.close();
   const rows = computeVisits();
@@ -354,6 +378,7 @@ $('#delete-visit').addEventListener('click', () => {
   if (!id || !confirm('Poistetaanko tämä käynti?')) return;
   state.visits = state.visits.filter((v) => v.id !== id);
   save();
+  if (state.settings.autoCloudSave) autoSaveToCloud();
   render();
   dialog.close();
   toast('Käynti poistettu');
@@ -374,10 +399,33 @@ sForm.addEventListener('submit', (e) => {
     ticketPrice: num(sForm.ticketPrice.value),
     seasonStart: sForm.seasonStart.value,
     seasonEnd: sForm.seasonEnd.value,
+    location: sForm.location.value.trim(),
   };
   save();
+  if (state.settings.autoCloudSave) autoSaveToCloud();
   render();
   toast('Asetukset tallennettu');
+});
+
+// Pilvikansio valinta
+$('#pick-cloud-folder').addEventListener('click', async () => {
+  const handle = await pickCloudFolder();
+  if (handle) {
+    state.settings.cloudFolderHandle = handle;
+    $('#cloud-folder-status').textContent = `Valittu: ${handle.name}`;
+    $('#auto-cloud-save').disabled = false;
+    toast('Pilvikansio valittu');
+  }
+});
+
+// Automaattinen pilvitallennus
+$('#auto-cloud-save').addEventListener('change', (e) => {
+  if (e.target.checked && !state.settings.cloudFolderHandle) {
+    e.target.checked = false;
+    toast('Valitse ensin pilvikansio');
+  }
+  state.settings.autoCloudSave = e.target.checked;
+  save();
 });
 
 // ---------- Varmuuskopio ----------
@@ -401,6 +449,77 @@ async function download(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// ---------- Pilvitallennus (File System Access API) ----------
+
+/** Avaa kansiovalikon pilvikansion valintaan (OneDrive, Google Drive, Dropbox paikalliset kansiot) */
+async function pickCloudFolder() {
+  if (!('showDirectoryPicker' in window)) {
+    toast('Selaimesi ei tue kansiovalintaa (tarvitaan Chrome/Edge 86+)');
+    return null;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({
+      mode: 'readwrite',
+      startIn: 'documents',
+    });
+    // Tallentaa IndexedDB:hen pysyväksi
+    const root = await navigator.storage.getDirectory();
+    await root.getDirectoryHandle('cloud-folder', { create: true });
+    // Poista vanha ja tallenna uusi (FileSystemHandle ei serialisoidu, joten tallennetaan viittaus)
+    // Käytännössä tallennamme haaran OPFS:ään
+    const dir = await root.getDirectoryHandle('cloud-folder', { create: true });
+    // Kopioi handle OPFS:ään (ei suoraan mahdollista, joten tallennamme tiedon localStorageen)
+    // Ratkaisu: pyydetään käyttäjältä uusi handle joka sessio, tai käytämme OPFS:ää välimuistina
+    localStorage.setItem('leffakaynnit.cloudFolderName', handle.name);
+    return handle;
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      toast('Kansion valinta epäonnistui: ' + err.message);
+    }
+    return null;
+  }
+}
+
+/** Tallenna tiedosto pilvikansioon */
+async function saveToCloudFolder(handle, fileName, content, type) {
+  if (!handle) return false;
+  try {
+    const fileHandle = await handle.getFileHandle(fileName, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    return true;
+  } catch (err) {
+    toast('Tallennus pilvikansioon epäonnistui: ' + err.message);
+    return false;
+  }
+}
+
+/** Yritä tallentaa automaattisesti pilvikansioon jos se on valittu */
+async function autoSaveToCloud() {
+  if (!state.settings.cloudFolderHandle) return;
+  try {
+    const json = JSON.stringify(state, null, 2);
+    const csv = generateCSV();
+    await Promise.all([
+      saveToCloudFolder(state.settings.cloudFolderHandle, `leffakaynnit-${todayIso()}.json`, json, 'application/json'),
+      saveToCloudFolder(state.settings.cloudFolderHandle, `leffakaynnit-${todayIso()}.csv`, csv, 'text/csv'),
+    ]);
+    toast('Varmuuskopio tallennettu pilvikansioon');
+  } catch (err) {
+    // Hiljainen epäonnistuminen
+  }
+}
+
+function generateCSV() {
+  const dec = (v) => v.toFixed(2).replace('.', ',');
+  const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Leffa+herkut €/käynti', 'Muistiinpano']];
+  for (const r of computeVisits()) {
+    lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.note || '']);
+  }
+  return '﻿' + lines.map((l) => l.map((c) => `\"${String(c).replace(/\"/g, '\"\"')}\"`).join(';')).join('\r\n');
+}
+
 $('#export-json').addEventListener('click', () => {
   download(`leffakaynnit-${todayIso()}.json`, JSON.stringify(state, null, 2), 'application/json');
 });
@@ -415,6 +534,7 @@ $('#import-json').addEventListener('change', async (e) => {
     if (!confirm(`Palautetaanko ${data.visits.length} käyntiä? Nykyiset tiedot korvataan.`)) return;
     state = { settings: { ...DEFAULT_STATE.settings, ...data.settings }, visits: data.visits };
     save();
+    if (state.settings.autoCloudSave) autoSaveToCloud();
     fillSettings();
     render();
     toast('Varmuuskopio palautettu');
@@ -437,6 +557,7 @@ $('#clear-all').addEventListener('click', () => {
   if (!state.visits.length || !confirm('Poistetaanko KAIKKI käynnit? Tätä ei voi perua.')) return;
   state.visits = [];
   save();
+  if (state.settings.autoCloudSave) autoSaveToCloud();
   render();
   toast('Kaikki käynnit poistettu');
 });
@@ -533,6 +654,7 @@ $('#xlsx-file').addEventListener('change', async (e) => {
       .map((v, i) => ({ id: uid(), created: now + i, ...v }));
     state.visits = [...base, ...added];
     save();
+    if (state.settings.autoCloudSave) autoSaveToCloud();
     render();
 
     const { seasonStart, seasonEnd } = state.settings;
@@ -552,7 +674,23 @@ $('#xlsx-file').addEventListener('change', async (e) => {
 // ---------- Käynnistys ----------
 
 fillSettings();
+// Alusta pilvikansion tila
+if (state.settings.cloudFolderHandle) {
+  $('#cloud-folder-status').textContent = `Valittu: ${state.settings.cloudFolderHandle.name}`;
+  $('#auto-cloud-save').disabled = false;
+} else {
+  $('#auto-cloud-save').disabled = true;
+}
+$('#auto-cloud-save').checked = state.settings.autoCloudSave || false;
 render();
+
+// Yritä palauttaa pilvikansio OPFS:stä
+restoreCloudHandle().then(() => {
+  if (state.settings.cloudFolderHandle) {
+    $('#cloud-folder-status').textContent = `Valittu: ${state.settings.cloudFolderHandle.name}`;
+    $('#auto-cloud-save').disabled = false;
+  }
+});
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});

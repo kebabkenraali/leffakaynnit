@@ -113,6 +113,19 @@
       </form>
 
       <div class="card form">
+        <strong>Paikka (Masterdata)</strong>
+        <p class="small muted">Oletuspaikka/teatteri, jota käytetään uusien käyntien esitäyttössä ja raportoinnissa.</p>
+        <label>Paikka<input name="location" type="text" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
+        <datalist id="locations"></datalist>
+        <button type="button" id="pick-cloud-folder" class="btn">Valitse pilvikansio (OneDrive/Google Drive/Dropbox)</button>
+        <p id="cloud-folder-status" class="small muted"></p>
+        <label class="two">
+          <input id="auto-cloud-save" type="checkbox">
+          <span>Tallenna varmuuskopiot automaattisesti pilvikansioon</span>
+        </label>
+      </div>
+
+      <div class="card form">
         <strong>Tuo Excelistä</strong>
         <p class="small muted">Valitse Finnkino_Premium_Seuranta.xlsx. Sovellus lukee välilehden, jossa on sarakkeet Päivä, Elokuva ja Herkut €.</p>
         <input id="xlsx-file" type="file" accept=".xlsx,.xls,.csv">
