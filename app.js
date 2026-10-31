@@ -89,6 +89,32 @@ function computeSummary(rows) {
   const totalDays = Math.max(1, Math.round((end - start) / DAY));
   const elapsed = Math.min(totalDays, Math.max(1, Math.ceil((now - start) / DAY)));
   const projected = n ? Math.round((n / elapsed) * totalDays) : 0;
+
+  // Eniten katsottu elokuva
+  const byTitle = new Map();
+  for (const v of rows) {
+    const key = v.title.toLowerCase();
+    const m = byTitle.get(key) || { title: v.title, count: 0, snacks: 0 };
+    m.count++;
+    m.snacks += v.snacks || 0;
+    byTitle.set(key, m);
+  }
+  let mostWatched = null;
+  let mostExpensiveWithSnacks = null;
+  let maxCount = 0;
+  let maxTotalWithSnacks = 0;
+  for (const m of byTitle.values()) {
+    if (m.count > maxCount) {
+      maxCount = m.count;
+      mostWatched = { title: m.title, count: m.count };
+    }
+    const totalWithSnacks = (s.annualFee / n) * m.count + m.snacks; // movie cost + snacks for this title
+    if (totalWithSnacks > maxTotalWithSnacks) {
+      maxTotalWithSnacks = totalWithSnacks;
+      mostExpensiveWithSnacks = { title: m.title, total: totalWithSnacks, count: m.count, snacks: m.snacks };
+    }
+  }
+
   return {
     n,
     snacks,
@@ -101,6 +127,8 @@ function computeSummary(rows) {
     daysLeft: Math.max(0, Math.ceil((end - now) / DAY)),
     projected,
     projectedPrice: projected ? s.annualFee / projected : null,
+    mostWatched,
+    mostExpensiveWithSnacks,
   };
 }
 
@@ -140,6 +168,22 @@ function renderSummary(rows, sum) {
   $('#s-proj').textContent = sum.projected
     ? `${sum.projected} kpl · ${eur.format(sum.projectedPrice)}`
     : '–';
+
+  // Elokuvatilastot
+  if (sum.mostWatched) {
+    $('#s-most-watched').textContent = sum.mostWatched.title;
+    $('#s-most-watched-count').textContent = sum.mostWatched.count;
+  } else {
+    $('#s-most-watched').textContent = '–';
+    $('#s-most-watched-count').textContent = '–';
+  }
+  if (sum.mostExpensiveWithSnacks) {
+    $('#s-most-expensive').textContent = sum.mostExpensiveWithSnacks.title;
+    $('#s-most-expensive-total').textContent = eur.format(sum.mostExpensiveWithSnacks.total);
+  } else {
+    $('#s-most-expensive').textContent = '–';
+    $('#s-most-expensive-total').textContent = '–';
+  }
 
   renderChart(rows);
   renderMonths(rows);
