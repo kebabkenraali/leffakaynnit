@@ -215,34 +215,96 @@ function renderChart(rows) {
     el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on vähintään kaksi.</p>';
     return;
   }
+
   const W = 320, H = 170, L = 34, R = 8, T = 8, B = 22;
   const ref = state.settings.ticketPrice;
-  const yMax = Math.max(ref * 3, rows[rows.length - 1].totalAt * 1.2);
-  const n = rows.length;
-  const x = (i) => L + ((i - 1) / Math.max(1, n - 1)) * (W - L - R);
-  const y = (v) => T + (1 - Math.min(v, yMax * 1.5) / yMax) * (H - T - B);
-  const path = (key) => rows.map((r, i) => `${i ? 'L' : 'M'}${x(r.nro).toFixed(1)},${y(r[key]).toFixed(1)}`).join('');
+  const s = state.settings;
+  const seasonStart = Date.parse(s.seasonStart);
+  const seasonEnd = Date.parse(s.seasonEnd) + DAY;
+  const seasonDays = Math.max(1, Math.round((seasonEnd - seasonStart) / DAY));
+  const now = Date.now();
 
+  // X-akseli: päivä kauden alusta (0 = kauden alku, seasonDays = kauden loppu)
+  const x = (dayOffset) => L + (dayOffset / seasonDays) * (W - L - R);
+
+  // Y-akseli: hinta €
+  // Laske yMax datasta + ref
+  const maxCost = Math.max(...rows.map(r => r.totalAt), ref);
+  const yMax = Math.max(ref * 2.5, maxCost * 1.2);
+  const y = (v) => T + (1 - Math.min(v, yMax * 1.5) / yMax) * (H - T - B);
+
+  // Kaavio on ajassa etenevä: jokainen käynti on piste (päivä, kumulatiivinen keskihinta)
+  // movieAt = vuosimaksu / käyntejä tähän mennessä
+  // totalAt = (vuosimaksu + kumulatiiviset herkut) / käyntejä tähän mennessä
+  const moviePath = rows.map((r, i) => {
+    const dayOffset = Math.max(0, Math.min(seasonDays, Math.round((Date.parse(r.date) - seasonStart) / DAY)));
+    return `${i ? 'L' : 'M'}${x(dayOffset).toFixed(1)},${y(r.movieAt).toFixed(1)}`;
+  }).join('');
+
+  const totalPath = rows.map((r, i) => {
+    const dayOffset = Math.max(0, Math.min(seasonDays, Math.round((Date.parse(r.date) - seasonStart) / DAY)));
+    return `${i ? 'L' : 'M'}${x(dayOffset).toFixed(1)},${y(r.totalAt).toFixed(1)}`;
+  }).join('');
+
+  // Break-even viiva: päivä jolloin break-even saavutetaan (projekti)
+  const breakEvenDay = s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0;
+  const breakEvenX = breakEvenDay > 0 && rows.length > 0 ? x(Math.min(seasonDays, breakEvenDay * (seasonDays / Math.max(1, rows.length)))) : null;
+
+  // Y-akselin ruudut
   const ticks = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
   const grid = ticks
     .map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
       <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
     .join('');
-  const xTicks = [1, Math.ceil(n / 2), n]
-    .filter((v, i, a) => a.indexOf(v) === i)
-    .map((v) => `<text x="${x(v)}" y="${H - 6}" text-anchor="middle">${v}.</text>`)
-    .join('');
+
+  // X-akselin ruudut: kuukaudet kauden aikana
+  const monthLabels = [];
+  const startDate = new Date(seasonStart);
+  for (let m = 0; m <= 12; m++) {
+    const d = new Date(startDate);
+    d.setMonth(d.getMonth() + m);
+    if (d > new Date(seasonEnd)) break;
+    const dayOffset = Math.round((d - seasonStart) / DAY);
+    if (dayOffset >= 0 && dayOffset <= seasonDays) {
+      const label = d.toLocaleString('fi-FI', { month: 'short' });
+      monthLabels.push(`<text x="${x(dayOffset)}" y="${H - 4}" text-anchor="middle" class="small">${label}</text>`);
+    }
+  }
+  const xTicks = monthLabels.join('');
+
+  // Tämänhetkinen päivä viiva
+  const todayOffset = Math.max(0, Math.min(seasonDays, Math.round((now - seasonStart) / DAY)));
+  const todayX = x(todayOffset);
+  const todayLine = `<line x1="${todayX}" x2="${todayX}" y1="${T}" y2="${H - B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+    <text x="${todayX}" y="${T - 4}" text-anchor="middle" class="small" fill="var(--accent)">Tänään</text>`;
+
+  // Sarjalippu viittausviiva
+  const refLine = `<line x1="${L}" x2="${W - R}" y1="${y(ref)}" y2="${y(ref)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
+    <text x="${W - R + 4}" y="${y(ref) + 4}" text-anchor="start" class="small muted">Sarjalippu</text>`;
+
+  // Break-even merkintä
+  const beLine = breakEvenX ? `
+    <line x1="${breakEvenX}" x2="${breakEvenX}" y1="${T}" y2="${H - B}" stroke="var(--good)" stroke-width="1" stroke-dasharray="2 2" opacity="0.7"/>
+    <text x="${breakEvenX}" y="${H - B + 12}" text-anchor="middle" class="small" fill="var(--good)">Break-even</text>
+  ` : '';
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käyntihinnan kehitys">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käyntihinnan kehitys ajan funktiona">
       <defs><clipPath id="clip"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
       ${grid}${xTicks}
       <g clip-path="url(#clip)">
-        <line x1="${L}" x2="${W - R}" y1="${y(ref)}" y2="${y(ref)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
-        <path d="${path('totalAt')}" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
-        <path d="${path('movieAt')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        ${refLine}
+        ${todayLine}
+        ${beLine}
+        <path d="${totalPath}" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
+        <path d="${moviePath}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
       </g>
-    </svg>`;
+    </svg>
+    <div class="legend small">
+      <span><i class="dot dot-movie"></i>Pelkkä leffa (vuosimaksu / käynnit)</span>
+      <span><i class="dot dot-total"></i>Leffa + herkut ((vuosimaksu + herkut) / käynnit)</span>
+      <span><i class="dot dot-ref"></i>Sarjalippu</span>
+    </div>`;
 }
 
 function renderMonths(rows) {
