@@ -18,7 +18,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **Break-even -mittari**: Kuinka monta käyntiä tarvitaan, jotta Premium on halvempi kuin sarjalippu
 - **Säästö vs. sarjalippu**: Positiivinen = voittaa, negatiivinen = sarjalippu on halvempi
 - **Ennuste**: Projisoitu kokonaiskäyntimäärä kauden lopussa
-- **Kuukausittainen taulukko**: Käynnit, herkut ja keskimääräinen hinta per kuukausi
+- **Kuukausittain (pylväskaavio + taulukko)**: Pelkkä leffa (vuosimaksu / käynnit), leffa + herkut ((vuosimaksu + herkut) / käynnit) ja sarjalippujen hinta kuukauden käyntien mukaan
 
 ### 🆕 Elokuvatilastot
 - **Eniten katsottu elokuva**: Elokuva, jota olet katsonut eniten kertoja
@@ -183,7 +183,7 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Kumulatiivinen keskihinta** – `movieAt = vuosimaksu / käynnit`, `totalAt = (vuosimaksu + herkut) / käynnit`
 - **Break-even analyysi** – `ceil(vuosimaksu / sarjalippu_hinta)`
 - **Projektiot** – Lineaarinen extrapolaatio nykyisestä nopeudesta kauden loppuun
-- **Aika-akselinen visualisointi** – SVG-kaavio kauden aikajanalla (ei käyntinumero)
+- **Kuukausipylväät** – SVG-pylväskaavio: Premium-hinnat kuukauden lopun tilanteesta, sarjaliput kuukauden omista käynneistä
 
 ### Laadunvarmistus
 - **Virheenkäsittely** – `try/catch` kaikissa I/O-operaatioissa, käyttäjäystävälliset toast-viestit

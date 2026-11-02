@@ -243,212 +243,104 @@ function renderSummary(rows, sum) {
     $('#s-most-expensive-total').textContent = '–';
   }
 
-  renderChart(rows);
-  renderCompareChart(rows);
   renderMonths(rows);
 }
 
-function renderChart(rows) {
-  const el = $('#chart');
-  if (rows.length < 2) {
-    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on vähintään kaksi.</p>';
+const MONTH_NAMES = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
+
+/**
+ * Kuukausikohtaiset luvut. Premium-hinnat lasketaan kuukauden lopun tilanteesta
+ * (vuosimaksu jaettuna siihen mennessä kertyneillä käynneillä), sarjaliput kuukauden omista käynneistä.
+ */
+function monthStats(rows) {
+  const s = state.settings;
+  const keys = new Set(rows.map((r) => r.date.slice(0, 7)));
+  // Kauden kuukaudet tähän päivään asti, myös ne joina ei käyty
+  const last = [todayIso(), ...rows.map((r) => r.date)].sort().at(-1).slice(0, 7);
+  const end = s.seasonEnd.slice(0, 7) < last ? s.seasonEnd.slice(0, 7) : last;
+  for (let [y, m] = s.seasonStart.split('-').map(Number); `${y}-${pad(m)}` <= end; m === 12 ? (y++, (m = 1)) : m++) {
+    keys.add(`${y}-${pad(m)}`);
+  }
+  return [...keys].sort().map((key) => {
+    const inMonth = rows.filter((r) => r.date.startsWith(key));
+    const upTo = rows.filter((r) => r.date.slice(0, 7) <= key);
+    const cumSnacks = upTo.reduce((a, r) => a + (r.snacks || 0), 0);
+    const [y, m] = key.split('-').map(Number);
+    return {
+      key,
+      label: `${MONTH_NAMES[m - 1]} ${String(y).slice(2)}`,
+      short: MONTH_NAMES[m - 1].slice(0, 3),
+      count: inMonth.length,
+      movie: upTo.length ? s.annualFee / upTo.length : null,
+      withSnacks: upTo.length ? (s.annualFee + cumSnacks) / upTo.length : null,
+      tickets: inMonth.length * s.ticketPrice,
+    };
+  });
+}
+
+function renderMonths(rows) {
+  const months = monthStats(rows);
+  const fmt = (v) => (v == null ? '–' : eur.format(v));
+  $('#months').innerHTML = rows.length
+    ? months
+        .map((m) => `<tr><td>${m.label}</td><td>${m.count}</td><td>${fmt(m.movie)}</td>
+          <td>${fmt(m.withSnacks)}</td><td>${eur.format(m.tickets)}</td></tr>`)
+        .join('')
+    : '<tr><td colspan="5" class="muted">Ei käyntejä</td></tr>';
+  renderMonthChart(months, rows.length);
+}
+
+/** Pylväät kuukausittain: pelkkä leffa, leffa + herkut ja sarjaliput. */
+function renderMonthChart(months, visitCount) {
+  const el = $('#month-chart');
+  if (!visitCount) {
+    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
     return;
   }
-
-  const W = 320, H = 170, L = 34, R = 8, T = 8, B = 22;
-  const ref = state.settings.ticketPrice;
-  const s = state.settings;
-  const seasonStart = Date.parse(s.seasonStart);
-  const seasonEnd = Date.parse(s.seasonEnd) + DAY;
-  const seasonDays = Math.max(1, Math.round((seasonEnd - seasonStart) / DAY));
-  const now = Date.now();
-
-  // X-akseli: päivä kauden alusta (0 = kauden alku, seasonDays = kauden loppu)
-  const x = (dayOffset) => L + (dayOffset / seasonDays) * (W - L - R);
-
-  // Y-akseli: hinta €
-  // Laske yMax datasta + ref
-  // Asteikko perustuu sarjalippuun. Alun korkeat hinnat (esim. 372 € ensimmäisellä käynnillä) rajautuvat pois,
-  // jotta kehitys näkyy myös vähäisillä käynneillä.
-  const maxCost = Math.max(...rows.map((r) => r.totalAt));
-  const yMax = Math.max(ref * 2.5, Math.min(maxCost * 1.1, ref * 5));
+  const W = 320, H = 180, L = 38, R = 6, T = 10, B = 22;
+  const series = [
+    { key: 'movie', color: 'var(--accent)', label: 'Pelkkä leffa (vuosimaksu / käynnit)' },
+    { key: 'withSnacks', color: 'var(--accent-2)', label: 'Leffa + herkut ((vuosimaksu + herkut) / käynnit)' },
+    { key: 'tickets', color: 'var(--muted)', label: 'Sarjalippu (kuukauden käynnit × lippuhinta)' },
+  ];
+  const yMax = Math.max(1, ...months.flatMap((m) => series.map((sr) => m[sr.key] || 0))) * 1.1;
   const y = (v) => T + (1 - v / yMax) * (H - T - B);
+  const groupW = (W - L - R) / months.length;
+  const barW = Math.max(1.5, (groupW * 0.8) / series.length);
 
-  // Kaavio on ajassa etenevä: jokainen käynti on piste (päivä, kumulatiivinen keskihinta)
-  // movieAt = vuosimaksu / käyntejä tähän mennessä
-  // totalAt = (vuosimaksu + kumulatiiviset herkut) / käyntejä tähän mennessä
-  const moviePath = rows.map((r, i) => {
-    const dayOffset = Math.max(0, Math.min(seasonDays, Math.round((Date.parse(r.date) - seasonStart) / DAY)));
-    return `${i ? 'L' : 'M'}${x(dayOffset).toFixed(1)},${y(r.movieAt).toFixed(1)}`;
-  }).join('');
-
-  const totalPath = rows.map((r, i) => {
-    const dayOffset = Math.max(0, Math.min(seasonDays, Math.round((Date.parse(r.date) - seasonStart) / DAY)));
-    return `${i ? 'L' : 'M'}${x(dayOffset).toFixed(1)},${y(r.totalAt).toFixed(1)}`;
-  }).join('');
-
-  // Break-even viiva: päivä, jona käyntejä on sama määrä kuin Premium vaatii.
-  // Jos se on jo saavutettu, käytetään sen käynnin päivää; muuten nykyisellä tahdilla arvioitua päivää.
-  const breakEvenCount = s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0;
-  let breakEvenX = null;
-  if (breakEvenCount > 0 && rows.length >= breakEvenCount) {
-    breakEvenX = x(Math.round((Date.parse(rows[breakEvenCount - 1].date) - seasonStart) / DAY));
-  } else if (breakEvenCount > 0 && rows.length > 0) {
-    const elapsed = Math.max(1, (now - seasonStart) / DAY);
-    const projectedDay = Math.min(seasonDays, (elapsed * breakEvenCount) / rows.length);
-    breakEvenX = x(projectedDay);
-  }
-
-  // Y-akselin ruudut
   const ticks = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
   const grid = ticks
     .map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
       <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
     .join('');
 
-  // X-akselin ruudut: kuukaudet kauden aikana
-  const monthLabels = [];
-  const startDate = new Date(seasonStart);
-  for (let m = 0; m <= 12; m++) {
-    const d = new Date(startDate);
-    d.setMonth(d.getMonth() + m);
-    if (d > new Date(seasonEnd)) break;
-    const dayOffset = Math.round((d - seasonStart) / DAY);
-    if (dayOffset >= 0 && dayOffset <= seasonDays) {
-      const label = d.toLocaleString('fi-FI', { month: 'short' });
-      monthLabels.push(`<text x="${x(dayOffset)}" y="${H - 4}" text-anchor="middle" class="small">${label}</text>`);
-    }
-  }
-  // Pienellä näytöllä joka toinen kuukausi, jotta nimet eivät mene päällekkäin
-  const xTicks = monthLabels.filter((_, i) => i % 2 === 0).join('');
-
-  // Tämänhetkinen päivä viiva
-  const todayOffset = Math.max(0, Math.min(seasonDays, Math.round((now - seasonStart) / DAY)));
-  const todayX = x(todayOffset);
-  const todayLine = `<line x1="${todayX}" x2="${todayX}" y1="${T}" y2="${H - B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
-    <text x="${todayX}" y="${T - 4}" text-anchor="middle" class="small" fill="var(--accent)">Tänään</text>`;
-
-  // Sarjalippu viittausviiva
-  const refLine = `<line x1="${L}" x2="${W - R}" y1="${y(ref)}" y2="${y(ref)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
-    <text x="${W - R - 2}" y="${y(ref) - 4}" text-anchor="end" class="small muted">sarjalippu ${ref.toFixed(2).replace('.', ',')} €</text>`;
-
-  // Break-even merkintä
-  const beLine = breakEvenX ? `
-    <line x1="${breakEvenX}" x2="${breakEvenX}" y1="${T}" y2="${H - B}" stroke="var(--good)" stroke-width="1" stroke-dasharray="2 2" opacity="0.7"/>
-    <text x="${breakEvenX + 3}" y="${T + 10}" text-anchor="start" class="small" fill="var(--good)">break-even</text>
-  ` : '';
-
-  el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käyntihinnan kehitys ajan funktiona">
-      <defs><clipPath id="clip"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
-      ${grid}${xTicks}
-      <g clip-path="url(#clip)">
-        ${refLine}
-        ${todayLine}
-        ${beLine}
-        <path d="${totalPath}" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
-        <path d="${moviePath}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
-      </g>
-    </svg>
-    </svg>
-    <div class="legend small">
-      <span><i class="dot dot-movie"></i>Pelkkä leffa (vuosimaksu / käynnit)</span>
-      <span><i class="dot dot-total"></i>Leffa + herkut ((vuosimaksu + herkut) / käynnit)</span>
-      <span><i class="dot dot-ref"></i>Sarjalippu</span>
-    </div>
-    <p class="small muted">Kaavion yläreuna on rajattu, jotta kehitys näkyy. Alun korkeat hinnat eivät mahdu kuvaan.</p>`;
-}
-
-/**
- * Kaavio käyntien määrän mukaan: Premiumin hinta per käynti laskee (vuosimaksu / käynnit),
- * sarjalippujen yhteishinta nousee jokaisesta käynnistä. Herkut eivät ole mukana.
- */
-function renderCompareChart(rows) {
-  const el = $('#compare-chart');
-  const s = state.settings;
-  if (!rows.length || s.ticketPrice <= 0) {
-    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
-    return;
-  }
-
-  const W = 320, H = 170, L = 40, R = 10, T = 10, B = 22;
-  const n = rows.length;
-  const breakEven = Math.ceil(s.annualFee / s.ticketPrice);
-  const xMax = Math.max(n, breakEven) + Math.max(3, Math.round(breakEven * 0.15));
-  const yMax = Math.max(s.annualFee, s.ticketPrice * xMax) * 1.08;
-  const x = (k) => L + (k / xMax) * (W - L - R);
-  const y = (v) => T + (1 - v / yMax) * (H - T - B);
-  const premiumPerVisit = (k) => s.annualFee / k;
-  const ticketsTotal = (k) => s.ticketPrice * k;
-
-  const path = (fn, from) =>
-    Array.from({ length: xMax - from + 1 }, (_, i) => {
-      const k = from + i;
-      return `${i ? 'L' : 'M'}${x(k).toFixed(1)},${y(fn(k)).toFixed(1)}`;
-    }).join('');
-
-  const tickVals = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
-  const grid = tickVals
-    .map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
-      <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
-    .join('');
-
-  const xStep = xMax > 40 ? 10 : 5;
-  const xLabels = Array.from({ length: Math.floor(xMax / xStep) + 1 }, (_, i) => i * xStep)
-    .map((k) => `<text x="${x(k)}" y="${H - 6}" text-anchor="middle">${k}</text>`)
-    .join('');
-
-  const nowX = x(n);
-  const nowLine = `
-    <line x1="${nowX}" x2="${nowX}" y1="${T}" y2="${H - B}" stroke="var(--accent)" stroke-dasharray="4 3" opacity="0.7"/>
-    <text x="${nowX + 3}" y="${T + 10}" class="small" fill="var(--accent)">nyt ${n}</text>`;
-
-  // Taulukko: muutama tarkistuskohta ja nykyinen tilanne
-  const points = [...new Set([1, 5, 10, n, breakEven])].filter((k) => k >= 1 && k <= xMax).sort((a, b) => a - b);
-  const tableRows = points
-    .map((k) => `<tr${k === n ? ' class="now"' : ''}><td>${k}${k === n ? ' (nyt)' : ''}</td>
-      <td>${eur.format(premiumPerVisit(k))}</td><td>${eur.format(ticketsTotal(k))}</td></tr>`)
-    .join('');
-
-  el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Premiumin hinta per käynti ja sarjalippujen yhteishinta">
-      <defs><clipPath id="clip2"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
-      ${grid}${xLabels}
-      <g clip-path="url(#clip2)">
-        ${nowLine}
-        <path d="${path(ticketsTotal, 0)}" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
-        <path d="${path(premiumPerVisit, 1)}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
-      </g>
-    </svg>
-    <div class="legend small">
-      <span><i class="dot dot-movie"></i>Premium €/käynti (${eur.format(s.annualFee)} ÷ käynnit)</span>
-      <span><i class="dot dot-ref"></i>Sarjaliput yhteensä (${eur.format(s.ticketPrice)} × käynnit)</span>
-    </div>
-    <table class="months">
-      <thead><tr><th>Käynnit</th><th>Premium €/käynti</th><th>Sarjaliput yht.</th></tr></thead>
-      <tbody>${tableRows}</tbody>
-    </table>
-    <p class="small muted">Vaaka-akseli on käyntien määrä. Huom: käyrien leikkauskohta ei ole break-even. Premium on sarjalippuja halvempi vasta ${breakEven}. käynnistä alkaen.</p>`;
-}
-
-function renderMonths(rows) {
-  const byMonth = new Map();
-  for (const r of rows) {
-    const key = r.date.slice(0, 7);
-    const m = byMonth.get(key) || { count: 0, snacks: 0, last: r };
-    m.count++;
-    m.snacks += r.snacks || 0;
-    m.last = r;
-    byMonth.set(key, m);
-  }
-  const months = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
-  $('#months').innerHTML = [...byMonth.entries()]
-    .map(([key, m]) => {
-      const [y, mo] = key.split('-').map(Number);
-      return `<tr><td>${months[mo - 1]} ${String(y).slice(2)}</td><td>${m.count}</td>
-        <td>${eur.format(m.snacks)}</td><td>${eur.format(m.last.movieAt)}</td></tr>`;
+  const labelEvery = months.length > 8 ? 2 : 1;
+  const bars = months
+    .map((m, i) => {
+      const gx = L + i * groupW + groupW * 0.1;
+      const rects = series
+        .map((sr, j) => {
+          const v = m[sr.key];
+          if (!v) return '';
+          return `<rect x="${(gx + j * barW).toFixed(1)}" y="${y(v).toFixed(1)}" width="${(barW - 0.6).toFixed(1)}"
+            height="${(y(0) - y(v)).toFixed(1)}" fill="${sr.color}" rx="1"><title>${m.label}: ${sr.label} ${eur.format(v)}</title></rect>`;
+        })
+        .join('');
+      const label = i % labelEvery === 0
+        ? `<text x="${(L + (i + 0.5) * groupW).toFixed(1)}" y="${H - 6}" text-anchor="middle">${m.short}</text>`
+        : '';
+      return rects + label;
     })
-    .join('') || '<tr><td colspan="4" class="muted">Ei käyntejä</td></tr>';
+    .join('');
+
+  el.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käyntihinnat ja sarjalippujen hinta kuukausittain">
+      ${grid}${bars}
+    </svg>
+    <div class="legend small">
+      ${series.map((sr) => `<span><i class="dot" style="background:${sr.color}"></i>${sr.label}</span>`).join('')}
+    </div>
+    <p class="small muted">Premium-hinnat ovat kuukauden lopun tilanne: vuosimaksu jaettuna siihen mennessä kertyneillä käynneillä. Sarjalippu on kuukauden käyntien hinta sarjalipuilla.</p>`;
 }
 
 function renderList(rows) {
