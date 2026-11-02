@@ -144,7 +144,11 @@
 
       <div class="card form">
         <strong>Varmuuskopio</strong>
-        <p class="small muted">Tiedot tallentuvat vain tähän selaimeen. Ota välillä varmuuskopio.</p>
+        <p class="small muted">Tiedot tallentuvat vain tähän selaimeen. Varmuuskopio tallentuu puhelimen tiedostoihin (Lataukset-kansio tai jakovalikko), ei selaimen välimuistiin.</p>
+        <label class="two">
+          <input id="auto-local-backup" type="checkbox">
+          <span>Tallenna varmuuskopio puhelimeen automaattisesti kerran päivässä (muutoksen jälkeen)</span>
+        </label>
         <button id="export-json" class="btn" type="button">Lataa varmuuskopio (.json)</button>
         <label class="btn file-btn">Palauta varmuuskopio<input id="import-json" type="file" accept=".json,application/json" hidden></label>
         <button id="export-csv" class="btn" type="button">Vie CSV (Exceliin)</button>

@@ -13,6 +13,8 @@ const DEFAULT_STATE = {
     location: '', // Paikka / oletusteatteri (masterdata)
     cloudFolderHandle: null, // File System Access API handle for cloud folder
     autoCloudSave: false, // Automaattinen pilvitallennus
+    autoLocalBackup: false, // Päivittäinen varmuuskopio puhelimen tiedostoihin
+    lastLocalBackup: null, // Viimeisin päivä (YYYY-MM-DD) jolloin varmuuskopio tehtiin
   },
   visits: [],
 };
@@ -463,7 +465,7 @@ form.addEventListener('submit', (e) => {
     state.visits.push({ id: uid(), created: Date.now(), ...data });
   }
   save();
-  if (state.settings.autoCloudSave) autoSaveToCloud();
+  autoSaveToCloud();
   render();
   dialog.close();
   const rows = computeVisits();
@@ -476,7 +478,7 @@ $('#delete-visit').addEventListener('click', () => {
   if (!id || !confirm('Poistetaanko tämä käynti?')) return;
   state.visits = state.visits.filter((v) => v.id !== id);
   save();
-  if (state.settings.autoCloudSave) autoSaveToCloud();
+  autoSaveToCloud();
   render();
   dialog.close();
   toast('Käynti poistettu');
@@ -492,7 +494,9 @@ function fillSettings() {
 }
 sForm.addEventListener('submit', (e) => {
   e.preventDefault();
+  // Säilytä muut asetukset (pilvi, varmuuskopio), vain lomakkeen kentät päivittyvät
   state.settings = {
+    ...state.settings,
     annualFee: num(sForm.annualFee.value),
     ticketPrice: num(sForm.ticketPrice.value),
     seasonStart: sForm.seasonStart.value,
@@ -500,7 +504,7 @@ sForm.addEventListener('submit', (e) => {
     location: sForm.location.value.trim(),
   };
   save();
-  if (state.settings.autoCloudSave) autoSaveToCloud();
+  autoSaveToCloud();
   render();
   toast('Asetukset tallennettu');
 });
@@ -652,9 +656,49 @@ let cloudTimer = null;
 
 /** Tallennus viivästetään hieman, jotta peräkkäiset muutokset lähtevät yhtenä kertana. */
 function autoSaveToCloud() {
-  if (!state.settings.autoCloudSave) return;
   clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(syncCloudNow, 1500);
+  cloudTimer = setTimeout(async () => {
+    if (state.settings.autoCloudSave) await syncCloudNow();
+    runLocalBackup();
+  }, 1500);
+}
+
+/** Lataa varmuuskopion tiedostoksi (puhelimen Lataukset-kansio, ei välimuisti). */
+function saveFile(name, content, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** Kerran päivässä muutoksen jälkeen, jos asetus on päällä. Ei jaa tiedostoa, vain tallentaa. */
+function runLocalBackup() {
+  const today = todayIso();
+  if (!state.settings.autoLocalBackup || !state.visits.length || state.settings.lastLocalBackup === today) return;
+  saveFile(`leffakaynnit-${today}.json`, JSON.stringify(snapshot(), null, 2), 'application/json');
+  saveFile(`leffakaynnit-${today}.csv`, generateCSV(), 'text/csv');
+  state.settings.lastLocalBackup = today;
+  save();
+  toast('Varmuuskopio tallennettu puhelimeen');
+}
+
+$('#auto-local-backup').addEventListener('change', (e) => {
+  state.settings.autoLocalBackup = e.target.checked;
+  save();
+  if (e.target.checked) runLocalBackup();
+});
+
+/** Muistutus, jos varmuuskopio on yli viikon vanha. */
+function remindBackup() {
+  const last = state.settings.lastLocalBackup;
+  if (!state.visits.length || (last && daysBetween(last, todayIso()) < 7)) return;
+  toast('Muista varmuuskopio: Asetukset → Lataa varmuuskopio');
+}
+
+function daysBetween(a, b) {
+  return Math.round((Date.parse(b) - Date.parse(a)) / DAY);
 }
 
 async function syncCloudNow() {
@@ -743,7 +787,7 @@ $('#clear-all').addEventListener('click', () => {
   if (!state.visits.length || !confirm('Poistetaanko KAIKKI käynnit? Tätä ei voi perua.')) return;
   state.visits = [];
   save();
-  if (state.settings.autoCloudSave) autoSaveToCloud();
+  autoSaveToCloud();
   render();
   toast('Kaikki käynnit poistettu');
 });
@@ -840,7 +884,7 @@ $('#xlsx-file').addEventListener('change', async (e) => {
       .map((v, i) => ({ id: uid(), created: now + i, ...v }));
     state.visits = [...base, ...added];
     save();
-    if (state.settings.autoCloudSave) autoSaveToCloud();
+    autoSaveToCloud();
     render();
 
     const { seasonStart, seasonEnd } = state.settings;
@@ -861,7 +905,9 @@ $('#xlsx-file').addEventListener('change', async (e) => {
 
 fillSettings();
 $('#auto-cloud-save').checked = state.settings.autoCloudSave;
+$('#auto-local-backup').checked = state.settings.autoLocalBackup;
 render();
+remindBackup();
 
 // Palauta tallennettu pilvikansio IndexedDB:stä ja pilvipalvelujen tila
 restoreCloudHandle().then(() => {
