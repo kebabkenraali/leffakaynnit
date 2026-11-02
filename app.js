@@ -244,6 +244,7 @@ function renderSummary(rows, sum) {
   }
 
   renderChart(rows);
+  renderCompareChart(rows);
   renderMonths(rows);
 }
 
@@ -356,6 +357,66 @@ function renderChart(rows) {
       <span><i class="dot dot-ref"></i>Sarjalippu</span>
     </div>
     <p class="small muted">Kaavion yläreuna on rajattu, jotta kehitys näkyy. Alun korkeat hinnat eivät mahdu kuvaan.</p>`;
+}
+
+/**
+ * Kaavio käyntien määrän mukaan: sarjaliput kasvavat jokaisesta käynnistä, Premium maksetaan kerran.
+ * Herkut jätetään pois, koska ne kuluvat kummassakin vaihtoehdossa samalla tavalla.
+ */
+function renderCompareChart(rows) {
+  const el = $('#compare-chart');
+  const s = state.settings;
+  if (!rows.length || s.ticketPrice <= 0) {
+    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
+    return;
+  }
+
+  const W = 320, H = 170, L = 40, R = 10, T = 10, B = 22;
+  const breakEven = Math.ceil(s.annualFee / s.ticketPrice);
+  const xMax = Math.max(rows.length, breakEven) + Math.max(3, Math.round(breakEven * 0.15));
+  const yMax = Math.max(s.annualFee, s.ticketPrice * xMax) * 1.08;
+  const x = (k) => L + (k / xMax) * (W - L - R);
+  const y = (v) => T + (1 - v / yMax) * (H - T - B);
+
+  const ticketPath = Array.from({ length: xMax + 1 }, (_, k) => `${k ? 'L' : 'M'}${x(k).toFixed(1)},${y(s.ticketPrice * k).toFixed(1)}`).join('');
+  const premiumY = y(s.annualFee);
+
+  const tickVals = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
+  const grid = tickVals
+    .map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
+      <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
+    .join('');
+
+  const xStep = xMax > 40 ? 10 : 5;
+  const xLabels = Array.from({ length: Math.floor(xMax / xStep) + 1 }, (_, i) => i * xStep)
+    .map((k) => `<text x="${x(k)}" y="${H - 6}" text-anchor="middle">${k}</text>`)
+    .join('');
+
+  const beX = x(breakEven);
+  const nowX = x(rows.length);
+  const breakEvenLine = `
+    <line x1="${beX}" x2="${beX}" y1="${T}" y2="${H - B}" stroke="var(--good)" stroke-dasharray="2 2"/>
+    <text x="${beX - 3}" y="${T + 10}" text-anchor="end" class="small" fill="var(--good)">break-even ${breakEven}</text>`;
+  const nowLine = `
+    <line x1="${nowX}" x2="${nowX}" y1="${T}" y2="${H - B}" stroke="var(--accent)" stroke-dasharray="4 3" opacity="0.7"/>
+    <text x="${nowX + 3}" y="${H - B - 4}" class="small" fill="var(--accent)">nyt ${rows.length}</text>`;
+
+  el.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sarjalippujen ja Premiumin kumulatiivinen kustannus">
+      <defs><clipPath id="clip2"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
+      ${grid}${xLabels}
+      <g clip-path="url(#clip2)">
+        ${breakEvenLine}
+        ${nowLine}
+        <line x1="${L}" x2="${W - R}" y1="${premiumY}" y2="${premiumY}" stroke="var(--accent-2)" stroke-width="2.5"/>
+        <path d="${ticketPath}" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
+      </g>
+    </svg>
+    <div class="legend small">
+      <span><i class="dot dot-total"></i>Premium: vuosimaksu ${eur.format(s.annualFee)} kerran</span>
+      <span><i class="dot dot-ref"></i>Sarjaliput: ${eur.format(s.ticketPrice)} × käynnit</span>
+    </div>
+    <p class="small muted">Vaaka-akseli on käyntien määrä. Kun sarjalippukäyrä ylittää Premium-viivan, Premium on halvempi.</p>`;
 }
 
 function renderMonths(rows) {
