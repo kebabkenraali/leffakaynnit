@@ -380,6 +380,11 @@ function renderCompareChart(rows) {
 
   const ticketPath = Array.from({ length: xMax + 1 }, (_, k) => `${k ? 'L' : 'M'}${x(k).toFixed(1)},${y(s.ticketPrice * k).toFixed(1)}`).join('');
   const premiumY = y(s.annualFee);
+  // Premium per käynti: laskee jokaisen käynnin myötä (vuosimaksu / käynnit)
+  const premiumPerVisitPath = Array.from({ length: xMax }, (_, i) => {
+    const k = i + 1;
+    return `${k > 1 ? 'L' : 'M'}${x(k).toFixed(1)},${y(s.annualFee / k).toFixed(1)}`;
+  }).join('');
 
   const tickVals = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
   const grid = tickVals
@@ -410,13 +415,15 @@ function renderCompareChart(rows) {
         ${nowLine}
         <line x1="${L}" x2="${W - R}" y1="${premiumY}" y2="${premiumY}" stroke="var(--accent-2)" stroke-width="2.5"/>
         <path d="${ticketPath}" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
+        <path d="${premiumPerVisitPath}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 3"/>
       </g>
     </svg>
     <div class="legend small">
       <span><i class="dot dot-total"></i>Premium: vuosimaksu ${eur.format(s.annualFee)} kerran</span>
+      <span><i class="dot dot-movie"></i>Premium €/käynti (laskee käyntien myötä)</span>
       <span><i class="dot dot-ref"></i>Sarjaliput: ${eur.format(s.ticketPrice)} × käynnit</span>
     </div>
-    <p class="small muted">Vaaka-akseli on käyntien määrä. Kun sarjalippukäyrä ylittää Premium-viivan, Premium on halvempi.</p>`;
+    <p class="small muted">Vaaka-akseli on käyntien määrä. Kun sarjalippukäyrä ylittää Premium-viivan, Premium on halvempi. Katkoviiva näyttää Premiumin hinnan käyntiä kohden.</p>`;
 }
 
 function renderMonths(rows) {
