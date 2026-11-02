@@ -1,5 +1,5 @@
 // Sovelluksen tiedostot välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
-const CACHE = 'leffakaynnit-v8';
+const CACHE = 'leffakaynnit-v9';
 const ASSETS = ['./', 'index.html', 'style.css', 'config.js', 'cloud.js', 'app.js', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', (e) => {

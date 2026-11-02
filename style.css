@@ -157,3 +157,4 @@ dialog h2 { margin: 0 0 4px; font-size: 1.15rem; }
   background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: .9rem;
   max-width: calc(100vw - 32px);
 }
+.months tr.now td { font-weight: 700; color: var(--accent); }
