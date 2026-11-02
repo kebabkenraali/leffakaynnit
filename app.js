@@ -42,26 +42,62 @@ function load() {
   }
 }
 
+/** Tila ilman FileSystemDirectoryHandle-oliota, jotka eivät serialisoidu JSON:ksi. */
+function snapshot() {
+  const { cloudFolderHandle, ...settings } = state.settings;
+  return { ...state, settings };
+}
+
 function save() {
   try {
-    // Don't serialize FileSystemDirectoryHandle - store separately
-    const { cloudFolderHandle, ...settingsToSave } = state.settings;
-    const stateToSave = { ...state, settings: settingsToSave };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
   } catch {
     toast('Tallennus epäonnistui – ota varmuuskopio!');
   }
 }
 
-// Restore cloud folder handle from IndexedDB (persistent across sessions)
+// Pilvikansion kahva tallennetaan IndexedDB:hen, jotta se säilyy sovelluksen uudelleenavauksen yli
+const DB_NAME = 'leffakaynnit';
+const DB_STORE = 'kv';
+
+function openDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbGet(key) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(DB_STORE).objectStore(DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbSet(key, value) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function hasCloudWriteAccess(handle) {
+  return (await handle.queryPermission({ mode: 'readwrite' })) === 'granted';
+}
+
 async function restoreCloudHandle() {
-  if (!('storage' in navigator && 'getDirectory' in navigator.storage)) return;
   try {
-    const root = await navigator.storage.getDirectory();
-    const handle = await root.getDirectoryHandle('cloud-folder', { create: false });
-    state.settings.cloudFolderHandle = handle;
+    const handle = await idbGet('cloudFolder');
+    if (handle) state.settings.cloudFolderHandle = handle;
   } catch {
-    // No saved handle
+    // Tallennettua kansiota ei ole tai IndexedDB ei ole käytettävissä
   }
 }
 
@@ -471,14 +507,26 @@ sForm.addEventListener('submit', (e) => {
 
 // Pilvikansio valinta
 $('#pick-cloud-folder').addEventListener('click', async () => {
+  // Tallennettu kansio: riittää vahvistaa lupa, ei tarvitse valita uudelleen
+  const saved = state.settings.cloudFolderHandle;
+  if (saved && (await saved.requestPermission({ mode: 'readwrite' })) === 'granted') {
+    showCloudStatus();
+    toast('Pilvikansion lupa vahvistettu');
+    return;
+  }
   const handle = await pickCloudFolder();
   if (handle) {
     state.settings.cloudFolderHandle = handle;
-    $('#cloud-folder-status').textContent = `Valittu: ${handle.name}`;
-    $('#auto-cloud-save').disabled = false;
+    showCloudStatus();
     toast('Pilvikansio valittu');
   }
 });
+
+function showCloudStatus() {
+  const h = state.settings.cloudFolderHandle;
+  $('#auto-cloud-save').disabled = !h;
+  $('#cloud-folder-status').textContent = h ? `Valittu: ${h.name}` : '';
+}
 
 // Automaattinen pilvitallennus
 $('#auto-cloud-save').addEventListener('change', (e) => {
@@ -520,19 +568,8 @@ async function pickCloudFolder() {
     return null;
   }
   try {
-    const handle = await window.showDirectoryPicker({
-      mode: 'readwrite',
-      startIn: 'documents',
-    });
-    // Tallentaa IndexedDB:hen pysyväksi
-    const root = await navigator.storage.getDirectory();
-    await root.getDirectoryHandle('cloud-folder', { create: true });
-    // Poista vanha ja tallenna uusi (FileSystemHandle ei serialisoidu, joten tallennetaan viittaus)
-    // Käytännössä tallennamme haaran OPFS:ään
-    const dir = await root.getDirectoryHandle('cloud-folder', { create: true });
-    // Kopioi handle OPFS:ään (ei suoraan mahdollista, joten tallennamme tiedon localStorageen)
-    // Ratkaisu: pyydetään käyttäjältä uusi handle joka sessio, tai käytämme OPFS:ää välimuistina
-    localStorage.setItem('leffakaynnit.cloudFolderName', handle.name);
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'documents' });
+    await idbSet('cloudFolder', handle);
     return handle;
   } catch (err) {
     if (err.name !== 'AbortError') {
@@ -545,6 +582,10 @@ async function pickCloudFolder() {
 /** Tallenna tiedosto pilvikansioon */
 async function saveToCloudFolder(handle, fileName, content, type) {
   if (!handle) return false;
+  if (!(await hasCloudWriteAccess(handle))) {
+    toast('Vahvista pilvikansion lupa painamalla Asetuksissa "Valitse pilvikansio"');
+    return false;
+  }
   try {
     const fileHandle = await handle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
@@ -561,7 +602,7 @@ async function saveToCloudFolder(handle, fileName, content, type) {
 async function autoSaveToCloud() {
   if (!state.settings.cloudFolderHandle) return;
   try {
-    const json = JSON.stringify(state, null, 2);
+    const json = JSON.stringify(snapshot(), null, 2);
     const csv = generateCSV();
     await Promise.all([
       saveToCloudFolder(state.settings.cloudFolderHandle, `leffakaynnit-${todayIso()}.json`, json, 'application/json'),
@@ -583,7 +624,7 @@ function generateCSV() {
 }
 
 $('#export-json').addEventListener('click', () => {
-  download(`leffakaynnit-${todayIso()}.json`, JSON.stringify(state, null, 2), 'application/json');
+  download(`leffakaynnit-${todayIso()}.json`, JSON.stringify(snapshot(), null, 2), 'application/json');
 });
 
 $('#import-json').addEventListener('change', async (e) => {
@@ -594,7 +635,10 @@ $('#import-json').addEventListener('change', async (e) => {
     const data = JSON.parse(await file.text());
     if (!Array.isArray(data.visits)) throw new Error();
     if (!confirm(`Palautetaanko ${data.visits.length} käyntiä? Nykyiset tiedot korvataan.`)) return;
-    state = { settings: { ...DEFAULT_STATE.settings, ...data.settings }, visits: data.visits };
+    state = {
+      settings: { ...DEFAULT_STATE.settings, ...data.settings, cloudFolderHandle: state.settings.cloudFolderHandle },
+      visits: data.visits,
+    };
     save();
     if (state.settings.autoCloudSave) autoSaveToCloud();
     fillSettings();
@@ -736,21 +780,16 @@ $('#xlsx-file').addEventListener('change', async (e) => {
 // ---------- Käynnistys ----------
 
 fillSettings();
-// Alusta pilvikansion tila
-if (state.settings.cloudFolderHandle) {
-  $('#cloud-folder-status').textContent = `Valittu: ${state.settings.cloudFolderHandle.name}`;
-  $('#auto-cloud-save').disabled = false;
-} else {
-  $('#auto-cloud-save').disabled = true;
-}
-$('#auto-cloud-save').checked = state.settings.autoCloudSave || false;
+$('#auto-cloud-save').checked = state.settings.autoCloudSave;
 render();
 
-// Yritä palauttaa pilvikansio OPFS:stä
+// Palauta tallennettu pilvikansio IndexedDB:stä
 restoreCloudHandle().then(() => {
-  if (state.settings.cloudFolderHandle) {
-    $('#cloud-folder-status').textContent = `Valittu: ${state.settings.cloudFolderHandle.name}`;
-    $('#auto-cloud-save').disabled = false;
+  showCloudStatus();
+  if (!state.settings.cloudFolderHandle && state.settings.autoCloudSave) {
+    state.settings.autoCloudSave = false;
+    $('#auto-cloud-save').checked = false;
+    save();
   }
 });
 

@@ -26,7 +26,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 
 ### Asetukset (Masterdata)
 - **Tilausasetukset**: Vuosimaksu, sarjalipun vertailuhinta, kauden alkupäivä ja loppupäivä
-- **🆕 Paikka (Masterdata)**: Oletuspaikka/teatteri, jota käytetään uusien käyntien esitäyttössä
+- **🆕 Paikka (Masterdata)**: Oletusteatteri, jolla uusien käyntien Teatteri-kenttä esitäytetään
 - **🆕 Pilvitallennus**: Valitse OneDrive-, Google Drive- tai Dropbox-kansio (paikallinen synkrointikansio) varmuuskopioiden automaattiseen tallentamiseen
 - **🆕 Automaattinen pilvitallennus**: Valintaruutu varmuuskopioiden (JSON + CSV) automaattiseen tallentamiseen pilvikansioon joka muutoksen jälkeen
 
@@ -42,14 +42,14 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **localStorage**: Tiedot tallentuvat selaimeen, ei palvelimelle
 - **File System Access API**: Pilvikansio-valinta (Chrome/Edge 86+)
 - **Web Share API**: Mobiililaitteilla jakovalikko (Tallenna OneDriveen, Google Driveen jne.)
-- **OPFS (Origin Private File System)**: Pilvikansion käden säilyttäminen istuntojen välillä
+- **IndexedDB**: Pilvikansion kahvan (lupaviittauksen) säilyttäminen sovelluksen uudelleenavauksen yli
 
 ## 🚀 Käyttöönotto
 
 ### GitHub Pages (suositus)
 1. Forkkaa tai kloonaa tämä repositorio
 2. Mene repositorion **Settings → Pages**
-3. Valitse **Source: Deploy from a branch**, branch `gh-pages` (tai `main` jos käytät workflow)
+3. Valitse **Source: Deploy from a branch**, branch `gh-pages` (kansio `/ (root)`)
 4. Sovellus on käytettävissä osoitteessa `https://<käyttäjänimesi>.github.io/leffakaynnit/`
 
 ### Paikallinen kehitys
@@ -66,14 +66,14 @@ npx serve .
 ## 📊 Excel-tuonti – ohjeet
 
 1. Mene **Asetukset**-välilehdelle
-2. Klikkaa **Valitse Finnkino_Premium_Seuranta.xlsx** (tai raahaa tiedosto)
+2. Valitse tiedosto **Finnkino_Premium_Seuranta.xlsx** tuontikentästä
 3. Sovellus etsii automaattisesti välilehden, jossa on sarakkeet:
    - **Päivä** (pvm/date)
    - **Elokuva** (elokuva)
    - **Herkut €** (herku/karkki)
    - Valinnaiset: **Teatteri/Sali**, **Muut kulut €** (muu), **Muistio/Huomio**
 4. Varmista, että otsikkorivi on oikeilla nimillä (ääkköset eivät väliä)
-5. Valitse: **Korvaa nykyiset** tai **Lisää vain uudet** (duplikaatit tunnistetaan päivän + elokuvan perusteella)
+5. Jos käyntejä on jo, sovellus kysyy: **OK** korvaa nykyiset käynnit, **Peruuta** lisää vain uudet (duplikaatit tunnistetaan päivän + elokuvan perusteella)
 
 ## 💾 Pilvitallennus – asetukset
 
@@ -146,7 +146,7 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Progressive Web App (PWA)** – `manifest.webmanifest`, Service Worker (`sw.js`)
 - **File System Access API** – Pilvikansio-valinta (OneDrive, Google Drive, Dropbox)
 - **Web Share API** – Mobiililaitteiden jakovalikko
-- **OPFS (Origin Private File System)** – Tiedostokäsittely selaimessa
+- **IndexedDB** – Pilvikansion kahvan tallennus
 - **localStorage** – Paikallinen tietovarasto
 - **SheetJS (xlsx)** – Excel-tiedostojen lukeminen CDN:stä
 
@@ -163,7 +163,6 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Aika-akselinen visualisointi** – SVG-kaavio kauden aikajanalla (ei käyntinumero)
 
 ### Laadunvarmistus
-- **TypeScript-tyyppinen JSDoc** – Funktioiden parametrit ja paluuarvot dokumentoitu
 - **Virheenkäsittely** – `try/catch` kaikissa I/O-operaatioissa, käyttäjäystävälliset toast-viestit
 - **Graceful degradation** – File System Access API ei tue kaikki selainta → fallback Web Share API:hin
 
