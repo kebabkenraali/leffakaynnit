@@ -267,9 +267,11 @@ function renderChart(rows) {
 
   // Y-akseli: hinta €
   // Laske yMax datasta + ref
-  const maxCost = Math.max(...rows.map(r => r.totalAt), ref);
-  const yMax = Math.max(ref * 2.5, maxCost * 1.2);
-  const y = (v) => T + (1 - Math.min(v, yMax * 1.5) / yMax) * (H - T - B);
+  // Asteikko perustuu sarjalippuun. Alun korkeat hinnat (esim. 372 € ensimmäisellä käynnillä) rajautuvat pois,
+  // jotta kehitys näkyy myös vähäisillä käynneillä.
+  const maxCost = Math.max(...rows.map((r) => r.totalAt));
+  const yMax = Math.max(ref * 2.5, Math.min(maxCost * 1.1, ref * 5));
+  const y = (v) => T + (1 - v / yMax) * (H - T - B);
 
   // Kaavio on ajassa etenevä: jokainen käynti on piste (päivä, kumulatiivinen keskihinta)
   // movieAt = vuosimaksu / käyntejä tähän mennessä
@@ -284,9 +286,17 @@ function renderChart(rows) {
     return `${i ? 'L' : 'M'}${x(dayOffset).toFixed(1)},${y(r.totalAt).toFixed(1)}`;
   }).join('');
 
-  // Break-even viiva: päivä jolloin break-even saavutetaan (projekti)
-  const breakEvenDay = s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0;
-  const breakEvenX = breakEvenDay > 0 && rows.length > 0 ? x(Math.min(seasonDays, breakEvenDay * (seasonDays / Math.max(1, rows.length)))) : null;
+  // Break-even viiva: päivä, jona käyntejä on sama määrä kuin Premium vaatii.
+  // Jos se on jo saavutettu, käytetään sen käynnin päivää; muuten nykyisellä tahdilla arvioitua päivää.
+  const breakEvenCount = s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0;
+  let breakEvenX = null;
+  if (breakEvenCount > 0 && rows.length >= breakEvenCount) {
+    breakEvenX = x(Math.round((Date.parse(rows[breakEvenCount - 1].date) - seasonStart) / DAY));
+  } else if (breakEvenCount > 0 && rows.length > 0) {
+    const elapsed = Math.max(1, (now - seasonStart) / DAY);
+    const projectedDay = Math.min(seasonDays, (elapsed * breakEvenCount) / rows.length);
+    breakEvenX = x(projectedDay);
+  }
 
   // Y-akselin ruudut
   const ticks = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
@@ -308,7 +318,8 @@ function renderChart(rows) {
       monthLabels.push(`<text x="${x(dayOffset)}" y="${H - 4}" text-anchor="middle" class="small">${label}</text>`);
     }
   }
-  const xTicks = monthLabels.join('');
+  // Pienellä näytöllä joka toinen kuukausi, jotta nimet eivät mene päällekkäin
+  const xTicks = monthLabels.filter((_, i) => i % 2 === 0).join('');
 
   // Tämänhetkinen päivä viiva
   const todayOffset = Math.max(0, Math.min(seasonDays, Math.round((now - seasonStart) / DAY)));
@@ -318,12 +329,12 @@ function renderChart(rows) {
 
   // Sarjalippu viittausviiva
   const refLine = `<line x1="${L}" x2="${W - R}" y1="${y(ref)}" y2="${y(ref)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
-    <text x="${W - R + 4}" y="${y(ref) + 4}" text-anchor="start" class="small muted">Sarjalippu</text>`;
+    <text x="${W - R - 2}" y="${y(ref) - 4}" text-anchor="end" class="small muted">sarjalippu ${ref.toFixed(2).replace('.', ',')} €</text>`;
 
   // Break-even merkintä
   const beLine = breakEvenX ? `
     <line x1="${breakEvenX}" x2="${breakEvenX}" y1="${T}" y2="${H - B}" stroke="var(--good)" stroke-width="1" stroke-dasharray="2 2" opacity="0.7"/>
-    <text x="${breakEvenX}" y="${H - B + 12}" text-anchor="middle" class="small" fill="var(--good)">Break-even</text>
+    <text x="${breakEvenX + 3}" y="${T + 10}" text-anchor="start" class="small" fill="var(--good)">break-even</text>
   ` : '';
 
   el.innerHTML = `
@@ -338,11 +349,13 @@ function renderChart(rows) {
         <path d="${moviePath}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
       </g>
     </svg>
+    </svg>
     <div class="legend small">
       <span><i class="dot dot-movie"></i>Pelkkä leffa (vuosimaksu / käynnit)</span>
       <span><i class="dot dot-total"></i>Leffa + herkut ((vuosimaksu + herkut) / käynnit)</span>
       <span><i class="dot dot-ref"></i>Sarjalippu</span>
-    </div>`;
+    </div>
+    <p class="small muted">Kaavion yläreuna on rajattu, jotta kehitys näkyy. Alun korkeat hinnat eivät mahdu kuvaan.</p>`;
 }
 
 function renderMonths(rows) {
