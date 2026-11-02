@@ -24,11 +24,11 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **Eniten katsottu elokuva**: Elokuva, jota olet katsonut eniten kertoja
 - **Kallein elokuva (leffa + herkut)**: Elokuva, jonka kokonaishinta (leffaosuus + herkut) on suurin
 
-### Asetukset (Masterdata)
+### Asetukset
 - **Tilausasetukset**: Vuosimaksu, sarjalipun vertailuhinta, kauden alkupäivä ja loppupäivä
-- **🆕 Paikka (Masterdata)**: Oletusteatteri, jolla uusien käyntien Teatteri-kenttä esitäytetään
-- **Pilvivarmuus**: OneDrive (Microsoft Graph) ja Google Drive, käyttäjän oma tili. Automaattinen tallennus ja palautus
-- **🆕 Automaattinen pilvitallennus**: Valintaruutu varmuuskopioiden (JSON + CSV) automaattiseen tallentamiseen pilvikansioon joka muutoksen jälkeen
+- **Oletusteatteri**: Tilaus-asetuksissa; uusien käyntien Teatteri-kenttä esitäytetään tällä
+- **Varmuuskopiot**: Päivittäinen automaattinen tallennus puhelimen tiedostoihin, tietokoneella valittuun kansioon
+- **Automaattinen kansiotallennus (tietokone)**: varmuuskopiot (JSON + CSV) valittuun kansioon joka muutoksen jälkeen
 
 ### Varmuuskopiot & tietojen hallinta
 - **Lataa varmuuskopio (.json)**: Kokonaistilan tallennus (asetukset + käynnit)
@@ -40,10 +40,9 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **PWA (Progressive Web App)**: Asennettava puhelimeen/työpöydälle, toimii offline
 - **Service Worker**: Välimuistittaa resurssit, sovellus aukeaa ilman verkkoa
 - **localStorage**: Tiedot tallentuvat selaimeen, ei palvelimelle
-- **Microsoft Graph (MSAL.js)** ja **Google Identity Services**: pilvivarmuus
 - **File System Access API**: paikallinen kansio (Chrome/Edge 86+)
 - **Web Share API**: Mobiililaitteilla jakovalikko (Tallenna OneDriveen, Google Driveen jne.)
-- **IndexedDB**: Pilvikansion kahvan (lupaviittauksen) säilyttäminen sovelluksen uudelleenavauksen yli
+- **IndexedDB**: Valitun kansion kahvan säilyttäminen sovelluksen uudelleenavauksen yli
 
 ## 🚀 Käyttöönotto
 
@@ -76,41 +75,20 @@ npx serve .
 4. Varmista, että otsikkorivi on oikeilla nimillä (ääkköset eivät väliä)
 5. Jos käyntejä on jo, sovellus kysyy: **OK** korvaa nykyiset käynnit, **Peruuta** lisää vain uudet (duplikaatit tunnistetaan päivän + elokuvan perusteella)
 
-## ☁️ Pilvivarmuus (OneDrive ja Google Drive)
+## 💾 Varmuuskopiot
 
-Sovellus tallentaa varmuuskopion **sinun omaan** pilvitiliisi. Sovelluksella ei ole palvelinta, joten kehittäjä ei näe tietojasi. Tiedostot ovat `leffakaynnit.json` (koko tila) ja `leffakaynnit.csv` (taulukko). Ne ylikirjoitetaan joka tallennuksessa, joten pilvessä on aina uusin versio.
+Tiedot tallentuvat selaimeen. Varmuuskopiot ovat tavallisia tiedostoja laitteen muistissa, eivät selaimen välimuistia.
 
-Yhdistäminen vaatii kerran sovellustunnukset `config.js`-tiedostoon. Tunnukset eivät ole salaisuuksia, ja jokainen käyttäjä kirjautuu omalla tilillään.
+### Puhelin
+- **Tallenna varmuuskopio puhelimeen automaattisesti kerran päivässä**: muutoksen jälkeen sovellus lataa `leffakaynnit-YYYY-MM-DD.json` ja `.csv` Lataukset-kansioon, enintään kerran päivässä.
+- **Lataa varmuuskopio** / **Vie CSV**: avaa jakovalikon, josta tiedoston voi tallentaa haluamaansa paikkaan.
+- Jos varmuuskopio on yli viikon vanha, sovellus muistuttaa avattaessa.
 
-### OneDrive (Microsoft Graph, henkilökohtainen tili)
-1. Avaa [entra.microsoft.com](https://entra.microsoft.com) → **App registrations → New registration**
-2. Nimi: `Leffakäynnit`. Supported account types: **Personal Microsoft accounts only**
-3. Redirect URI: tyyppi **Single-page application (SPA)**, arvo `https://kebabkenraali.github.io/leffakaynnit/`
-4. **API permissions → Add a permission → Microsoft Graph → Delegated → `Files.ReadWrite.AppFolder`**
-5. Kopioi **Application (client) ID** → `config.js` kenttään `onedriveClientId`
+### Tietokone (Chrome/Edge)
+**Valitse kansio** tallentaa varmuuskopiot valittuun kansioon, esim. `D:\OneDrive\...`, jolloin OneDrive-synkronointi hoitaa loput. Kansio muistetaan, ja selain voi kysyä luvan uudelleen.
 
-Tiedostot menevät OneDriven kansioon `Apps/Leffakäynnit/`. Sovellus ei näe muuta OneDrivea.
-
-### Google Drive
-1. Avaa [console.cloud.google.com](https://console.cloud.google.com), luo projekti ja ota käyttöön **Google Drive API** (APIs & Services → Library)
-2. **OAuth consent screen**: sovelluksen nimi, tukisähköposti, User type **External**, scope `.../auth/drive.file`
-3. **Credentials → Create credentials → OAuth client ID → Web application**
-4. **Authorized JavaScript origins**: `https://kebabkenraali.github.io` (vain origin, ei polkua)
-5. Kopioi Client ID → `config.js` kenttään `googleClientId`
-
-Kun sovellus on Testing-tilassa, Google sallii yhteyden vain Test users -listalla oleville tileille (enintään 100). Julkaisua varten Google vaatii sovelluksen verifioinnin ja tietosuojaselosteen.
-
-### Käyttö
-- **Yhdistä OneDrive / Yhdistä Google Drive** Asetuksissa. Yhteys muistetaan, ja tokenit uusitaan automaattisesti.
-- **Tallenna automaattisesti joka muutoksen jälkeen**: tallennus tapahtuu noin 1,5 s muutoksen jälkeen. Tyhjää tilaa ei lähetetä pilveen, joten uusi laite ei ylikirjoita varmuuskopiota ennen palautusta.
-- **Palauta pilvestä**: lataa `leffakaynnit.json` ja korvaa nykyinen tila (vahvistus kysytään).
-- Jos yhteys vanhenee, sovellus ilmoittaa siitä. Yhdistä palvelu uudelleen Asetuksissa.
-
-### Paikallinen kansio (vain tietokone)
-Chrome/Edge: **Valitse paikallinen kansio** tallentaa varmuuskopiot kansioon, esim. `D:OneDrive...`, jolloin OneDrive-synkronointi hoitaa loput. Puhelimella tätä ei ole.
-
-### Mobiili
-Android-Chrome ei salli kansioon kirjoittamista, joten puhelimella käytä pilvipalvelua tai jakovalikkoa (**Vie CSV** / **Lataa varmuuskopio**).
+### Palautus
+**Palauta varmuuskopio** lukee `.json`-tiedoston ja korvaa nykyiset tiedot (vahvistus kysytään).
 
 ## 📁 Tiedostorakenne
 
@@ -121,8 +99,6 @@ leffakaynnit/
 ├── style.css         # Teema, responsiivisuus, tummavaalea-tila
 ├── sw.js             # Service Worker (offline-tuki)
 ├── manifest.webmanifest  # PWA-manifesti
-├── config.js         # Pilvipalvelujen sovellustunnukset
-├── cloud.js          # OneDrive- ja Google Drive -yhteys
 ├── icon.svg          # Sovelluskuvake
 └── README.md         # Tämä tiedosto
 ```
@@ -169,7 +145,7 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Progressive Web App (PWA)** – `manifest.webmanifest`, Service Worker (`sw.js`)
 - **File System Access API** – Paikallinen kansio (vain tietokone)
 - **Web Share API** – Mobiililaitteiden jakovalikko
-- **IndexedDB** – Pilvikansion kahvan tallennus
+- **IndexedDB** – Valitun kansion kahvan tallennus
 - **localStorage** – Paikallinen tietovarasto
 - **SheetJS (xlsx)** – Excel-tiedostojen lukeminen CDN:stä
 

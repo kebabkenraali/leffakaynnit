@@ -100,30 +100,20 @@
         <label>Sarjalipun hinta vertailuun (€/lippu)<input name="ticketPrice" type="number" step="0.01" min="0" inputmode="decimal" required></label>
         <label>Kausi alkaa<input name="seasonStart" type="date" required></label>
         <label>Kausi päättyy<input name="seasonEnd" type="date" required></label>
+        <label>Oletusteatteri (esitäytetään uusiin käynteihin)<input name="location" type="text" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
+        <datalist id="locations"></datalist>
         <button type="submit" class="btn primary">Tallenna</button>
       </form>
 
       <div class="card form">
-        <strong>Paikka (Masterdata)</strong>
-        <p class="small muted">Oletusteatteri, jolla uusien käyntien Teatteri-kenttä esitäytetään.</p>
-        <label>Paikka<input name="location" type="text" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
-        <datalist id="locations"></datalist>
-      </div>
-
-      <div class="card form">
-        <strong>Pilvivarmuus</strong>
-        <p class="small muted">Tallentuu sinun omaan tiliisi: <code>leffakaynnit.json</code> (koko tila) ja <code>leffakaynnit.csv</code> (taulukko).</p>
-        <button id="conn-onedrive" class="btn" type="button">Yhdistä OneDrive</button>
-        <button id="conn-gdrive" class="btn" type="button">Yhdistä Google Drive</button>
-        <p id="cloud-status" class="small muted"></p>
+        <strong>Paikallinen kansio (vain tietokone)</strong>
+        <p class="small muted">Chrome/Edge tietokoneella: varmuuskopiot tallentuvat valittuun kansioon, esim. OneDrive-synkronointikansioon.</p>
+        <button id="pick-cloud-folder" class="btn" type="button">Valitse kansio</button>
+        <p id="cloud-folder-status" class="small muted"></p>
         <label class="two">
           <input id="auto-cloud-save" type="checkbox">
-          <span>Tallenna automaattisesti joka muutoksen jälkeen</span>
+          <span>Tallenna kansioon automaattisesti joka muutoksen jälkeen</span>
         </label>
-        <button id="cloud-restore" class="btn" type="button">Palauta pilvestä</button>
-        <p class="small muted">Vain tietokoneella (Chrome/Edge): tallennus paikalliseen kansioon, esim. OneDrive-synkronointikansioon.</p>
-        <button id="pick-cloud-folder" class="btn" type="button">Valitse paikallinen kansio</button>
-        <p id="cloud-folder-status" class="small muted"></p>
       </div>
 
       <div class="card form">
@@ -181,10 +171,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@5.25.1/lib/msal-browser.min.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async></script>
-  <script src="cloud.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

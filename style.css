@@ -79,9 +79,6 @@ main { padding: 0 16px; max-width: 640px; margin: 0 auto; }
 .chart text { fill: var(--muted); font-size: 10px; }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
-.dot-movie { background: var(--accent); }
-.dot-total { background: var(--accent-2); }
-.dot-ref { background: var(--muted); }
 
 table.months { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; }
 .months th, .months td { text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--border); }
