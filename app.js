@@ -522,20 +522,67 @@ $('#pick-cloud-folder').addEventListener('click', async () => {
   }
 });
 
+/** Onko jokin pilvikohde käytössä (paikallinen kansio tai pilvipalvelu). */
+function hasCloudTarget() {
+  return !!state.settings.cloudFolderHandle || Cloud.connectedNames().length > 0;
+}
+
 function showCloudStatus() {
   const h = state.settings.cloudFolderHandle;
-  $('#auto-cloud-save').disabled = !h;
-  $('#cloud-folder-status').textContent = h ? `Valittu: ${h.name}` : '';
+  const names = Cloud.connectedNames().map((n) => Cloud.providers[n].label);
+  if (h) names.push(`kansio ${h.name}`);
+  $('#cloud-status').textContent = names.length ? `Yhdistetty: ${names.join(', ')}` : 'Ei yhdistettyjä pilvipalveluita';
+  $('#cloud-folder-status').textContent = h ? `Paikallinen kansio: ${h.name}` : '';
+  $('#auto-cloud-save').disabled = !hasCloudTarget();
+  for (const name of Object.keys(Cloud.providers)) {
+    const btn = $(name === 'onedrive' ? '#conn-onedrive' : '#conn-gdrive');
+    const label = Cloud.providers[name].label;
+    btn.disabled = !Cloud.configured(name);
+    btn.textContent = !Cloud.configured(name)
+      ? `${label} (ei määritetty config.js:ssä)`
+      : Cloud.isConnected(name) ? `Katkaise ${label}-yhteys` : `Yhdistä ${label}`;
+  }
+}
+
+for (const name of Object.keys(Cloud.providers)) {
+  $(name === 'onedrive' ? '#conn-onedrive' : '#conn-gdrive').addEventListener('click', async () => {
+    if (Cloud.isConnected(name)) {
+      await Cloud.disconnect(name);
+      showCloudStatus();
+      return;
+    }
+    try {
+      await Cloud.connect(name); // OneDrive siirtyy Microsoftin sivulle ja palaa takaisin
+      showCloudStatus();
+      toast(`${Cloud.providers[name].label} yhdistetty`);
+    } catch (err) {
+      toast('Yhdistäminen epäonnistui: ' + err.message);
+    }
+  });
 }
 
 // Automaattinen pilvitallennus
 $('#auto-cloud-save').addEventListener('change', (e) => {
-  if (e.target.checked && !state.settings.cloudFolderHandle) {
+  if (e.target.checked && !hasCloudTarget()) {
     e.target.checked = false;
-    toast('Valitse ensin pilvikansio');
+    toast('Yhdistä ensin pilvipalvelu tai valitse kansio');
   }
   state.settings.autoCloudSave = e.target.checked;
   save();
+});
+
+$('#cloud-restore').addEventListener('click', async () => {
+  const names = Cloud.connectedNames();
+  if (!names.length) return toast('Yhdistä ensin OneDrive tai Google Drive');
+  // Käytä ensimmäistä yhdistettyä palvelua
+  const name = names[0];
+  try {
+    const text = await Cloud.download(name, FILE_JSON);
+    if (!text) return toast(`${Cloud.providers[name].label}: varmuuskopiota ei löydy`);
+    await restoreBackup(text);
+  } catch (err) {
+    toast('Palautus epäonnistui: ' + err.message);
+  }
 });
 
 // ---------- Varmuuskopio ----------
@@ -598,20 +645,47 @@ async function saveToCloudFolder(handle, fileName, content, type) {
   }
 }
 
-/** Yritä tallentaa automaattisesti pilvikansioon jos se on valittu */
-async function autoSaveToCloud() {
-  if (!state.settings.cloudFolderHandle) return;
-  try {
-    const json = JSON.stringify(snapshot(), null, 2);
-    const csv = generateCSV();
+const FILE_JSON = 'leffakaynnit.json';
+const FILE_CSV = 'leffakaynnit.csv';
+
+let cloudTimer = null;
+
+/** Tallennus viivästetään hieman, jotta peräkkäiset muutokset lähtevät yhtenä kertana. */
+function autoSaveToCloud() {
+  if (!state.settings.autoCloudSave) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(syncCloudNow, 1500);
+}
+
+async function syncCloudNow() {
+  if (!hasCloudTarget()) return;
+  // Tyhjää tilaa ei ylikirjoiteta pilveen, esim. uudella laitteella ennen palautusta
+  if (!state.visits.length) return;
+  const json = JSON.stringify(snapshot(), null, 2);
+  const csv = generateCSV();
+
+  if (state.settings.cloudFolderHandle) {
+    const h = state.settings.cloudFolderHandle;
+    const stamp = todayIso();
     await Promise.all([
-      saveToCloudFolder(state.settings.cloudFolderHandle, `leffakaynnit-${todayIso()}.json`, json, 'application/json'),
-      saveToCloudFolder(state.settings.cloudFolderHandle, `leffakaynnit-${todayIso()}.csv`, csv, 'text/csv'),
+      saveToCloudFolder(h, `leffakaynnit-${stamp}.json`, json, 'application/json'),
+      saveToCloudFolder(h, `leffakaynnit-${stamp}.csv`, csv, 'text/csv'),
     ]);
-    toast('Varmuuskopio tallennettu pilvikansioon');
-  } catch (err) {
-    // Hiljainen epäonnistuminen
   }
+  for (const name of Cloud.connectedNames()) {
+    try {
+      await Cloud.upload(name, FILE_JSON, json, 'application/json');
+      await Cloud.upload(name, FILE_CSV, csv, 'text/csv');
+      setLastSync(Cloud.providers[name].label);
+    } catch (err) {
+      toast(`${Cloud.providers[name].label}: ${err.message}`);
+    }
+  }
+}
+
+function setLastSync(label) {
+  const t = new Date().toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+  toast(`Varmuuskopio tallennettu (${label}) klo ${t}`);
 }
 
 function generateCSV() {
@@ -631,23 +705,29 @@ $('#import-json').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   e.target.value = '';
   if (!file) return;
-  try {
-    const data = JSON.parse(await file.text());
-    if (!Array.isArray(data.visits)) throw new Error();
-    if (!confirm(`Palautetaanko ${data.visits.length} käyntiä? Nykyiset tiedot korvataan.`)) return;
-    state = {
-      settings: { ...DEFAULT_STATE.settings, ...data.settings, cloudFolderHandle: state.settings.cloudFolderHandle },
-      visits: data.visits,
-    };
-    save();
-    if (state.settings.autoCloudSave) autoSaveToCloud();
-    fillSettings();
-    render();
-    toast('Varmuuskopio palautettu');
-  } catch {
-    toast('Tiedosto ei ole kelvollinen varmuuskopio');
-  }
+  await restoreBackup(await file.text());
 });
+
+/** Palauttaa varmuuskopion JSON-tekstistä. Korvaa nykyisen tilan käyttäjän vahvistuksella. */
+async function restoreBackup(text) {
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = null;
+  }
+  if (!data || !Array.isArray(data.visits)) return toast('Tiedosto ei ole kelvollinen varmuuskopio');
+  if (!confirm(`Palautetaanko ${data.visits.length} käyntiä? Nykyiset tiedot korvataan.`)) return;
+  state = {
+    settings: { ...DEFAULT_STATE.settings, ...data.settings, cloudFolderHandle: state.settings.cloudFolderHandle },
+    visits: data.visits,
+  };
+  save();
+  fillSettings();
+  render();
+  showCloudStatus();
+  toast('Varmuuskopio palautettu');
+}
 
 $('#export-csv').addEventListener('click', () => {
   const dec = (v) => v.toFixed(2).replace('.', ',');
@@ -783,15 +863,16 @@ fillSettings();
 $('#auto-cloud-save').checked = state.settings.autoCloudSave;
 render();
 
-// Palauta tallennettu pilvikansio IndexedDB:stä
+// Palauta tallennettu pilvikansio IndexedDB:stä ja pilvipalvelujen tila
 restoreCloudHandle().then(() => {
   showCloudStatus();
-  if (!state.settings.cloudFolderHandle && state.settings.autoCloudSave) {
+  if (!hasCloudTarget() && state.settings.autoCloudSave) {
     state.settings.autoCloudSave = false;
     $('#auto-cloud-save').checked = false;
     save();
   }
 });
+Cloud.init().then(showCloudStatus).catch((err) => toast('OneDrive: ' + err.message));
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});

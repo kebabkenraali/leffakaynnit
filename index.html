@@ -114,15 +114,25 @@
 
       <div class="card form">
         <strong>Paikka (Masterdata)</strong>
-        <p class="small muted">Oletuspaikka/teatteri, jota käytetään uusien käyntien esitäyttössä ja raportoinnissa.</p>
+        <p class="small muted">Oletusteatteri, jolla uusien käyntien Teatteri-kenttä esitäytetään.</p>
         <label>Paikka<input name="location" type="text" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
         <datalist id="locations"></datalist>
-        <button type="button" id="pick-cloud-folder" class="btn">Valitse pilvikansio (OneDrive/Google Drive/Dropbox)</button>
-        <p id="cloud-folder-status" class="small muted"></p>
+      </div>
+
+      <div class="card form">
+        <strong>Pilvivarmuus</strong>
+        <p class="small muted">Tallentuu sinun omaan tiliisi: <code>leffakaynnit.json</code> (koko tila) ja <code>leffakaynnit.csv</code> (taulukko).</p>
+        <button id="conn-onedrive" class="btn" type="button">Yhdistä OneDrive</button>
+        <button id="conn-gdrive" class="btn" type="button">Yhdistä Google Drive</button>
+        <p id="cloud-status" class="small muted"></p>
         <label class="two">
           <input id="auto-cloud-save" type="checkbox">
-          <span>Tallenna varmuuskopiot automaattisesti pilvikansioon</span>
+          <span>Tallenna automaattisesti joka muutoksen jälkeen</span>
         </label>
+        <button id="cloud-restore" class="btn" type="button">Palauta pilvestä</button>
+        <p class="small muted">Vain tietokoneella (Chrome/Edge): tallennus paikalliseen kansioon, esim. OneDrive-synkronointikansioon.</p>
+        <button id="pick-cloud-folder" class="btn" type="button">Valitse paikallinen kansio</button>
+        <p id="cloud-folder-status" class="small muted"></p>
       </div>
 
       <div class="card form">
@@ -176,6 +186,10 @@
 
   <div id="toast" class="toast" hidden></div>
 
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@5.25.1/lib/msal-browser.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <script src="cloud.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
