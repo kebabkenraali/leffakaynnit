@@ -161,3 +161,20 @@ dialog h2 { margin: 0 0 4px; font-size: 1.15rem; }
 .chart .bar-value { fill: var(--text); font-size: 11px; font-weight: 700; }
 .months.compare td:first-child { color: var(--muted); }
 .months.compare th { font-size: .8rem; }
+.rating-field { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
+.stars { display: flex; gap: 4px; }
+.stars button {
+  font-size: 1.9rem; line-height: 1; width: 44px; height: 44px; padding: 0; cursor: pointer;
+  background: none; border: 0; color: var(--border);
+}
+.stars button.on { color: var(--accent); }
+.stars-small { color: var(--accent); letter-spacing: 1px; }
+.rating-summary { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 10px; }
+.rating-avg { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+.dist { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.dist-row { display: grid; grid-template-columns: 34px 1fr 24px; align-items: center; gap: 8px; font-size: .8rem; }
+.dist-row span:last-child { text-align: right; color: var(--muted); }
+.dist-bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.dist-bar > div { height: 100%; background: var(--accent); border-radius: 99px; }
+.rating-list { list-style: none; margin: 4px 0 10px; padding: 0; font-size: .9rem; }
+.rating-list li { padding: 4px 0; border-bottom: 1px solid var(--border); }

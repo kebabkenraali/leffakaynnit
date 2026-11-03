@@ -7,7 +7,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 ## 🎬 Ominaisuudet
 
 ### Käyntien hallinta
-- **Manuaalisyöttö**: Lisää käynnit yksitellen (päivä, elokuva, teatteri, herkut, muut kulut, muistiinpano)
+- **Manuaalisyöttö**: Lisää käynnit yksitellen (päivä, elokuva, teatteri, herkut, muut kulut, arvosana 1–5 tähteä, muistiinpano)
 - **Excel-tuonti**: Tuo Finnkino Premium -seurantataulukosta (`.xlsx`) suoraan sovellukseen
 - **Muokkaus & poisto**: Klikkaa käyntiä muuttaaksesi tai poistaaksesi sen
 - **Hakutoiminto**: Suodata käyntilistaa elokuvan nimen perusteella
@@ -26,6 +26,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 ### 🆕 Elokuvatilastot
 - **Eniten katsottu elokuva**: Elokuva, jota olet katsonut eniten kertoja
 - **Eniten maksanut elokuva**: Samannimisten käyntien leffaosuudet + herkut yhteensä
+- **Arvosanat**: Keskiarvo, jakauma (1–5 tähteä), parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). Saman tähden napautus uudelleen poistaa arvosanan
 
 ### Asetukset
 - **Tilausasetukset**: Vuosimaksu, sarjalipun vertailuhinta, kauden alkupäivä ja loppupäivä
@@ -74,7 +75,7 @@ npx serve .
    - **Päivä** (pvm/date)
    - **Elokuva** (elokuva)
    - **Herkut €** (herku/karkki)
-   - Valinnaiset: **Teatteri/Sali**, **Muut kulut €** (muu), **Muistio/Huomio**
+   - Valinnaiset: **Teatteri/Sali**, **Muut kulut €** (muu), **Arvosana** (1–5), **Muistio/Huomio**
 4. Varmista, että otsikkorivi on oikeilla nimillä (ääkköset eivät väliä)
 5. Jos käyntejä on jo, sovellus kysyy: **OK** korvaa nykyiset käynnit, **Peruuta** lisää vain uudet (duplikaatit tunnistetaan päivän + elokuvan perusteella)
 

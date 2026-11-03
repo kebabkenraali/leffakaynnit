@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   <header class="top">
@@ -94,6 +94,11 @@
           </div>
         </div>
       </div>
+
+      <div class="card">
+        <strong>Arvosanat</strong>
+        <div id="ratings"></div>
+      </div>
     </section>
 
     <!-- Käynnit -->
@@ -170,6 +175,17 @@
         <label>Herkut €<input name="snacks" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00"></label>
         <label>Muut kulut €<input name="other" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00"></label>
       </div>
+      <div class="rating-field">
+        <span>Arvosana (valinnainen)</span>
+        <div class="stars" id="rating-stars" role="radiogroup" aria-label="Arvosana">
+          <button type="button" role="radio" data-v="1" aria-label="1 tähti">★</button>
+          <button type="button" role="radio" data-v="2" aria-label="2 tähteä">★</button>
+          <button type="button" role="radio" data-v="3" aria-label="3 tähteä">★</button>
+          <button type="button" role="radio" data-v="4" aria-label="4 tähteä">★</button>
+          <button type="button" role="radio" data-v="5" aria-label="5 tähteä">★</button>
+        </div>
+        <input type="hidden" name="rating">
+      </div>
       <label>Muistiinpano<input name="note" type="text" placeholder="esim. 4DX, seuralainen…"></label>
       <div class="actions">
         <button type="button" id="delete-visit" class="btn danger" hidden>Poista</button>
@@ -182,6 +198,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>

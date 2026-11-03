@@ -285,7 +285,56 @@ function renderSummary(rows, sum) {
 
   const months = monthStats(rows);
   renderSavingsChart(months, rows.length, sum);
+  renderRatings(rows);
   renderMonths(months, rows.length);
+}
+
+/** Arvosanat: keskiarvo, jakauma sekä parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). */
+function renderRatings(rows) {
+  const el = $('#ratings');
+  const rated = rows.filter((r) => r.rating > 0);
+  if (!rated.length) {
+    el.innerHTML = '<p class="muted small">Anna käynnille 1–5 tähteä käynnin lomakkeessa, niin näet täällä keskiarvon ja parhaat elokuvat.</p>';
+    return;
+  }
+  const fmt1 = (v) => v.toFixed(1).replace('.', ',');
+  const avg = rated.reduce((a, r) => a + r.rating, 0) / rated.length;
+  const dist = [5, 4, 3, 2, 1].map((v) => ({ v, count: rated.filter((r) => r.rating === v).length }));
+  const maxCount = Math.max(...dist.map((d) => d.count));
+
+  const byTitle = new Map();
+  for (const r of rated) {
+    const key = r.title.toLowerCase();
+    const m = byTitle.get(key) || { title: r.title, sum: 0, count: 0 };
+    m.sum += r.rating;
+    m.count++;
+    byTitle.set(key, m);
+  }
+  const films = [...byTitle.values()].map((m) => ({ ...m, avg: m.sum / m.count }));
+  const byBest = (a, b) => b.avg - a.avg || a.title.localeCompare(b.title, 'fi');
+  const best = [...films].sort(byBest).slice(0, 3);
+  // Heikoimmat vasta kun arvioituja elokuvia on tarpeeksi, ettei sama elokuva näy molemmissa listoissa
+  const worst = films.length >= 6 ? [...films].sort((a, b) => -byBest(a, b)).slice(0, 3) : [];
+  const list = (items) =>
+    items
+      .map((f) => `<li><span class="stars-small">${stars(Math.round(f.avg))}</span> ${esc(f.title)}${f.count > 1 ? ` <span class="muted">(${f.count}×, ka ${fmt1(f.avg)})</span>` : ''}</li>`)
+      .join('');
+
+  el.innerHTML = `
+    <div class="rating-summary">
+      <div class="rating-avg">★ ${fmt1(avg)}</div>
+      <div class="small muted">keskiarvo · ${rated.length} / ${rows.length} käyntiä arvioitu</div>
+    </div>
+    <div class="dist">
+      ${dist
+        .map((d) => `<div class="dist-row"><span>${d.v} ★</span>
+          <div class="dist-bar"><div style="width:${maxCount ? (d.count / maxCount) * 100 : 0}%"></div></div>
+          <span>${d.count}</span></div>`)
+        .join('')}
+    </div>
+    <div class="small"><strong>Parhaat</strong></div>
+    <ul class="rating-list">${list(best)}</ul>
+    ${worst.length ? `<div class="small"><strong>Heikoimmat</strong></div><ul class="rating-list">${list(worst)}</ul>` : ''}`;
 }
 
 /** Vertailu: säästö ja €/käynti ilman herkkuja ja muita kuluja sekä niiden kanssa. */
@@ -476,13 +525,14 @@ function renderList(rows) {
   const items = shown
     .map((r) => {
       const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
+      const rating = r.rating ? `<span class="stars-small">${stars(r.rating)}</span> ` : '';
       const snack = r.snacks ? ` · <span class="snack">herkut ${eur.format(r.snacks)}</span>` : '';
       const withSnacks = r.snacks || r.other ? `<span>kaikki kulut ${eur.format(r.totalAt)}</span>` : '';
       return `<li class="visit" data-id="${r.id}">
         <div class="nro">${r.nro}</div>
         <div class="title">${esc(r.title)}</div>
         <div class="price"><b>${eur.format(r.movieAt)}</b>${withSnacks}</div>
-        <div class="meta">${meta}${snack}</div>
+        <div class="meta">${rating}${meta}${snack}</div>
       </li>`;
     })
     .join('');
@@ -538,13 +588,33 @@ function openVisit(visit) {
   form.date.value = visit?.date ?? todayIso();
   form.title.value = visit?.title ?? '';
   // Uusi käynti: esitäytä teatteri asetuksista (paikka/masterdata) tai viimeisimmän käynnin teatterista
-  form.theater.value = visit?.theater ?? state.settings.location ?? (state.visits.at(-1)?.theater || '');
+  form.theater.value = visit ? visit.theater || '' : state.settings.location || state.visits.at(-1)?.theater || '';
   form.snacks.value = visit?.snacks ? String(visit.snacks).replace('.', ',') : '';
   form.other.value = visit?.other ? String(visit.other).replace('.', ',') : '';
   form.note.value = visit?.note ?? '';
+  setRating(visit?.rating || 0);
   dialog.showModal();
   if (!visit) form.title.focus();
 }
+
+function setRating(v) {
+  form.rating.value = v || '';
+  for (const b of document.querySelectorAll('#rating-stars button')) {
+    const n = Number(b.dataset.v);
+    b.classList.toggle('on', n <= v);
+    b.setAttribute('aria-checked', String(n === v));
+  }
+}
+
+// Saman tähden napautus uudelleen poistaa arvosanan
+$('#rating-stars').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const v = Number(b.dataset.v);
+  setRating(Number(form.rating.value) === v ? 0 : v);
+});
+
+const stars = (v) => '★'.repeat(v) + '☆'.repeat(5 - v);
 
 $('#fab').addEventListener('click', () => openVisit(null));
 $('#cancel-visit').addEventListener('click', () => dialog.close());
@@ -561,6 +631,7 @@ form.addEventListener('submit', (e) => {
     theater: form.theater.value.trim(),
     snacks: num(form.snacks.value),
     other: num(form.other.value),
+    rating: Number(form.rating.value) || 0,
     note: form.note.value.trim(),
   };
   if (!data.date || !data.title) return;
@@ -767,13 +838,13 @@ async function saveToFolderNow() {
 
 function generateCSV() {
   const dec = (v) => v.toFixed(2).replace('.', ',');
-  const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Kaikki kulut €/käynti', 'Muistiinpano']];
+  const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Kaikki kulut €/käynti', 'Arvosana', 'Muistiinpano']];
   for (const r of computeVisits()) {
-    lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.note || '']);
+    lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.rating || '', r.note || '']);
   }
   // Laskemattomat käynnit mukaan ilman järjestysnumeroa ja hintoja, jotta mitään ei katoa
   for (const r of suspectVisits()) {
-    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', [r.note, 'ei laskettu: tarkista päivä'].filter(Boolean).join(' · ')]);
+    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', r.rating || '', [r.note, 'ei laskettu: tarkista päivä'].filter(Boolean).join(' · ')]);
   }
   return '﻿' + lines.map((l) => l.map((c) => `\"${String(c).replace(/\"/g, '\"\"')}\"`).join(';')).join('\r\n');
 }
@@ -867,6 +938,7 @@ function rowsFromWorkbook(XLSX, wb) {
       other: col(/muut/),
       theater: col(/teatteri|sali/),
       note: col(/muist|huom/),
+      rating: col(/arvosana|arvio|tahdet|rating/),
     };
     if (c.date < 0) continue;
     const out = [];
@@ -881,6 +953,7 @@ function rowsFromWorkbook(XLSX, wb) {
         other: c.other >= 0 ? num(row[c.other]) : 0,
         theater: c.theater >= 0 ? String(row[c.theater]).trim() : '',
         note: c.note >= 0 ? String(row[c.note]).trim() : '',
+        rating: c.rating >= 0 ? Math.min(5, Math.max(0, Math.round(num(row[c.rating])))) : 0,
       });
     }
     return { sheet: name, rows: out };
