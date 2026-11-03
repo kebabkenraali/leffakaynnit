@@ -465,10 +465,11 @@ function renderList(rows) {
     .map((r) => {
       const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
       const snack = r.snacks ? ` · <span class="snack">herkut ${eur.format(r.snacks)}</span>` : '';
+      const herkutPart = r.snacks ? `<span>+ herkut ${eur.format(r.totalAt)}</span>` : '';
       return `<li class="visit" data-id="${r.id}">
         <div class="nro">${r.nro}</div>
         <div class="title">${esc(r.title)}</div>
-        <div class="price"><b>${eur.format(r.movieAt)}</b><span>+ herkut ${eur.format(r.totalAt)}</span></div>
+        <div class="price"><b>${eur.format(r.movieAt)}</b>${herkutPart}</div>
         <div class="meta">${meta}${snack}</div>
       </li>`;
     })
