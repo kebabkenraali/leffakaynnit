@@ -116,7 +116,7 @@ python -m http.server 8000
 ```
 
 ### Service Worker -päivitys
-`sw.js`-tiedostossa oleva `CACHE`-vakio (esim. `leffakaynnit-v3`) pitää nostaa versionumeroa, jotta päivitykset tulevat käyttäjille heti.
+Julkaistessa nosta sama numero kolmeen kohtaan: `sw.js`:n `CACHE` (esim. `leffakaynnit-v14`) sekä `index.html`:n `app.js?v=14` ja `style.css?v=14` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
 
 ### Käyttöönottotilin tiedot
 - **GitHub Pages -haara**: `gh-pages` (automaattinen deploy pushin yhteydessä)

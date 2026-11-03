@@ -1,6 +1,7 @@
 // Sovelluksen tiedostot välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
-const CACHE = 'leffakaynnit-v13';
-const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon.svg'];
+const CACHE = 'leffakaynnit-v14';
+// Versionumero samaksi kuin index.html:n app.js?v= ja style.css?v=, nosta molemmat julkaistessa
+const ASSETS = ['./', 'index.html', 'style.css?v=14', 'app.js?v=14', 'manifest.webmanifest', 'icon.svg'];
 
 // cache: 'reload' ohittaa selaimen HTTP-välimuistin (GitHub Pages: max-age 10 min),
 // ettei uuteen versioon tallennu vanhoja tiedostoja
