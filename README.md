@@ -23,7 +23,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **Herkut**: Yhteensä, monellako käynnillä ostettu ja keskiostos
 - **Päivämäärätarkistus**: Tulevaisuuteen tai kauden ulkopuolelle merkityt käynnit jäävät laskuista pois ja näkyvät varoituksena
 
-### 🆕 Elokuvatilastot
+### Elokuvatilastot
 - **Eniten katsottu elokuva**: Elokuva, jota olet katsonut eniten kertoja
 - **Eniten maksanut elokuva**: Samannimisten käyntien leffaosuudet + herkut yhteensä
 - **Arvosanat**: Keskiarvo, jakauma (1–5 tähteä), parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). Saman tähden napautus uudelleen poistaa arvosanan
@@ -31,8 +31,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 ### Asetukset
 - **Tilausasetukset**: Vuosimaksu, sarjalipun vertailuhinta, kauden alkupäivä ja loppupäivä
 - **Oletusteatteri**: Tilaus-asetuksissa; uusien käyntien Teatteri-kenttä esitäytetään tällä
-- **Varmuuskopiot**: Päivittäinen automaattinen tallennus puhelimen tiedostoihin, tietokoneella valittuun kansioon
-- **Automaattinen kansiotallennus (tietokone)**: varmuuskopiot (JSON + CSV) valittuun kansioon joka muutoksen jälkeen
+- **Varmuuskopiot**: Päivittäinen automaattinen tallennus puhelimen tiedostoihin, tietokoneella valittuun kansioon (ks. [Varmuuskopiot](#-varmuuskopiot))
 
 ### Varmuuskopiot & tietojen hallinta
 - **Lataa varmuuskopio (.json)**: Kokonaistilan tallennus (asetukset + käynnit)
@@ -62,7 +61,8 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 git clone https://github.com/kebabkenraali/leffakaynnit.git
 cd leffakaynnit
 
-# Avaa index.html selaimessa (esim. Live Server -laajennuksella VS Codessa)
+# Käynnistä paikallinen palvelin (index.html suoraan tiedostona ei aja service workeria)
+python -m http.server 8000
 # TAI
 npx serve .
 ```
@@ -72,7 +72,7 @@ npx serve .
 1. Mene **Asetukset**-välilehdelle
 2. Valitse tiedosto **Finnkino_Premium_Seuranta.xlsx** tuontikentästä
 3. Sovellus etsii automaattisesti välilehden, jossa on sarakkeet:
-   - **Päivä** (pvm/date)
+   - **Päivä** (myös Paiva/pvm/date)
    - **Elokuva** (elokuva)
    - **Herkut €** (herku/karkki)
    - Valinnaiset: **Teatteri/Sali**, **Muut kulut €** (muu), **Arvosana** (1–5), **Muistio/Huomio**
@@ -99,33 +99,36 @@ Tiedot tallentuvat selaimeen. Varmuuskopiot ovat tavallisia tiedostoja laitteen 
 ```
 leffakaynnit/
 ├── index.html        # Pääkäyttöliittymä
-├── app.js            # Kaikki logiikka (laskenta, tallennus, renderöinti, pilvitallennus)
+├── app.js            # Kaikki logiikka (laskenta, tallennus, renderöinti, varmuuskopiot)
 ├── style.css         # Teema, responsiivisuus, tummavaalea-tila
 ├── sw.js             # Service Worker (offline-tuki)
 ├── manifest.webmanifest  # PWA-manifesti
 ├── icon.svg          # Sovelluskuvake
+├── LICENSE           # MIT-lisenssi
 └── README.md         # Tämä tiedosto
 ```
 
 ## 🔧 Kehittäjäohjeet
 
-### Paikallinen testaus
+### Service Worker -päivitys
+Julkaistessa nosta sama numero kolmeen kohtaan: `sw.js`:n `CACHE` (esim. `leffakaynnit-v16`) sekä `index.html`:n `app.js?v=16` ja `style.css?v=16` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
+
+### Julkaisu
+GitHub Pages julkaisee `gh-pages`-haaran. Kehitys tehdään `main`-haarassa, ja julkaisu on sama commit molempiin:
+
 ```bash
-# Python HTTP-palvelin (välttää CORS-ongelmat)
-python -m http.server 8000
-# Avaa http://localhost:8000
+git pull --ff-only origin main
+git push origin main
+git push origin main:gh-pages
 ```
 
-### Service Worker -päivitys
-Julkaistessa nosta sama numero kolmeen kohtaan: `sw.js`:n `CACHE` (esim. `leffakaynnit-v14`) sekä `index.html`:n `app.js?v=14` ja `style.css?v=14` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
-
-### Käyttöönottotilin tiedot
-- **GitHub Pages -haara**: `gh-pages` (automaattinen deploy pushin yhteydessä)
 - **Kotisivu**: `https://kebabkenraali.github.io/leffakaynnit/`
+- Hae aina ensin uusin versio (`git pull`), jos repoa muokataan useammalla työkalulla tai koneella (esim. Cline ja Claude Code). Muuten vanhan version päälle pushattu muutos voi kumota aiemmat korjaukset.
+- Älä käytä `git push --force` -komentoa `main`- tai `gh-pages`-haaraan.
 
 ## 📝 Lisenssi
 
-MIT License – vapaa käyttö, muokkaus ja jakelu.
+MIT License – vapaa käyttö, muokkaus ja jakelu. Ks. [LICENSE](LICENSE).
 
 ## 🤝 Avustukset
 
@@ -139,6 +142,7 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 
 ### Kehitysympäristö ja työkalut
 - **Cline (AI Coding Agent)** – Koodin generointi, refaktorointi, debuggaus ja arkkitehtuurisuunnittelu
+- **Claude Code** – Sovelluksen ensimmäinen versio, laskennan ja kaavioiden uudistus, virheenkorjaukset ja testaus
 - **Visual Studio Code** – Pääkehitysympäristö
 - **Git & GitHub** – Versiohallinta ja GitHub Pages -hostaus
 - **Chrome/Edge DevTools** – Debuggaus, PWA-testaus, performance-profilointi
@@ -160,9 +164,11 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Tilaan perustuva renderöinti** – `state` objekti → `compute` → `render`
 
 ### Laskentamalli
-- **Kumulatiivinen keskihinta** – `movieAt = vuosimaksu / käynnit`, `totalAt = (vuosimaksu + herkut) / käynnit`
-- **Break-even analyysi** – `ceil(vuosimaksu / sarjalippu_hinta)`
-- **Projektiot** – Lineaarinen extrapolaatio nykyisestä nopeudesta kauden loppuun
+- **Kumulatiivinen keskihinta** – `movieAt = vuosimaksu / käynnit`, `totalAt = (vuosimaksu + herkut + muut kulut) / käynnit`
+- **Säästö** – pelkkä lippu: `käynnit × sarjalippu − vuosimaksu`; herkut ja muut mukana: `käynnit × sarjalippu − (vuosimaksu + herkut + muut kulut)`
+- **Laskettavat käynnit** – vain kauden sisällä ja tähän päivään mennessä; muut näytetään varoituksena
+- **Break-even analyysi** – pelkkä lippu `ceil(vuosimaksu / sarjalippu_hinta)`; herkut mukana ensimmäinen käynti, jolla säästö menee plussalle (arvio, jos ei vielä saavutettu)
+- **Ennuste** – Viimeisen 30 päivän käyntitahti jatkettuna kauden loppuun
 - **SVG-kaaviot** – Kertyneen säästön viiva ja käynnit/kk-pylväät; €/käynti ja säästö kuukauden lopun tilanteesta
 
 ### Laadunvarmistus
@@ -174,10 +180,10 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 ## 👤 Tekijä ja AI-avustus
 
 **Kehittäjä**: [kebabkenraali](https://github.com/kebabkenraali)  
-**AI-avustus**: [Cline](https://cline.bot) – autonominen koodausagentti, joka on kirjoittanut ja refaktoroinut suuren osan koodista, suunnitellut arkkitehtuuria, korjannut bugeja ja dokumentoinut ominaisuuksia.
+**AI-avustus**: [Cline](https://cline.bot) ja [Claude Code](https://claude.com/claude-code) – AI-koodausagentit, jotka ovat kirjoittaneet ja refaktoroineet koodia, suunnitelleet arkkitehtuuria, korjanneet bugeja ja dokumentoineet ominaisuuksia.
 
 > *Tämä projekti demonstroi miten moderni AI-avustettu kehitysnopeus yhdistettynä vanillan web-tekniikoihin voi tuottaa tuotantovalmiin, offline-toimivan PWA-sovelluksen ilman monimutkaisia build-ketjuja.*
 
 ---
 
-**Versio**: 2026.09 (sisältää pilvitallennuksen, paikka-masterdatan ja aikakaavio)
+**Versio**: 2026.11 (säästövertailu herkuilla ja ilman, kuukausikaaviot, arvosanat, päivämäärätarkistus, päivittäinen varmuuskopio)
