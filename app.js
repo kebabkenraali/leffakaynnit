@@ -311,64 +311,133 @@ function renderMonths(rows) {
   const byMonth = new Map();
   for (const r of rows) {
     const key = r.date.slice(0, 7);
-    const m = byMonth.get(key) || { count: 0, snacks: 0, last: r };
+    const m = byMonth.get(key) || { count: 0, snacks: 0, other: 0, last: r };
     m.count++;
     m.snacks += r.snacks || 0;
+    m.other += r.other || 0;
     m.last = r;
     byMonth.set(key, m);
   }
 
-  // Build sorted month entries
   const monthEntries = [...byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   const monthsFi = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
   const ticketPrice = state.settings.ticketPrice;
+  const annualFee = state.settings.annualFee;
 
-  // Render chart: Sarjalippu cost per month (visits * ticketPrice)
-  const chartEl = $('#month-chart');
-  if (monthEntries.length > 0) {
-    const W = 320, H = 120, L = 34, R = 8, T = 8, B = 22;
-    const maxVal = Math.max(...monthEntries.map(([_, m]) => m.count * ticketPrice), ticketPrice);
-    const yMax = Math.max(ticketPrice * 2, maxVal * 1.2);
-    const n = monthEntries.length;
-    const x = (i) => L + (i / Math.max(1, n - 1)) * (W - L - R);
-    const y = (v) => T + (1 - Math.min(v, yMax * 1.5) / yMax) * (H - T - B);
+  renderMonthLineChart(monthEntries, monthsFi, ticketPrice);
+  renderCostPieChart(rows, annualFee, ticketPrice);
 
-    const path = monthEntries.map((m, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(m[1].count * ticketPrice).toFixed(1)}`).join('');
-
-    // Y-axis ticks
-    const ticks = [0, yMax / 2, yMax].map((v) => Math.round(v));
-    const grid = ticks.map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
-      <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end" class="small">${v} €</text>`).join('');
-
-    // X-axis labels (month names)
-    const xTicks = monthEntries.map((m, i) => {
-      const [y, mo] = m[0].split('-').map(Number);
-      return `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" class="small">${monthsFi[mo - 1]}</text>`;
-    }).join('');
-
-    chartEl.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kuukausittainen sarjalippukustannus">
-        <defs><clipPath id="clip-month"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
-        ${grid}${xTicks}
-        <g clip-path="url(#clip-month)">
-          <path d="${path}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 3"/>
-          ${monthEntries.map((m, i) => `<circle cx="${x(i)}" cy="${y(m[1].count * ticketPrice)}" r="3" fill="var(--muted)"/>`).join('')}
-        </g>
-      </svg>
-      <div class="legend small"><span><i class="dot" style="background:var(--muted)"></i>Sarjalippu (käynnit × lippuhinta)</span></div>`;
-  } else {
-    chartEl.innerHTML = '<p class="muted small">Ei käyntitietoja kuukausikäpyrään.</p>';
-  }
-
-  // Render table with Sarjalippu column
   $('#months').innerHTML = monthEntries
     .map(([key, m]) => {
       const [y, mo] = key.split('-').map(Number);
-      const sarjalippu = m.count * ticketPrice;
+      const moviePerVisit = annualFee / m.count;
+      const totalPerVisit = (annualFee + m.snacks) / m.count;
       return `<tr><td>${monthsFi[mo - 1]} ${String(y).slice(2)}</td><td>${m.count}</td>
-        <td>${eur.format(m.snacks)}</td><td>${eur.format(m.last.movieAt)}</td><td>${eur.format(sarjalippu)}</td></tr>`;
+        <td>${eur.format(m.snacks)}</td><td>${eur.format(moviePerVisit)}</td><td>${eur.format(totalPerVisit)}</td></tr>`;
     })
     .join('') || '<tr><td colspan="5" class="muted">Ei käyntejä</td></tr>';
+}
+
+function renderMonthLineChart(monthEntries, monthsFi, ticketPrice) {
+  const chartEl = $('#month-chart');
+  if (monthEntries.length === 0) {
+    chartEl.innerHTML = '<p class="muted small">Ei käyntitietoja kuukausikäpyrään.</p>';
+    return;
+  }
+  const W = 320, H = 120, L = 34, R = 8, T = 8, B = 22;
+  const maxVal = Math.max(...monthEntries.map(([_, m]) => m.count * ticketPrice), ticketPrice);
+  const yMax = Math.max(ticketPrice * 2, maxVal * 1.2);
+  const n = monthEntries.length;
+  const x = (i) => L + (i / Math.max(1, n - 1)) * (W - L - R);
+  const y = (v) => T + (1 - Math.min(v, yMax * 1.5) / yMax) * (H - T - B);
+
+  const path = monthEntries.map((m, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(m[1].count * ticketPrice).toFixed(1)}`).join('');
+
+  const ticks = [0, yMax / 2, yMax].map((v) => Math.round(v));
+  const grid = ticks.map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
+    <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end" class="small">${v} €</text>`).join('');
+
+  const xTicks = monthEntries.map((m, i) => {
+    const [y, mo] = m[0].split('-').map(Number);
+    return `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" class="small">${monthsFi[mo - 1]}</text>`;
+  }).join('');
+
+  chartEl.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kuukausittainen sarjalippukustannus">
+      <defs><clipPath id="clip-month"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
+      ${grid}${xTicks}
+      <g clip-path="url(#clip-month)">
+        <path d="${path}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 3"/>
+        ${monthEntries.map((m, i) => `<circle cx="${x(i)}" cy="${y(m[1].count * ticketPrice)}" r="3" fill="var(--muted)"/>`).join('')}
+      </g>
+    </svg>
+    <div class="legend small"><span><i class="dot" style="background:var(--muted)"></i>Sarjalippu (käynnit × lippuhinta)</span></div>`;
+}
+
+function renderCostPieChart(rows, annualFee, ticketPrice) {
+  const pieEl = $('#cost-pie');
+  const sum = computeSummary(rows);
+  if (sum.n === 0) {
+    pieEl.innerHTML = '<p class="muted small">Ei tietoja pirakka-kaavioon.</p>';
+    return;
+  }
+  const totalCost = annualFee + sum.snacks + sum.other;
+  const sarjalippuCost = sum.n * ticketPrice;
+  const savings = sarjalippuCost - totalCost;
+
+  const segments = [
+    { label: 'Vuosimaksu', value: annualFee, color: 'var(--accent)' },
+    { label: 'Herkut', value: sum.snacks, color: 'var(--accent-2)' },
+    { label: 'Muut kulut', value: sum.other, color: 'var(--bad)' },
+  ];
+  if (savings > 0) {
+    segments.push({ label: 'Säästö vs. sarjalippu', value: savings, color: 'var(--good)' });
+  } else if (savings < 0) {
+    segments.push({ label: 'Ylimäärä vs. sarjalippu', value: -savings, color: 'var(--bad)' });
+  }
+
+  const totalValue = segments.reduce((a, s) => a + s.value, 0);
+  const R = 60, cx = 80, cy = 80;
+  let currentAngle = -Math.PI / 2;
+
+  const piePaths = segments.map((seg) => {
+    const angle = (seg.value / totalValue) * 2 * Math.PI;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + angle;
+    currentAngle = endAngle;
+
+    const x1 = cx + R * Math.cos(startAngle);
+    const y1 = cy + R * Math.sin(startAngle);
+    const x2 = cx + R * Math.cos(endAngle);
+    const y2 = cy + R * Math.sin(endAngle);
+    const largeArc = angle > Math.PI ? 1 : 0;
+
+    const path = `M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    const percent = ((seg.value / totalValue) * 100).toFixed(1);
+
+    return `<path d="${path}" fill="${seg.color}" stroke="var(--bg)" stroke-width="2"/>
+      <text x="${cx + (R * 0.65) * Math.cos(startAngle + angle / 2)}" 
+            y="${cy + (R * 0.65) * Math.sin(startAngle + angle / 2) + 4}" 
+            text-anchor="middle" class="small" fill="var(--bg)" font-weight="700">${percent}%</text>`;
+  }).join('');
+
+  const legend = segments.map((seg) => {
+    const percent = ((seg.value / totalValue) * 100).toFixed(1);
+    return `<span><i class="dot" style="background:${seg.color}"></i>${seg.label} ${eur.format(seg.value)} (${percent}%)</span>`;
+  }).join('');
+
+  pieEl.innerHTML = `
+    <svg viewBox="0 0 160 160" role="img" aria-label="Kustannusjakauma" style="display:block; margin: 0 auto;">
+      ${piePaths}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.35}" fill="var(--bg)"/>
+      <text x="${cx}" y="${cy + 4}" text-anchor="middle" class="small" font-weight="700">${eur.format(totalCost)}</text>
+      <text x="${cx}" y="${cy + 16}" text-anchor="middle" class="small muted">Kokonaiskulut</text>
+    </svg>
+    <div class="legend small" style="margin-top: 8px;">${legend}</div>
+    <div class="legend small muted" style="margin-top: 4px;">
+      Sarjalippu vastaava: ${eur.format(sarjalippuCost)} (${sum.n} × ${eur.format(ticketPrice)})
+      ${savings >= 0 ? ` → Säästö ${eur.format(savings)}` : ` → Ylimäärä ${eur.format(-savings)}`}
+    </div>`;
 }
 
 function renderList(rows) {

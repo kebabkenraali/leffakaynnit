@@ -65,9 +65,16 @@
 
       <div class="card">
         <strong>Kuukausittain</strong>
-        <div id="month-chart" class="chart" style="margin-bottom: 12px;"></div>
+        <div class="grid" style="gap: 16px; align-items: start;">
+          <div style="min-width: 0;">
+            <div id="month-chart" class="chart" style="margin-bottom: 12px;"></div>
+          </div>
+          <div style="min-width: 0;">
+            <div id="cost-pie" class="chart" style="margin-bottom: 12px;"></div>
+          </div>
+        </div>
         <table class="months">
-          <thead><tr><th>Kk</th><th>Käynnit</th><th>Herkut</th><th>€/käynti</th><th>Sarjalippu</th></tr></thead>
+          <thead><tr><th>Kk</th><th>Käynnit</th><th>Herkut</th><th>€/käynti (leffa)</th><th>€/käynti (leffa+herkut)</th></tr></thead>
           <tbody id="months"></tbody>
         </table>
       </div>
