@@ -205,7 +205,6 @@ function renderSummary(rows, sum) {
     $('#s-most-expensive-total').textContent = '–';
   }
 
-  renderChart(rows);
   renderMonths(rows);
 }
 
