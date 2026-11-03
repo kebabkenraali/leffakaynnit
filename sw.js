@@ -1,9 +1,15 @@
 // Sovelluksen tiedostot välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
-const CACHE = 'leffakaynnit-v12';
+const CACHE = 'leffakaynnit-v13';
 const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon.svg'];
 
+// cache: 'reload' ohittaa selaimen HTTP-välimuistin (GitHub Pages: max-age 10 min),
+// ettei uuteen versioon tallennu vanhoja tiedostoja
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {
@@ -15,11 +21,12 @@ self.addEventListener('activate', (e) => {
 });
 
 // Verkko ensin, välimuisti varalla – päivitykset tulevat heti kun verkko toimii.
+// no-cache: tarkistetaan aina palvelimelta, ettei HTML ja app.js ole eri versioita.
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request.url, { cache: 'no-cache' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
