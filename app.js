@@ -317,14 +317,58 @@ function renderMonths(rows) {
     m.last = r;
     byMonth.set(key, m);
   }
-  const months = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
-  $('#months').innerHTML = [...byMonth.entries()]
+
+  // Build sorted month entries
+  const monthEntries = [...byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const monthsFi = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
+  const ticketPrice = state.settings.ticketPrice;
+
+  // Render chart: Sarjalippu cost per month (visits * ticketPrice)
+  const chartEl = $('#month-chart');
+  if (monthEntries.length > 0) {
+    const W = 320, H = 120, L = 34, R = 8, T = 8, B = 22;
+    const maxVal = Math.max(...monthEntries.map(([_, m]) => m.count * ticketPrice), ticketPrice);
+    const yMax = Math.max(ticketPrice * 2, maxVal * 1.2);
+    const n = monthEntries.length;
+    const x = (i) => L + (i / Math.max(1, n - 1)) * (W - L - R);
+    const y = (v) => T + (1 - Math.min(v, yMax * 1.5) / yMax) * (H - T - B);
+
+    const path = monthEntries.map((m, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(m[1].count * ticketPrice).toFixed(1)}`).join('');
+
+    // Y-axis ticks
+    const ticks = [0, yMax / 2, yMax].map((v) => Math.round(v));
+    const grid = ticks.map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
+      <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end" class="small">${v} €</text>`).join('');
+
+    // X-axis labels (month names)
+    const xTicks = monthEntries.map((m, i) => {
+      const [y, mo] = m[0].split('-').map(Number);
+      return `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" class="small">${monthsFi[mo - 1]}</text>`;
+    }).join('');
+
+    chartEl.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kuukausittainen sarjalippukustannus">
+        <defs><clipPath id="clip-month"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>
+        ${grid}${xTicks}
+        <g clip-path="url(#clip-month)">
+          <path d="${path}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 3"/>
+          ${monthEntries.map((m, i) => `<circle cx="${x(i)}" cy="${y(m[1].count * ticketPrice)}" r="3" fill="var(--muted)"/>`).join('')}
+        </g>
+      </svg>
+      <div class="legend small"><span><i class="dot" style="background:var(--muted)"></i>Sarjalippu (käynnit × lippuhinta)</span></div>`;
+  } else {
+    chartEl.innerHTML = '<p class="muted small">Ei käyntitietoja kuukausikäpyrään.</p>';
+  }
+
+  // Render table with Sarjalippu column
+  $('#months').innerHTML = monthEntries
     .map(([key, m]) => {
       const [y, mo] = key.split('-').map(Number);
-      return `<tr><td>${months[mo - 1]} ${String(y).slice(2)}</td><td>${m.count}</td>
-        <td>${eur.format(m.snacks)}</td><td>${eur.format(m.last.movieAt)}</td></tr>`;
+      const sarjalippu = m.count * ticketPrice;
+      return `<tr><td>${monthsFi[mo - 1]} ${String(y).slice(2)}</td><td>${m.count}</td>
+        <td>${eur.format(m.snacks)}</td><td>${eur.format(m.last.movieAt)}</td><td>${eur.format(sarjalippu)}</td></tr>`;
     })
-    .join('') || '<tr><td colspan="4" class="muted">Ei käyntejä</td></tr>';
+    .join('') || '<tr><td colspan="5" class="muted">Ei käyntejä</td></tr>';
 }
 
 function renderList(rows) {
