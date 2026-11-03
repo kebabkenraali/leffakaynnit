@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <header class="top">
@@ -25,7 +25,7 @@
         <div class="hero-sub">vuosimaksu ÷ käynnit</div>
         <div class="hero-split">
           <div>
-            <div class="small muted">Leffa + herkut</div>
+            <div class="small muted">Herkut ja muut mukana</div>
             <div class="big" id="h-total">–</div>
           </div>
           <div>
@@ -49,10 +49,13 @@
       <div class="grid">
         <div class="stat"><div class="muted small">Herkut yhteensä</div><div class="val" id="s-snacks">–</div></div>
         <div class="stat"><div class="muted small">Herkkuja ostettu</div><div class="val" id="s-snacks-avg">–</div><div class="muted small" id="s-snacks-avg-sub"></div></div>
-        <div class="stat"><div class="muted small">Kokonaiskulut</div><div class="val" id="s-total">–</div></div>
-        <div class="stat"><div class="muted small">Säästö vs. sarjalippu</div><div class="val" id="s-saving">–</div></div>
         <div class="stat"><div class="muted small">Kautta jäljellä</div><div class="val" id="s-left">–</div></div>
         <div class="stat"><div class="muted small">Ennuste kauden lopussa (30 pv tahti)</div><div class="val" id="s-proj">–</div></div>
+      </div>
+
+      <div class="card">
+        <strong>Säästö vs. sarjaliput</strong>
+        <div id="savings-compare"></div>
       </div>
 
       <div class="card">
@@ -64,10 +67,10 @@
         <strong>Kuukausittain</strong>
         <div id="visits-chart" class="chart"></div>
         <table class="months">
-          <thead><tr><th>Kk</th><th>Käyn.</th><th>Herkut</th><th>€/käynti</th><th>Säästö</th></tr></thead>
+          <thead><tr><th>Kk</th><th>Käyn.</th><th>Herkut</th><th>€/käynti</th><th>Säästö</th><th>+ herkut</th></tr></thead>
           <tbody id="months"></tbody>
         </table>
-        <p class="small muted">€/käynti ja säästö ovat kuukauden lopun tilanne: vuosimaksu jaetaan kaikilla siihen mennessä kertyneillä käynneillä.</p>
+        <p class="small muted">Kuukauden lopun tilanne: vuosimaksu jaetaan kaikilla siihen mennessä kertyneillä käynneillä. Säästö = pelkkä lippu, + herkut = herkut ja muut kulut vähennettynä.</p>
       </div>
 
       <div class="card">
@@ -179,6 +182,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

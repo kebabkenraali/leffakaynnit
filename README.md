@@ -14,11 +14,11 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 
 ### Laskelmat & analyysi
 - **Leffakäynnin hinta nyt**: Vuosimaksu jaettuna käyntien määrällä
-- **Leffa + herkut**: (Vuosimaksu + herkut) / käynnit
+- **Herkut ja muut mukana**: (Vuosimaksu + herkut + muut kulut) / käynnit
 - **Break-even -mittari**: Kuinka monta käyntiä tarvitaan, jotta Premium on halvempi kuin sarjalippu
-- **Säästö vs. sarjalippu**: Positiivinen = voittaa, negatiivinen = sarjalippu on halvempi
+- **Säästö vs. sarjaliput**: Vertailutaulukko kahdella tavalla, pelkkä lippu sekä herkut ja muut kulut Premiumin kuluiksi laskettuna: kulut, €/käynti, säästö yhteensä ja per käynti sekä mistä käynnistä alkaen Premium kannattaa
 - **Ennuste**: Käyntimäärä ja €/käynti kauden lopussa viimeisen 30 päivän tahdilla
-- **Kertynyt säästö vs. sarjaliput**: Viiva kuukausittain, alkaa kauden alussa miinukselta (vuosimaksu) ja nousee nollan yli break-evenissä
+- **Kertynyt säästö vs. sarjaliput**: Kaksi viivaa kuukausittain (pelkkä lippu / herkut ja muut mukana), alkaa kauden alussa miinukselta (vuosimaksu) ja nousee nollan yli break-evenissä
 - **Kuukausittain**: Käynnit/kk-pylväät ja taulukko (käynnit, herkut, €/käynti ja säästö kuukauden lopussa), myös kuukaudet ilman käyntejä
 - **Herkut**: Yhteensä, monellako käynnillä ostettu ja keskiostos
 - **Päivämäärätarkistus**: Tulevaisuuteen tai kauden ulkopuolelle merkityt käynnit jäävät laskuista pois ja näkyvät varoituksena

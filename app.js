@@ -138,7 +138,7 @@ function computeVisits() {
       ...v,
       nro,
       movieAt: fee / nro, // pelkkä leffa: vuosimaksu jaettuna käyntien määrällä tämän leffan kohdalla
-      totalAt: (fee + cumSnacks) / nro, // leffa + herkut keskimäärin tähän mennessä
+      totalAt: (fee + cumSnacks + cumOther) / nro, // kaikki kulut (herkut ja muut) keskimäärin tähän mennessä
       cumSnacks,
       cumOther,
     };
@@ -188,15 +188,31 @@ function computeSummary(rows) {
     }
   }
 
+  // Säästö kahdella tavalla: pelkkä vuosimaksu vs. liput, ja kaikki kulut (herkut + muut) Premiumin kuluiksi
+  const total = s.annualFee + snacks + other;
+  const ticketsTotal = n * s.ticketPrice;
+  const breakEven = s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0;
+  // Kaikki kulut huomioiden: ensimmäinen käynti, jolla säästö menee plussalle.
+  // Jos ei vielä saavutettu, arvio nykyisellä herkkujen ja muiden kulujen keskiarvolla.
+  const reached = rows.find((r) => r.nro * s.ticketPrice - s.annualFee - r.cumSnacks - r.cumOther >= 0);
+  const extraPerVisit = n ? (snacks + other) / n : 0;
+  const breakEvenAll = reached
+    ? reached.nro
+    : s.ticketPrice > extraPerVisit ? Math.max(n + 1, Math.ceil(s.annualFee / (s.ticketPrice - extraPerVisit))) : null;
+
   return {
     n,
     snacks,
     other,
     movie: n ? s.annualFee / n : null,
-    withSnacks: n ? (s.annualFee + snacks) / n : null,
-    total: s.annualFee + snacks + other,
-    saving: n * s.ticketPrice - s.annualFee,
-    breakEven: s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0,
+    withExtras: n ? total / n : null,
+    total,
+    ticketsTotal,
+    saving: ticketsTotal - s.annualFee,
+    savingAll: ticketsTotal - total,
+    breakEven,
+    breakEvenAll,
+    breakEvenAllEstimated: !reached,
     daysLeft,
     projected,
     snackVisits,
@@ -222,7 +238,7 @@ function render() {
 function renderSummary(rows, sum) {
   const s = state.settings;
   $('#h-movie').textContent = sum.movie != null ? eur.format(sum.movie) : '–';
-  $('#h-total').textContent = sum.withSnacks != null ? eur.format(sum.withSnacks) : '–';
+  $('#h-total').textContent = sum.withExtras != null ? eur.format(sum.withExtras) : '–';
   $('#h-count').textContent = sum.n;
 
   const pct = sum.breakEven ? Math.min(100, (sum.n / sum.breakEven) * 100) : 0;
@@ -245,10 +261,7 @@ function renderSummary(rows, sum) {
   $('#s-snacks').textContent = eur.format(sum.snacks);
   $('#s-snacks-avg').textContent = sum.n ? `${sum.snackVisits} / ${sum.n}` : '–';
   $('#s-snacks-avg-sub').textContent = sum.snackAvg != null ? `keskiostos ${eur.format(sum.snackAvg)}` : '';
-  $('#s-total').textContent = eur.format(sum.total);
-  const saving = $('#s-saving');
-  saving.textContent = (sum.saving >= 0 ? '+' : '') + eur.format(sum.saving);
-  saving.className = 'val ' + (sum.saving >= 0 ? 'good' : 'bad');
+  renderSavingsCompare(sum);
   $('#s-left').textContent = `${sum.daysLeft} pv`;
   $('#s-proj').textContent = sum.projected
     ? `${sum.projected} kpl · ${eur.format(sum.projectedPrice)}`
@@ -271,11 +284,41 @@ function renderSummary(rows, sum) {
   }
 
   const months = monthStats(rows);
-  renderSavingsChart(months, rows.length, sum.saving);
+  renderSavingsChart(months, rows.length, sum);
   renderMonths(months, rows.length);
 }
 
-const MONTH_NAMES = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
+/** Vertailu: säästö ja €/käynti ilman herkkuja ja muita kuluja sekä niiden kanssa. */
+function renderSavingsCompare(sum) {
+  const s = state.settings;
+  const el = $('#savings-compare');
+  if (!sum.n) {
+    el.innerHTML = '<p class="muted small">Lisää käyntejä nähdäksesi säästön.</p>';
+    return;
+  }
+  const money = (v) => eur.format(v);
+  const signed = (v) => `<span class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</span>`;
+  const be = (count, estimated) => (count == null ? '–' : `${estimated ? 'n. ' : ''}${count}. käynti`);
+  const rowsHtml = [
+    ['Premium-kulut yhteensä', money(s.annualFee), money(sum.total)],
+    ['Premium €/käynti', money(sum.movie), money(sum.withExtras)],
+    ['Sarjalippu €/käynti', money(s.ticketPrice), money(s.ticketPrice)],
+    ['Säästö yhteensä', signed(sum.saving), signed(sum.savingAll)],
+    ['Säästö / käynti', signed(sum.saving / sum.n), signed(sum.savingAll / sum.n)],
+    ['Premium kannattaa alkaen', be(sum.breakEven, false), be(sum.breakEvenAll, sum.breakEvenAllEstimated)],
+  ]
+    .map(([label, a, b]) => `<tr><td>${label}</td><td>${a}</td><td>${b}</td></tr>`)
+    .join('');
+  el.innerHTML = `
+    <table class="months compare">
+      <thead><tr><th></th><th>Pelkkä lippu</th><th>Herkut ja muut mukana</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <p class="small muted">Pelkkä lippu: vuosimaksu verrattuna sarjalippuihin (${sum.n} × ${money(s.ticketPrice)} = ${money(sum.ticketsTotal)}).
+      Herkut ja muut mukana: herkut ${money(sum.snacks)} ja muut kulut ${money(sum.other)} lasketaan Premiumin kuluiksi, sarjalippupuolelle vain liput.</p>`;
+}
+
+const MONTH_NAMES =['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
 
 /**
  * Kuukausikohtaiset luvut kauden alusta kuluvaan kuukauteen, myös kuukaudet ilman käyntejä.
@@ -290,7 +333,9 @@ function monthStats(rows) {
   for (let [y, m] = s.seasonStart.split('-').map(Number); `${y}-${pad(m)}` <= end; m === 12 ? (y++, (m = 1)) : m++) {
     const key = `${y}-${pad(m)}`;
     const inMonth = rows.filter((r) => r.date.startsWith(key));
-    const cumCount = rows.filter((r) => r.date.slice(0, 7) <= key).length;
+    const upTo = rows.filter((r) => r.date.slice(0, 7) <= key);
+    const cumCount = upTo.length;
+    const cumExtras = upTo.reduce((a, r) => a + (r.snacks || 0) + (r.other || 0), 0);
     months.push({
       key,
       label: `${MONTH_NAMES[m - 1]} ${String(y).slice(2)}`,
@@ -299,6 +344,7 @@ function monthStats(rows) {
       snacks: inMonth.reduce((a, r) => a + (r.snacks || 0), 0),
       movie: cumCount ? s.annualFee / cumCount : null,
       saving: cumCount * s.ticketPrice - s.annualFee,
+      savingAll: cumCount * s.ticketPrice - s.annualFee - cumExtras,
     });
   }
   return months;
@@ -310,9 +356,9 @@ function renderMonths(months, visitCount) {
   $('#months').innerHTML = visitCount
     ? months
         .map((m) => `<tr><td>${m.label}</td><td>${m.count}</td><td>${eur.format(m.snacks)}</td>
-          <td>${fmt(m.movie)}</td><td>${signed(m.saving)}</td></tr>`)
+          <td>${fmt(m.movie)}</td><td>${signed(m.saving)}</td><td>${signed(m.savingAll)}</td></tr>`)
         .join('')
-    : '<tr><td colspan="5" class="muted">Ei käyntejä</td></tr>';
+    : '<tr><td colspan="6" class="muted">Ei käyntejä</td></tr>';
   renderVisitsChart(months, visitCount);
 }
 
@@ -350,8 +396,11 @@ function renderVisitsChart(months, visitCount) {
     </svg>`;
 }
 
-/** Viiva: kertynyt säästö sarjalippuihin verrattuna kuukauden lopussa. Alkaa miinuksella (vuosimaksu). */
-function renderSavingsChart(months, visitCount, current) {
+/**
+ * Viivat: kertynyt säästö sarjalippuihin verrattuna kuukauden lopussa, pelkällä lipulla
+ * sekä herkut ja muut kulut mukaan laskettuna. Molemmat alkavat miinukselta (vuosimaksu).
+ */
+function renderSavingsChart(months, visitCount, sum) {
   const el = $('#savings-chart');
   if (!visitCount) {
     el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
@@ -360,14 +409,18 @@ function renderSavingsChart(months, visitCount, current) {
   const s = state.settings;
   const W = 320, H = 170, L = 44, R = 12, T = 12, B = 22;
   // Ensimmäinen piste on kauden alku: vuosimaksu maksettu, ei vielä käyntejä
-  const points = [{ label: '', value: -s.annualFee }, ...months.map((m) => ({ label: m.short, value: m.saving }))];
-  const vals = points.map((p) => p.value);
+  const labels = ['', ...months.map((m) => m.short)];
+  const series = [
+    { key: 'saving', color: 'var(--accent)', label: 'Pelkkä lippu', now: sum.saving },
+    { key: 'savingAll', color: 'var(--accent-2)', label: 'Herkut ja muut mukana', now: sum.savingAll },
+  ].map((sr) => ({ ...sr, values: [-s.annualFee, ...months.map((m) => m[sr.key])] }));
+  const vals = series.flatMap((sr) => sr.values);
   // Tasaiset akselin arvot (esim. 100 €:n välein), ja tilaa nollaviivan yläpuolelle
   const span = Math.max(...vals, 0) - Math.min(...vals);
   const step = [50, 100, 200, 250, 500, 1000].find((st) => span / st <= 5) || 1000;
   const yMin = Math.floor(Math.min(...vals) / step) * step;
   const yMax = Math.ceil((Math.max(0, ...vals) + step * 0.5) / step) * step;
-  const x = (i) => L + (i / (points.length - 1)) * (W - L - R);
+  const x = (i) => L + (i / (labels.length - 1)) * (W - L - R);
   const y = (v) => T + (1 - (v - yMin) / (yMax - yMin)) * (H - T - B);
 
   const ticks = [];
@@ -378,24 +431,26 @@ function renderSavingsChart(months, visitCount, current) {
     .join('');
   const zero = `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
     <text x="${L + 3}" y="${y(0) - 4}" class="small">0 € = Premium maksanut itsensä</text>`;
-  const labelEvery = points.length > 9 ? 2 : 1;
-  const xLabels = points
-    .map((p, i) => (p.label && i % labelEvery === 1 % labelEvery ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${p.label}</text>` : ''))
+  const labelEvery = labels.length > 9 ? 2 : 1;
+  const xLabels = labels
+    .map((l, i) => (l && i % labelEvery === 1 % labelEvery ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${l}</text>` : ''))
     .join('');
-  const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join('');
-  const dots = points
-    .map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="3" fill="${p.value >= 0 ? 'var(--good)' : 'var(--bad)'}"/>`)
+  const lines = series
+    .map((sr) => {
+      const path = sr.values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+      const dots = sr.values.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5" fill="${sr.color}"/>`).join('');
+      return `<path d="${path}" fill="none" stroke="${sr.color}" stroke-width="2.5"/>${dots}`;
+    })
     .join('');
+  const signed = (v) => `<strong class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</strong>`;
 
   el.innerHTML = `
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kertynyt säästö sarjalippuihin verrattuna">
-      ${grid}${zero}${xLabels}
-      <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
-      ${dots}
+      ${grid}${zero}${xLabels}${lines}
     </svg>
-    <p class="small">Nyt: <strong class="${current >= 0 ? 'good' : 'bad'}">${current >= 0 ? '+' : ''}${eur.format(current)}</strong>
-      ${current >= 0 ? 'säästetty' : 'vielä kuromatta'} sarjalippuihin verrattuna.</p>
-    <p class="small muted">Säästö = käynnit × ${eur.format(s.ticketPrice)} − vuosimaksu ${eur.format(s.annualFee)}. Viiva alkaa kauden alusta miinukselta ja nousee jokaisesta käynnistä. Herkut eivät ole mukana, koska ne maksetaan kummassakin tapauksessa.</p>`;
+    <div class="legend small">
+      ${series.map((sr) => `<span><i class="dot" style="background:${sr.color}"></i>${sr.label}: ${signed(sr.now)}</span>`).join('')}
+    </div>`;
 }
 
 function renderList(rows) {
@@ -422,7 +477,7 @@ function renderList(rows) {
     .map((r) => {
       const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
       const snack = r.snacks ? ` · <span class="snack">herkut ${eur.format(r.snacks)}</span>` : '';
-      const withSnacks = r.snacks ? `<span>+ herkut ${eur.format(r.totalAt)}</span>` : '';
+      const withSnacks = r.snacks || r.other ? `<span>kaikki kulut ${eur.format(r.totalAt)}</span>` : '';
       return `<li class="visit" data-id="${r.id}">
         <div class="nro">${r.nro}</div>
         <div class="title">${esc(r.title)}</div>
@@ -712,7 +767,7 @@ async function saveToFolderNow() {
 
 function generateCSV() {
   const dec = (v) => v.toFixed(2).replace('.', ',');
-  const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Leffa+herkut €/käynti', 'Muistiinpano']];
+  const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Kaikki kulut €/käynti', 'Muistiinpano']];
   for (const r of computeVisits()) {
     lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.note || '']);
   }
