@@ -307,8 +307,12 @@ function renderChart(rows) {
 }
 
 function renderMonths(rows) {
+  const today = todayIso();
+  // Filter out future visits
+  const pastRows = rows.filter((r) => r.date <= today);
+
   const byMonth = new Map();
-  for (const r of rows) {
+  for (const r of pastRows) {
     const key = r.date.slice(0, 7);
     const m = byMonth.get(key) || { count: 0, snacks: 0, other: 0, last: r };
     m.count++;
@@ -323,8 +327,8 @@ function renderMonths(rows) {
   const ticketPrice = state.settings.ticketPrice;
   const annualFee = state.settings.annualFee;
 
-  renderMonthLineChart(monthEntries, monthsFi, ticketPrice, rows);
-  renderCostPieChart(rows, annualFee, ticketPrice);
+  renderMonthLineChart(monthEntries, monthsFi, ticketPrice, pastRows);
+  renderCostPieChart(pastRows, annualFee, ticketPrice);
 
   $('#months').innerHTML = monthEntries
     .map(([key, m]) => {
