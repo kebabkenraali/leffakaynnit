@@ -111,10 +111,21 @@ const num = (v) => {
 
 // ---------- Laskenta ----------
 
-/** Käynnit aikajärjestyksessä, jokaiselle järjestysnumero ja kertymät. */
+/** Lasketaanko käynti mukaan: kauden sisällä eikä tulevaisuudessa. */
+function isCounted(v) {
+  const s = state.settings;
+  return v.date >= s.seasonStart && v.date <= s.seasonEnd && v.date <= todayIso();
+}
+
+/** Käynnit, joita ei lasketa mukaan (päivä tulevaisuudessa tai kauden ulkopuolella). */
+function suspectVisits() {
+  return state.visits.filter((v) => !isCounted(v)).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Lasketut käynnit aikajärjestyksessä, jokaiselle järjestysnumero ja kertymät. */
 function computeVisits() {
   const fee = state.settings.annualFee;
-  const sorted = [...state.visits].sort(
+  const sorted = state.visits.filter(isCounted).sort(
     (a, b) => a.date.localeCompare(b.date) || (a.created ?? 0) - (b.created ?? 0)
   );
   let cumSnacks = 0;
@@ -144,7 +155,13 @@ function computeSummary(rows) {
   const now = Date.now();
   const totalDays = Math.max(1, Math.round((end - start) / DAY));
   const elapsed = Math.min(totalDays, Math.max(1, Math.ceil((now - start) / DAY)));
-  const projected = n ? Math.round((n / elapsed) * totalDays) : 0;
+  const daysLeft = Math.max(0, Math.ceil((end - now) / DAY));
+  // Ennuste viimeisen 30 päivän tahdista: kauden alun innostus ei vääristä koko vuotta
+  const pacePeriod = Math.min(30, elapsed);
+  const since = new Date(now - pacePeriod * DAY).toISOString().slice(0, 10);
+  const recent = rows.filter((r) => r.date > since).length;
+  const projected = n ? Math.round(n + (recent / pacePeriod) * daysLeft) : 0;
+  const snackVisits = rows.filter((r) => (r.snacks || 0) > 0).length;
 
   // Eniten katsottu elokuva
   const byTitle = new Map();
@@ -180,8 +197,10 @@ function computeSummary(rows) {
     total: s.annualFee + snacks + other,
     saving: n * s.ticketPrice - s.annualFee,
     breakEven: s.ticketPrice > 0 ? Math.ceil(s.annualFee / s.ticketPrice) : 0,
-    daysLeft: Math.max(0, Math.ceil((end - now) / DAY)),
+    daysLeft,
     projected,
+    snackVisits,
+    snackAvg: snackVisits ? snacks / snackVisits : null,
     projectedPrice: projected ? s.annualFee / projected : null,
     mostWatched,
     mostExpensiveWithSnacks,
@@ -214,8 +233,18 @@ function renderSummary(rows, sum) {
       ? `Premium on maksanut itsensä takaisin! Jokainen käynti nyt on puhdasta voittoa sarjalippuun verrattuna.`
       : `Vielä ${sum.breakEven - sum.n} käyntiä, niin Premium on halvempi kuin sarjalippu (${eur.format(s.ticketPrice)}/lippu).`;
 
+  const suspects = suspectVisits();
+  const warn = $('#date-warning');
+  warn.hidden = !suspects.length;
+  warn.innerHTML = suspects.length
+    ? `<strong>${suspects.length === 1 ? '1 käynti jää' : `${suspects.length} käyntiä jää`} laskuista pois</strong><br><span class="small">Päivä on tulevaisuudessa tai kauden ulkopuolella: ` +
+      suspects.map((v) => `${esc(v.title)} (${fmtDate(v.date)})`).join(', ') +
+      '. Korjaa päivä napauttamalla käyntiä Käynnit-sivulla.</span>'
+    : '';
+
   $('#s-snacks').textContent = eur.format(sum.snacks);
-  $('#s-snacks-avg').textContent = sum.n ? eur.format(sum.snacks / sum.n) : '–';
+  $('#s-snacks-avg').textContent = sum.n ? `${sum.snackVisits} / ${sum.n}` : '–';
+  $('#s-snacks-avg-sub').textContent = sum.snackAvg != null ? `keskiostos ${eur.format(sum.snackAvg)}` : '';
   $('#s-total').textContent = eur.format(sum.total);
   const saving = $('#s-saving');
   saving.textContent = (sum.saving >= 0 ? '+' : '') + eur.format(sum.saving);
@@ -241,122 +270,169 @@ function renderSummary(rows, sum) {
     $('#s-most-expensive-total').textContent = '–';
   }
 
-  renderMonths(rows);
+  const months = monthStats(rows);
+  renderSavingsChart(months, rows.length, sum.saving);
+  renderMonths(months, rows.length);
 }
 
 const MONTH_NAMES = ['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
 
 /**
- * Kuukausikohtaiset luvut. Premium-hinnat lasketaan kuukauden lopun tilanteesta
- * (vuosimaksu jaettuna siihen mennessä kertyneillä käynneillä), sarjaliput kuukauden omista käynneistä.
+ * Kuukausikohtaiset luvut kauden alusta kuluvaan kuukauteen, myös kuukaudet ilman käyntejä.
+ * €/käynti ja säästö ovat kuukauden lopun tilanne: vuosimaksu maksetaan kerran, joten
+ * se jaetaan kaikilla siihen mennessä kertyneillä käynneillä.
  */
 function monthStats(rows) {
   const s = state.settings;
-  const keys = new Set(rows.map((r) => r.date.slice(0, 7)));
-  // Kauden kuukaudet tähän päivään asti, myös ne joina ei käyty
-  const last = [todayIso(), ...rows.map((r) => r.date)].sort().at(-1).slice(0, 7);
-  const end = s.seasonEnd.slice(0, 7) < last ? s.seasonEnd.slice(0, 7) : last;
+  const today = todayIso().slice(0, 7);
+  const end = s.seasonEnd.slice(0, 7) < today ? s.seasonEnd.slice(0, 7) : today;
+  const months = [];
   for (let [y, m] = s.seasonStart.split('-').map(Number); `${y}-${pad(m)}` <= end; m === 12 ? (y++, (m = 1)) : m++) {
-    keys.add(`${y}-${pad(m)}`);
-  }
-  return [...keys].sort().map((key) => {
+    const key = `${y}-${pad(m)}`;
     const inMonth = rows.filter((r) => r.date.startsWith(key));
-    const upTo = rows.filter((r) => r.date.slice(0, 7) <= key);
-    const cumSnacks = upTo.reduce((a, r) => a + (r.snacks || 0), 0);
-    const [y, m] = key.split('-').map(Number);
-    return {
+    const cumCount = rows.filter((r) => r.date.slice(0, 7) <= key).length;
+    months.push({
       key,
       label: `${MONTH_NAMES[m - 1]} ${String(y).slice(2)}`,
       short: MONTH_NAMES[m - 1].slice(0, 3),
       count: inMonth.length,
-      movie: upTo.length ? s.annualFee / upTo.length : null,
-      withSnacks: upTo.length ? (s.annualFee + cumSnacks) / upTo.length : null,
-      tickets: inMonth.length * s.ticketPrice,
-    };
-  });
+      snacks: inMonth.reduce((a, r) => a + (r.snacks || 0), 0),
+      movie: cumCount ? s.annualFee / cumCount : null,
+      saving: cumCount * s.ticketPrice - s.annualFee,
+    });
+  }
+  return months;
 }
 
-function renderMonths(rows) {
-  const months = monthStats(rows);
+function renderMonths(months, visitCount) {
   const fmt = (v) => (v == null ? '–' : eur.format(v));
-  $('#months').innerHTML = rows.length
+  const signed = (v) => `<span class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</span>`;
+  $('#months').innerHTML = visitCount
     ? months
-        .map((m) => `<tr><td>${m.label}</td><td>${m.count}</td><td>${fmt(m.movie)}</td>
-          <td>${fmt(m.withSnacks)}</td><td>${eur.format(m.tickets)}</td></tr>`)
+        .map((m) => `<tr><td>${m.label}</td><td>${m.count}</td><td>${eur.format(m.snacks)}</td>
+          <td>${fmt(m.movie)}</td><td>${signed(m.saving)}</td></tr>`)
         .join('')
     : '<tr><td colspan="5" class="muted">Ei käyntejä</td></tr>';
-  renderMonthChart(months, rows.length);
+  renderVisitsChart(months, visitCount);
 }
 
-/** Pylväät kuukausittain: pelkkä leffa, leffa + herkut ja sarjaliput. */
-function renderMonthChart(months, visitCount) {
-  const el = $('#month-chart');
+/** Pylväät: käyntien määrä kuukausittain. */
+function renderVisitsChart(months, visitCount) {
+  const el = $('#visits-chart');
   if (!visitCount) {
-    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
+    el.innerHTML = '';
     return;
   }
-  const W = 320, H = 180, L = 38, R = 6, T = 10, B = 22;
-  const series = [
-    { key: 'movie', color: 'var(--accent)', label: 'Pelkkä leffa (vuosimaksu / käynnit)' },
-    { key: 'withSnacks', color: 'var(--accent-2)', label: 'Leffa + herkut ((vuosimaksu + herkut) / käynnit)' },
-    { key: 'tickets', color: 'var(--muted)', label: 'Sarjalippu (kuukauden käynnit × lippuhinta)' },
-  ];
-  const yMax = Math.max(1, ...months.flatMap((m) => series.map((sr) => m[sr.key] || 0))) * 1.1;
+  const W = 320, H = 130, L = 8, R = 8, T = 16, B = 20;
+  const yMax = Math.max(1, ...months.map((m) => m.count));
   const y = (v) => T + (1 - v / yMax) * (H - T - B);
   const groupW = (W - L - R) / months.length;
-  const barW = Math.max(1.5, (groupW * 0.8) / series.length);
-
-  const ticks = [0, yMax / 3, (2 * yMax) / 3, yMax].map((v) => Math.round(v));
-  const grid = ticks
-    .map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
-      <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
-    .join('');
-
+  const barW = Math.min(36, groupW * 0.7);
   const labelEvery = months.length > 8 ? 2 : 1;
+
   const bars = months
     .map((m, i) => {
-      const gx = L + i * groupW + groupW * 0.1;
-      const rects = series
-        .map((sr, j) => {
-          const v = m[sr.key];
-          if (!v) return '';
-          return `<rect x="${(gx + j * barW).toFixed(1)}" y="${y(v).toFixed(1)}" width="${(barW - 0.6).toFixed(1)}"
-            height="${(y(0) - y(v)).toFixed(1)}" fill="${sr.color}" rx="1"><title>${m.label}: ${sr.label} ${eur.format(v)}</title></rect>`;
-        })
-        .join('');
-      const label = i % labelEvery === 0
-        ? `<text x="${(L + (i + 0.5) * groupW).toFixed(1)}" y="${H - 6}" text-anchor="middle">${m.short}</text>`
+      const cx = L + (i + 0.5) * groupW;
+      const bar = m.count
+        ? `<rect x="${(cx - barW / 2).toFixed(1)}" y="${y(m.count).toFixed(1)}" width="${barW.toFixed(1)}"
+            height="${(y(0) - y(m.count)).toFixed(1)}" fill="var(--accent)" rx="2"/>
+           <text x="${cx.toFixed(1)}" y="${(y(m.count) - 4).toFixed(1)}" text-anchor="middle" class="bar-value">${m.count}</text>`
         : '';
-      return rects + label;
+      const label = i % labelEvery === 0 ? `<text x="${cx.toFixed(1)}" y="${H - 5}" text-anchor="middle">${m.short}</text>` : '';
+      return bar + label;
     })
     .join('');
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käyntihinnat ja sarjalippujen hinta kuukausittain">
-      ${grid}${bars}
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käynnit kuukausittain">
+      <line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--border)"/>
+      ${bars}
+    </svg>`;
+}
+
+/** Viiva: kertynyt säästö sarjalippuihin verrattuna kuukauden lopussa. Alkaa miinuksella (vuosimaksu). */
+function renderSavingsChart(months, visitCount, current) {
+  const el = $('#savings-chart');
+  if (!visitCount) {
+    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
+    return;
+  }
+  const s = state.settings;
+  const W = 320, H = 170, L = 44, R = 12, T = 12, B = 22;
+  // Ensimmäinen piste on kauden alku: vuosimaksu maksettu, ei vielä käyntejä
+  const points = [{ label: '', value: -s.annualFee }, ...months.map((m) => ({ label: m.short, value: m.saving }))];
+  const vals = points.map((p) => p.value);
+  // Tasaiset akselin arvot (esim. 100 €:n välein), ja tilaa nollaviivan yläpuolelle
+  const span = Math.max(...vals, 0) - Math.min(...vals);
+  const step = [50, 100, 200, 250, 500, 1000].find((st) => span / st <= 5) || 1000;
+  const yMin = Math.floor(Math.min(...vals) / step) * step;
+  const yMax = Math.ceil((Math.max(0, ...vals) + step * 0.5) / step) * step;
+  const x = (i) => L + (i / (points.length - 1)) * (W - L - R);
+  const y = (v) => T + (1 - (v - yMin) / (yMax - yMin)) * (H - T - B);
+
+  const ticks = [];
+  for (let v = yMin; v <= yMax; v += step) if (v !== 0) ticks.push(v);
+  const grid = ticks
+    .map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="0.6"/>
+      <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
+    .join('');
+  const zero = `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
+    <text x="${L + 3}" y="${y(0) - 4}" class="small">0 € = Premium maksanut itsensä</text>`;
+  const labelEvery = points.length > 9 ? 2 : 1;
+  const xLabels = points
+    .map((p, i) => (p.label && i % labelEvery === 1 % labelEvery ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${p.label}</text>` : ''))
+    .join('');
+  const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join('');
+  const dots = points
+    .map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="3" fill="${p.value >= 0 ? 'var(--good)' : 'var(--bad)'}"/>`)
+    .join('');
+
+  el.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kertynyt säästö sarjalippuihin verrattuna">
+      ${grid}${zero}${xLabels}
+      <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+      ${dots}
     </svg>
-    <div class="legend small">
-      ${series.map((sr) => `<span><i class="dot" style="background:${sr.color}"></i>${sr.label}</span>`).join('')}
-    </div>
-    <p class="small muted">Premium-hinnat ovat kuukauden lopun tilanne: vuosimaksu jaettuna siihen mennessä kertyneillä käynneillä. Sarjalippu on kuukauden käyntien hinta sarjalipuilla.</p>`;
+    <p class="small">Nyt: <strong class="${current >= 0 ? 'good' : 'bad'}">${current >= 0 ? '+' : ''}${eur.format(current)}</strong>
+      ${current >= 0 ? 'säästetty' : 'vielä kuromatta'} sarjalippuihin verrattuna.</p>
+    <p class="small muted">Säästö = käynnit × ${eur.format(s.ticketPrice)} − vuosimaksu ${eur.format(s.annualFee)}. Viiva alkaa kauden alusta miinukselta ja nousee jokaisesta käynnistä. Herkut eivät ole mukana, koska ne maksetaan kummassakin tapauksessa.</p>`;
 }
 
 function renderList(rows) {
   const q = $('#search').value.trim().toLowerCase();
-  const shown = rows.filter((r) => !q || r.title.toLowerCase().includes(q)).reverse();
-  $('#empty').hidden = rows.length > 0;
-  $('#visits').innerHTML = shown
+  const match = (r) => !q || r.title.toLowerCase().includes(q);
+  const suspects = suspectVisits().filter(match);
+  const shown = rows.filter(match).reverse();
+  $('#empty').hidden = state.visits.length > 0;
+
+  // Lasketaan mukaan vain kauden käynnit tähän päivään asti; muut näytetään ylimpänä varoituksella
+  const suspectItems = suspects
+    .map((r) => {
+      const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
+      return `<li class="visit suspect" data-id="${r.id}">
+        <div class="nro">!</div>
+        <div class="title">${esc(r.title)}</div>
+        <div class="price"><span>ei laskettu</span></div>
+        <div class="meta">${meta} · tarkista päivä</div>
+      </li>`;
+    })
+    .join('');
+
+  const items = shown
     .map((r) => {
       const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
       const snack = r.snacks ? ` · <span class="snack">herkut ${eur.format(r.snacks)}</span>` : '';
+      const withSnacks = r.snacks ? `<span>+ herkut ${eur.format(r.totalAt)}</span>` : '';
       return `<li class="visit" data-id="${r.id}">
         <div class="nro">${r.nro}</div>
         <div class="title">${esc(r.title)}</div>
-        <div class="price"><b>${eur.format(r.movieAt)}</b><span>+ herkut ${eur.format(r.totalAt)}</span></div>
+        <div class="price"><b>${eur.format(r.movieAt)}</b>${withSnacks}</div>
         <div class="meta">${meta}${snack}</div>
       </li>`;
     })
     .join('');
+
+  $('#visits').innerHTML = suspectItems + items;
 }
 
 function renderDatalists() {
@@ -446,7 +522,8 @@ form.addEventListener('submit', (e) => {
   dialog.close();
   const rows = computeVisits();
   const me = rows.find((r) => r.title === data.title && r.date === data.date);
-  toast(id ? 'Tallennettu' : `Käynti #${me?.nro} – leffan hinta nyt ${eur.format(computeSummary(rows).movie)}`);
+  if (!me) toast('Tallennettu, mutta ei lasketa: päivä on tulevaisuudessa tai kauden ulkopuolella');
+  else toast(id ? 'Tallennettu' : `Käynti #${me.nro} – leffan hinta nyt ${eur.format(computeSummary(rows).movie)}`);
 });
 
 $('#delete-visit').addEventListener('click', () => {
@@ -638,6 +715,10 @@ function generateCSV() {
   const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Leffa+herkut €/käynti', 'Muistiinpano']];
   for (const r of computeVisits()) {
     lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.note || '']);
+  }
+  // Laskemattomat käynnit mukaan ilman järjestysnumeroa ja hintoja, jotta mitään ei katoa
+  for (const r of suspectVisits()) {
+    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', [r.note, 'ei laskettu: tarkista päivä'].filter(Boolean).join(' · ')]);
   }
   return '﻿' + lines.map((l) => l.map((c) => `\"${String(c).replace(/\"/g, '\"\"')}\"`).join(';')).join('\r\n');
 }

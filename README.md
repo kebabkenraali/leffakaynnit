@@ -17,12 +17,15 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **Leffa + herkut**: (Vuosimaksu + herkut) / käynnit
 - **Break-even -mittari**: Kuinka monta käyntiä tarvitaan, jotta Premium on halvempi kuin sarjalippu
 - **Säästö vs. sarjalippu**: Positiivinen = voittaa, negatiivinen = sarjalippu on halvempi
-- **Ennuste**: Projisoitu kokonaiskäyntimäärä kauden lopussa
-- **Kuukausittain (pylväskaavio + taulukko)**: Pelkkä leffa (vuosimaksu / käynnit), leffa + herkut ((vuosimaksu + herkut) / käynnit) ja sarjalippujen hinta kuukauden käyntien mukaan
+- **Ennuste**: Käyntimäärä ja €/käynti kauden lopussa viimeisen 30 päivän tahdilla
+- **Kertynyt säästö vs. sarjaliput**: Viiva kuukausittain, alkaa kauden alussa miinukselta (vuosimaksu) ja nousee nollan yli break-evenissä
+- **Kuukausittain**: Käynnit/kk-pylväät ja taulukko (käynnit, herkut, €/käynti ja säästö kuukauden lopussa), myös kuukaudet ilman käyntejä
+- **Herkut**: Yhteensä, monellako käynnillä ostettu ja keskiostos
+- **Päivämäärätarkistus**: Tulevaisuuteen tai kauden ulkopuolelle merkityt käynnit jäävät laskuista pois ja näkyvät varoituksena
 
 ### 🆕 Elokuvatilastot
 - **Eniten katsottu elokuva**: Elokuva, jota olet katsonut eniten kertoja
-- **Kallein elokuva (leffa + herkut)**: Elokuva, jonka kokonaishinta (leffaosuus + herkut) on suurin
+- **Eniten maksanut elokuva**: Samannimisten käyntien leffaosuudet + herkut yhteensä
 
 ### Asetukset
 - **Tilausasetukset**: Vuosimaksu, sarjalipun vertailuhinta, kauden alkupäivä ja loppupäivä
@@ -159,7 +162,7 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Kumulatiivinen keskihinta** – `movieAt = vuosimaksu / käynnit`, `totalAt = (vuosimaksu + herkut) / käynnit`
 - **Break-even analyysi** – `ceil(vuosimaksu / sarjalippu_hinta)`
 - **Projektiot** – Lineaarinen extrapolaatio nykyisestä nopeudesta kauden loppuun
-- **Kuukausipylväät** – SVG-pylväskaavio: Premium-hinnat kuukauden lopun tilanteesta, sarjaliput kuukauden omista käynneistä
+- **SVG-kaaviot** – Kertyneen säästön viiva ja käynnit/kk-pylväät; €/käynti ja säästö kuukauden lopun tilanteesta
 
 ### Laadunvarmistus
 - **Virheenkäsittely** – `try/catch` kaikissa I/O-operaatioissa, käyttäjäystävälliset toast-viestit
