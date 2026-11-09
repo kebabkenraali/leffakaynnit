@@ -200,6 +200,17 @@ function computeSummary(rows) {
     ? reached.nro
     : s.ticketPrice > extraPerVisit ? Math.max(n + 1, Math.ceil(s.annualFee / (s.ticketPrice - extraPerVisit))) : null;
 
+  // Herkkutavoite: montako käyntiä yhteensä tarvitaan, jos uusia herkkuja tai muita kuluja
+  // ei enää tehdä, jotta käynnin keskihinta (vuosimaksu + kertyneet herkut + muut kulut)
+  // alittaa sarjalipun hinnan. Jokainen osto siirtää tavoitetta, mikä kannustaa hillitsemään
+  // herkkukulutusta.
+  const extras = snacks + other;
+  const snackGoalTotal = s.ticketPrice > 0 ? Math.floor((s.annualFee + extras) / s.ticketPrice) + 1 : null;
+  // Kun tavoite on saavutettu: näin paljon jää sarjalipun hinnasta jaettavaksi herkkuihin joka käynnillä
+  // (pelkkä leffa maksaa fee/n, lopun lipun hinnasta voi kuluttaa herkkuihin ilman, että Premium
+  // kallistuisi sarjalipun ostamista vastaavaksi).
+  const treatBudget = s.ticketPrice > 0 && n ? s.ticketPrice - s.annualFee / n : null;
+
   return {
     n,
     snacks,
@@ -213,6 +224,10 @@ function computeSummary(rows) {
     breakEven,
     breakEvenAll,
     breakEvenAllEstimated: !reached,
+    snackGoalTotal,
+    snackGoalLeft: snackGoalTotal != null ? snackGoalTotal - n : null,
+    snackDelay: snackGoalTotal != null && breakEven ? snackGoalTotal - breakEven : null,
+    treatBudget,
     daysLeft,
     projected,
     snackVisits,
@@ -248,6 +263,8 @@ function renderSummary(rows, sum) {
     sum.n >= sum.breakEven
       ? `Premium on maksanut itsensä takaisin! Jokainen käynti nyt on puhdasta voittoa sarjalippuun verrattuna.`
       : `Vielä ${sum.breakEven - sum.n} käyntiä, niin Premium on halvempi kuin sarjalippu (${eur.format(s.ticketPrice)}/lippu).`;
+
+  renderSnackGoal(sum);
 
   const suspects = suspectVisits();
   const warn = $('#date-warning');
@@ -287,6 +304,41 @@ function renderSummary(rows, sum) {
   renderSavingsChart(months, rows.length, sum);
   renderRatings(rows);
   renderMonths(months, rows.length);
+}
+
+/** Herkkutavoite: montako leffaa pitää katsoa ilman herkkuja ja muita kuluja, jotta
+ *  käynnin keskihinta (vuosimaksu + tässä mennessä ostetut herkut ja muut kulut)
+ *  alittaa sarjalipun hinnan. Kun tavoite on saavutettu, näytetään paljonko
+ *  sarjalipun hinnasta jää herkkubudjettiin joka käynnillä. */
+function renderSnackGoal(sum) {
+  const s = state.settings;
+  const bar = $('#sg-bar');
+  const label = $('#sg-label');
+  const text = $('#sg-text');
+  const budget = $('#sg-budget');
+  if (!sum.n || sum.snackGoalTotal == null) {
+    bar.style.width = '0';
+    label.textContent = '';
+    text.innerHTML = 'Lisää käyntejä ja tarkista asetusten vuosimaksu sekä sarjalipun hinta, niin tämä kertoo montako leffaa pitää katsoa ilman herkkuja, jotta käynnin hinta alittaa lipun hinnan.';
+    budget.textContent = '';
+    return;
+  }
+  if (sum.snackGoalLeft <= 0) {
+    bar.style.width = '100%';
+    label.textContent = `${sum.n} käynnin takana`;
+    text.innerHTML = `Tavoite saavutettu! Käynnin keskihinta kaikkia kuluja laskien on <span class="good">${eur.format(sum.withExtras)}</span>, eli alle sarjalipun hinnan (${eur.format(s.ticketPrice)}).`;
+    budget.innerHTML = `Voit käyttää herkkuihin joka käynnillä jopa <strong class="good">${eur.format(sum.treatBudget)}</strong> – niin paljon jää yli pelkän lipun hinnasta (sarjalippu ${eur.format(s.ticketPrice)}), ilman että Premium kallistuisi lippujen ostamista erikseen vastaavaksi.`;
+    return;
+  }
+  bar.style.width = Math.min(100, (sum.n / sum.snackGoalTotal) * 100) + '%';
+  label.textContent = `${sum.n} / ${sum.snackGoalTotal} käyntiä`;
+  text.innerHTML =
+    `Katso vielä <strong>${sum.snackGoalLeft}</strong> ${sum.snackGoalLeft === 1 ? 'leffa' : 'leffaa'} ilman herkkuja tai muita kuluja, ` +
+    `niin käynnin keskihinta kaikkia kuluja laskien alittaa sarjalipun hinnan (${eur.format(s.ticketPrice)}).`;
+  budget.innerHTML =
+    sum.snackDelay > 0
+      ? `Pelkkä vuosimaksu vaatisi ${sum.breakEven} käynnin: herkut ja muut kulut (${eur.format(sum.snacks + sum.other)}) ovat siirtäneet tavoitetta ${sum.snackDelay} käynnillä.`
+      : `Herkut ja muut kulut (${eur.format(sum.snacks + sum.other)}) eivät ole vielä siirtäneet tavoitetta.`;
 }
 
 /** Arvosanat: keskiarvo, jakauma sekä parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). */

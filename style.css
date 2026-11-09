@@ -74,6 +74,8 @@ main { padding: 0 16px; max-width: 640px; margin: 0 auto; }
 .bar { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 10px 0 6px; }
 .bar > div { height: 100%; width: 0; background: var(--good); border-radius: 99px; transition: width .4s; }
 
+#sg-budget { margin-top: 4px; }
+
 .chart { margin-top: 8px; }
 .chart svg { width: 100%; height: auto; display: block; }
 .chart text { fill: var(--muted); font-size: 10px; }
