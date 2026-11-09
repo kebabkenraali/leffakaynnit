@@ -263,6 +263,26 @@ function renderSummary(rows, sum) {
   $('#h-total').textContent = sum.withExtras != null ? eur.format(sum.withExtras) : '–';
   $('#h-count').textContent = sum.n;
 
+  // Ylälaatikon lisätila: viimeisin katsottu elokuva ja herkkutavoitteen tila
+  const latest = rows[rows.length - 1];
+  $('#h-latest').textContent = latest ? latest.title : '–';
+  $('#h-latest-sub').textContent = latest ? `${fmtDate(latest.date)} · #${latest.nro}` : '';
+  const goal = $('#h-goal');
+  if (sum.snackGoalLeft == null) {
+    goal.textContent = '–';
+    $('#h-goal-sub').textContent = '';
+  } else if (sum.snackGoalLeft <= 0) {
+    goal.textContent = '✓ Saavutettu';
+    $('#h-goal-sub').textContent = sum.treatBudget != null
+      ? `herkkubudjetti ${eur.format(sum.treatBudget)}/leffa`
+      : '';
+  } else {
+    goal.textContent = `${sum.snackGoalLeft} leffaa`;
+    $('#h-goal-sub').textContent =
+      `${sum.n} / ${sum.snackGoalTotal}` +
+      (sum.withExtras != null ? ` · ${eur.format(sum.withExtras)} vs ${eur.format(state.settings.ticketPrice)}` : '');
+  }
+
   const pct = sum.breakEven ? Math.min(100, (sum.n / sum.breakEven) * 100) : 0;
   $('#be-bar').style.width = pct + '%';
   $('#be-label').textContent = `${sum.n} / ${sum.breakEven} käyntiä`;

@@ -59,6 +59,8 @@ main { padding: 0 16px; max-width: 640px; margin: 0 auto; }
 .hero-sub { opacity: .8; font-size: .8rem; }
 .hero-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
 .hero-split .muted { color: rgba(255,255,255,.8); }
+.hero-split .big { font-size: 1.25rem; overflow-wrap: anywhere; }
+.hero-split .big.main { font-size: 1.4rem; }
 .big { font-size: 1.4rem; font-weight: 700; }
 
 .card {

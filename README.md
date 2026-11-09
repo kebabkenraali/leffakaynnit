@@ -1,4 +1,4 @@
-﻿# Leffakäynnit – Finnkino Premium Käyntiseuranta
+# Leffakäynnit – Finnkino Premium Käyntiseuranta
 
 Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamiseen. Seuraa käyntejä, herkkukustannuksia ja vertaa sarjalippua yhden sivun, offline-toimivan sovelluksen kautta.
 
@@ -13,7 +13,7 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **Hakutoiminto**: Suodata käyntilistaa elokuvan nimen perusteella
 
 ### Laskelmat & analyysi
-- **Leffakäynnin hinta nyt**: Vuosimaksu jaettuna käyntien määrällä
+- **Leffakäynnin hinta nyt**: Vuosimaksu jaettuna käyntien määrällä – ylälaatikossa lisäksi viimeisin katsottu elokuva (päivä ja käyntinumero), käynnit yhteensä ja herkkutavoitteen tila (jäljellä olevat leffat tai "✓ Saavutettu" + herkkubudjetti per leffa)
 - **Herkut ja muut mukana**: (Vuosimaksu + herkut + muut kulut) / käynnit
 - **Break-even -mittari**: Kuinka monta käyntiä tarvitaan, jotta Premium on halvempi kuin sarjalippu
 - **Herkkutavoite**: Montako leffaa pitää katsoa ilman herkkuja tai muita kuluja, jotta käynnin keskihinta (kaikki kulut mukaan lukien) alittaa sarjalipun hinnan – ja montako käyntiä herkut ovat kertyneisinä siirtäneet tavoitetta. Kun tavoite on saavutettu, sovellus näyttää paljonko sarjalipun hinnasta jää herkkubudjettiin joka käynnillä
@@ -127,7 +127,7 @@ Avaa `tests.html` selaimessa:
 - uudet laskentamuutokset tarvitsevat oman testitapauksen `tests.js`-tiedostoon
 
 ### Service Worker -päivitys
-Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v19`), `index.html`:n `app.js?v=19` ja `style.css?v=19` sekä `tests.html`:n `app.js?v=19` ja `tests.js?v=19` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
+Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v20`), `index.html`:n `app.js?v=20` ja `style.css?v=20` sekä `tests.html`:n `app.js?v=20` ja `tests.js?v=20` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
 
 ### Julkaisu
 GitHub Pages julkaisee `gh-pages`-haaran. Kehitys tehdään `main`-haarassa, ja julkaisu on sama commit molempiin:
@@ -222,4 +222,4 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 
 ---
 
-**Versio**: 2026.11 v18 (herkkutavoite ja herkkubudjetti (v17); dialogin herkkuennuste, kuukausibudjetti, kauden vaihto -apuri, ennusteviiva, laskentatestit, offline-Excel-tuonti ja maksupäivä (v18), säästövertailu herkuilla ja ilman, kuukausikaaviot, arvosanat, päivämäärätarkistus, päivittäinen varmuuskopio)
+**Versio**: 2026.11 v20 (ylälaatikko: viimeisin leffa ja herkkutavoite; herkkuennuste dialogissa, kuukausibudjetti, kauden vaihto -apuri, laskentatestit, offline-Excel-tuonti ja maksupäivä (v18–v20); säästökaavio ilman ennustetta (v19); herkkutavoite ja herkkubudjetti (v17); säästövertailu herkuilla ja ilman, kuukausikaaviot, arvosanat, päivämäärätarkistus, päivittäinen varmuuskopio)
