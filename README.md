@@ -131,26 +131,26 @@ git push origin main:gh-pages
 
 MIT License – vapaa käyttö, muokkaus ja jakelu. Ks. [LICENSE](LICENSE).
 
-## 💡 Kehitysideat (Roadmap)
+## 💡 Development Ideas (Roadmap)
 
-Priorisoitu lista jatkokehityksestä. Ensimmäiset palvelevat suoraan sovelluksen pääideaa eli herkkukulujen hillitsemistä.
+A prioritized list of future development. The first items directly support the app's core idea: keeping snack spending under control.
 
-### Korkea prioriteetti
-- **Herkkujen vaikutus jo lisäysdialogissa** – kulut näkyvät nyt vasta tallennuksen jälkeen. Dialogi voisi näyttää reaaliajassa esim. "36,90 € herkut siirtävät tavoitetta 2,5 käynnillä". Palautteen siirtäminen juuri ostopäätökseen on tehokkain tapa hillitä herkkukuluja.
-- **Kuukausibudjetti herkuille** – asetettava kuukausiraja (esim. 30 €/kk) ja sen täyttöä seuraava mittari kuukausitilastoissa. Herkkubudjetti (v17) on keskiarvopohjainen luku; kuukausibudjetti olisi konkreettinen ennakollinen raja.
-- **Kauden vaihto -apuri** – kun kausi on päättynyt, sovellus voisi ehdottaa uuden kauden päivämääriä ja muistuttaa vuosimaksun päivitystä. Nyt uusi kausi täytyy muistaa syöttää itse, muuten käynnit jäävät hiljalleen laskuista pois.
-- **Ennusteviiva säästökaavioon** – kertynyt säästö jatkuu katkoviivalla viimeisen 30 päivän tahtiin kauden loppuun asti, jolloin tavoitteen saavuttamishetken näkee jo etukäteen.
+### High priority
+- **Snack impact already in the add-visit dialog** – costs are currently only visible after saving. The dialog could show it in real time, e.g. "€36.90 of snacks pushes the goal back by 2.5 visits". Moving the feedback to the actual purchase decision is the most effective way to curb snack spending.
+- **Monthly snack budget** – a configurable monthly limit (e.g. €30/month) with a meter tracking it in the monthly stats. The treat budget (v17) is an average-based figure; a monthly budget would be a concrete, forward-looking limit.
+- **Season rollover helper** – when the season has ended, the app could suggest new season dates and remind you to update the annual fee. Currently, the new season has to be entered manually, otherwise visits will silently drop out of the calculations.
+- **Forecast line in the savings chart** – the accumulated savings continues as a dashed line at the pace of the last 30 days until the end of the season, so you can see ahead of time when the goal will be reached.
 
-### Keskitaso
-- **Automatisoidut testit laskennalle** – `computeVisits`, `computeSummary`, `monthStats` ja herkkutavoitekaavat ovat helposti testattavissa, mikä estäisi regressiot refaktoroinneissa. Testejä ei vielä ole.
-- **Excel-lukija toimimaan myös offlineen** – SheetJS ladataan CDN:stä, joten tuonti ei toimi ilman verkkoa. Lukijan vieminen service workerin `ASSETS`-listaan tai kevyt oma parseri täydentäisi offline-käytön.
-- **Vuosimaksun suorituspäivä** – maksupäivä kauden alkupäivän sijaan säästökaavion nollapisteeksi, jolloin ensimmäinen miinuspiste vastaa todellista maksuhetkeä.
-- **Tilausvaihtoehtojen vertailu** – Premium vs. peruskortti vs. pelkät liput samalla datalla.
+### Medium priority
+- **Automated tests for the calculations** – `computeVisits`, `computeSummary`, `monthStats` and the treat-goal formulas are easy to test, which would prevent regressions during refactoring. No tests exist yet.
+- **Excel reader working offline too** – SheetJS is loaded from a CDN, so importing doesn't work without a network connection. bundling the reader into the service worker's `ASSETS` list or a lightweight custom parser would complete the offline experience.
+- **Annual fee payment date** – use the payment date instead of the season start as the zero point of the savings chart, so that the first negative point matches the actual payment date.
+- **Comparison of subscription options** – Premium vs. basic card vs. regular tickets, all based on the same data.
 
-### Matala prioriteetti
-- **Kirjaamismuistutukset** – selaimen notifikaatio "Kirjasitko leffakäynnin?" illalla, jos kauden sisäiselle käynnille ei ole merkintää.
-- **Monivuotinen historia** – usean kauden vertailu (esim. herkkukulut per käynti eri vuosina) kannustaa pitkäjänteiseen seurantaan.
-- **Useampi käyttäjäprofiili** – perheen tai parin tilaus voi olla yhteinen; jokaisen omien herkkukulujen erittely toisi tarkemman kuvan.
+### Low priority
+- **Logging reminders** – a browser notification ("Did you log your cinema visit?") in the evening, when an in-season visit hasn't been recorded yet.
+- **Multi-year history** – comparing multiple seasons (e.g. snack spending per visit across years) encourages long-term tracking.
+- **Multiple user profiles** – the subscription may be shared by a family or couple; breaking down each person's own snack costs would give a more detailed picture.
 
 ## 🤝 Avustukset
 
