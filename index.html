@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
   <header class="top">
@@ -36,6 +36,15 @@
       </div>
 
       <div id="date-warning" class="card warn" hidden></div>
+
+      <div id="rollover" class="card warn" hidden>
+        <strong>Kausi on päättynyt</strong>
+        <div class="small" id="rollover-text"></div>
+        <div class="actions">
+          <button id="rollover-settings" class="btn" type="button">Muokkaa asetuksia</button>
+          <button id="rollover-advance" class="btn primary" type="button">Kausi vuodella eteenpäin</button>
+        </div>
+      </div>
 
       <div class="card">
         <div class="row-between">
@@ -75,6 +84,7 @@
 
       <div class="card">
         <strong>Kuukausittain</strong>
+        <div id="snack-budget" class="small" hidden></div>
         <div id="visits-chart" class="chart"></div>
         <table class="months">
           <thead><tr><th>Kk</th><th>Käyn.</th><th>Herkut</th><th>€/käynti</th><th>Säästö</th><th>+ herkut</th></tr></thead>
@@ -126,6 +136,8 @@
         <label>Sarjalipun hinta vertailuun (€/lippu)<input name="ticketPrice" type="number" step="0.01" min="0" inputmode="decimal" required></label>
         <label>Kausi alkaa<input name="seasonStart" type="date" required></label>
         <label>Kausi päättyy<input name="seasonEnd" type="date" required></label>
+        <label>Vuosimaksun maksupäivä (valinnainen, säästökaavion nollapiste)<input name="feeDate" type="date"></label>
+        <label>Kuukausibudjetti herkuille (€/kk, 0 = ei budjettia)<input name="snackBudget" type="number" step="0.01" min="0" inputmode="decimal"></label>
         <label>Oletusteatteri (esitäytetään uusiin käynteihin)<input name="location" type="text" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
         <datalist id="locations"></datalist>
         <button type="submit" class="btn primary">Tallenna</button>
@@ -197,6 +209,7 @@
         <input type="hidden" name="rating">
       </div>
       <label>Muistiinpano<input name="note" type="text" placeholder="esim. 4DX, seuralainen…"></label>
+      <div id="visit-preview" class="small muted" hidden></div>
       <div class="actions">
         <button type="button" id="delete-visit" class="btn danger" hidden>Poista</button>
         <span class="spacer"></span>
@@ -208,6 +221,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

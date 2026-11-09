@@ -10,6 +10,8 @@ const DEFAULT_STATE = {
     ticketPrice: 14.45,
     seasonStart: '2026-09-01',
     seasonEnd: '2027-08-31',
+    feeDate: '', // Vuosimaksun maksupäivä (valinnainen): säästökaavion nollapiste
+    snackBudget: 0, // Kuukausibudjetti herkuille (€/kk), 0 = ei budjettia
     location: '', // Paikka / oletusteatteri (masterdata)
     cloudFolderHandle: null, // File System Access API handle for cloud folder
     autoCloudSave: false, // Automaattinen pilvitallennus
@@ -20,6 +22,7 @@ const DEFAULT_STATE = {
 };
 
 const eur = new Intl.NumberFormat('fi-FI', { style: 'currency', currency: 'EUR' });
+const pad = (n) => String(n).padStart(2, '0');
 const fmtDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
   return `${d}.${m}.${y}`;
@@ -228,6 +231,10 @@ function computeSummary(rows) {
     snackGoalLeft: snackGoalTotal != null ? snackGoalTotal - n : null,
     snackDelay: snackGoalTotal != null && breakEven ? snackGoalTotal - breakEven : null,
     treatBudget,
+    // Kuukausitahdista: käynnit per päivä viimeisen 30 päivän ajalta + herkkujen ja muiden
+    // kulujen keskiarvo. Käytetään säästökaavion ennusteviivaan (× 30 = käynnit/kk).
+    monthPace: pacePeriod ? recent / pacePeriod : 0, // käynnit per päivä (viimeiset 30 pv)
+    extraAvg: n ? (snacks + other) / n : 0,
     daysLeft,
     projected,
     snackVisits,
@@ -275,6 +282,8 @@ function renderSummary(rows, sum) {
       '. Korjaa päivä napauttamalla käyntiä Käynnit-sivulla.</span>'
     : '';
 
+  renderRollover();
+
   $('#s-snacks').textContent = eur.format(sum.snacks);
   $('#s-snacks-avg').textContent = sum.n ? `${sum.snackVisits} / ${sum.n}` : '–';
   $('#s-snacks-avg-sub').textContent = sum.snackAvg != null ? `keskiostos ${eur.format(sum.snackAvg)}` : '';
@@ -301,9 +310,44 @@ function renderSummary(rows, sum) {
   }
 
   const months = monthStats(rows);
+  renderSnackBudget(months);
   renderSavingsChart(months, rows.length, sum);
   renderRatings(rows);
   renderMonths(months, rows.length);
+}
+
+/** Kauden vaihto -apuri: kun kausi on ohi, muistuta päivittämään päivämäärät, jotta uudet
+ *  käynnit eivät jää hiljalleen laskuista pois. */
+function renderRollover() {
+  const s = state.settings;
+  const expired = todayIso() > s.seasonEnd;
+  $('#rollover').hidden = !expired;
+  if (expired) {
+    $('#rollover-text').textContent =
+      `Kausi päättyi ${fmtDate(s.seasonEnd)}. Uudet käynnit jäävät laskuista, kunnes kauden päivämäärät on päivitetty.`;
+  }
+}
+
+/** Kuukausibudjetti herkuille: tämän kuun herkkukulut suhteessa Asetuksissa asetettuun rajaan. */
+function renderSnackBudget(months) {
+  const s = state.settings;
+  const el = $('#snack-budget');
+  const budget = num(s.snackBudget);
+  if (!budget) {
+    el.hidden = true;
+    el.innerHTML = '';
+    return;
+  }
+  const cur = months.find((m) => m.key === todayIso().slice(0, 7));
+  const spent = cur ? cur.snacks : 0;
+  const pct = Math.min(100, (spent / budget) * 100);
+  el.hidden = false;
+  el.innerHTML = `
+    <div class="row-between"><strong>Herkkubudjetti tässä kuussa</strong><span>${eur.format(spent)} / ${eur.format(budget)}</span></div>
+    <div class="bar"><div style="width:${pct}%;${spent > budget ? 'background:var(--bad)' : ''}"></div></div>
+    <div class="small">${spent > budget
+      ? '<span class="bad">Budjetti ylittynyt</span> – lisäherkkuostokset viivästyttävät herkkutavoitetta.'
+      : `Budjettia jäljellä ${eur.format(budget - spent)} loppukuulle.`}</div>`;
 }
 
 /** Herkkutavoite: montako leffaa pitää katsoa ilman herkkuja ja muita kuluja, jotta
@@ -430,9 +474,15 @@ function monthStats(rows) {
   const s = state.settings;
   const today = todayIso().slice(0, 7);
   const end = s.seasonEnd.slice(0, 7) < today ? s.seasonEnd.slice(0, 7) : today;
+  // Vuosimaksun maksupäivä: kuukausi, josta säästölaskenta alkaa – maksua edeltävillä
+  // kuukausilla säästö on 0, koska vuosimaksua ei vielä ole maksettu.
+  const feeMonth = /^\d{4}-\d{2}/.test(s.feeDate || '') ? s.feeDate.slice(0, 7) : null;
+  let startKey = s.seasonStart.slice(0, 7);
+  if (feeMonth && feeMonth < startKey) startKey = feeMonth;
   const months = [];
-  for (let [y, m] = s.seasonStart.split('-').map(Number); `${y}-${pad(m)}` <= end; m === 12 ? (y++, (m = 1)) : m++) {
+  for (let [y, m] = startKey.split('-').map(Number); `${y}-${pad(m)}` <= end; m === 12 ? (y++, (m = 1)) : m++) {
     const key = `${y}-${pad(m)}`;
+    const feePaid = !feeMonth || key >= feeMonth;
     const inMonth = rows.filter((r) => r.date.startsWith(key));
     const upTo = rows.filter((r) => r.date.slice(0, 7) <= key);
     const cumCount = upTo.length;
@@ -444,8 +494,8 @@ function monthStats(rows) {
       count: inMonth.length,
       snacks: inMonth.reduce((a, r) => a + (r.snacks || 0), 0),
       movie: cumCount ? s.annualFee / cumCount : null,
-      saving: cumCount * s.ticketPrice - s.annualFee,
-      savingAll: cumCount * s.ticketPrice - s.annualFee - cumExtras,
+      saving: feePaid ? cumCount * s.ticketPrice - s.annualFee : 0,
+      savingAll: feePaid ? cumCount * s.ticketPrice - s.annualFee - cumExtras : 0,
     });
   }
   return months;
@@ -509,13 +559,53 @@ function renderSavingsChart(months, visitCount, sum) {
   }
   const s = state.settings;
   const W = 320, H = 170, L = 44, R = 12, T = 12, B = 22;
-  // Ensimmäinen piste on kauden alku: vuosimaksu maksettu, ei vielä käyntejä
-  const labels = ['', ...months.map((m) => m.short)];
+  // Vuosimaksun maksupäivä: kun se on kauden alun edellä, months alkaa jo maksukuukaudesta
+  // (säästö 0) ja siirtyy -vuosimaksu arvoon maksukuukautena, jolloin synteettistä
+  // aloituspistettä ei enää tarvita.
+  const feeMonth = /^\d{4}-\d{2}/.test(s.feeDate || '') ? s.feeDate.slice(0, 7) : null;
+  const syntheticStart = !feeMonth || feeMonth >= s.seasonStart.slice(0, 7);
+
+  // Ennusteviiva: viimeisen 30 päivän käyntitahdilla jatkettu säästö kauden loppuun.
+  // Pelkkä lippu: tahdin käynnit × lipun hinta; herkut mukana keskimääräisen herkkukulun
+  // vähennyksellä (oletus: herkkuostos pysyy samalla tasolla).
+  const tKey = todayIso().slice(0, 7);
+  const endKey = s.seasonEnd.slice(0, 7);
+  const monthsLeft = endKey > tKey
+    ? (Number(endKey.slice(0, 4)) - Number(tKey.slice(0, 4))) * 12 + Number(endKey.slice(5, 7)) - Number(tKey.slice(5, 7))
+    : 0;
+  const pace = Math.max(0, sum.monthPace) * 30; // käynnit per kk
+  const hasProjection = monthsLeft > 0 && pace > 0;
+  const projection = {
+    saving: hasProjection ? pace * s.ticketPrice : 0,
+    savingAll: hasProjection ? pace * Math.max(0, s.ticketPrice - sum.extraAvg) : 0,
+  };
+
+  const labels = [
+    (syntheticStart ? [''] : []),
+    ...months.map((m) => m.short),
+    ...(hasProjection
+      ? (() => {
+          let proj = [];
+          let [y, m] = tKey.split('-').map(Number);
+          for (let k = 0; k < monthsLeft; k++) {
+            m === 12 ? (y++, (m = 1)) : m++;
+            proj.push(MONTH_NAMES[m - 1].slice(0, 3));
+          }
+          return proj;
+        })()
+      : []),
+  ];
   const series = [
     { key: 'saving', color: 'var(--accent)', label: 'Pelkkä lippu', now: sum.saving },
     { key: 'savingAll', color: 'var(--accent-2)', label: 'Herkut ja muut mukana', now: sum.savingAll },
-  ].map((sr) => ({ ...sr, values: [-s.annualFee, ...months.map((m) => m[sr.key])] }));
-  const vals = series.flatMap((sr) => sr.values);
+  ].map((sr) => ({
+    ...sr,
+    values: [...(syntheticStart ? [-s.annualFee] : []), ...months.map((m) => m[sr.key])],
+    projection: hasProjection
+      ? Array.from({ length: monthsLeft }, (_, k) => (sr.now + (k + 1) * projection[sr.key]))
+      : [],
+  }));
+  const vals = series.flatMap((sr) => [...sr.values, ...sr.projection]);
   // Tasaiset akselin arvot (esim. 100 €:n välein), ja tilaa nollaviivan yläpuolelle
   const span = Math.max(...vals, 0) - Math.min(...vals);
   const step = [50, 100, 200, 250, 500, 1000].find((st) => span / st <= 5) || 1000;
@@ -540,7 +630,18 @@ function renderSavingsChart(months, visitCount, sum) {
     .map((sr) => {
       const path = sr.values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
       const dots = sr.values.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5" fill="${sr.color}"/>`).join('');
-      return `<path d="${path}" fill="none" stroke="${sr.color}" stroke-width="2.5"/>${dots}`;
+      let proj = '';
+      if (sr.projection.length) {
+        const startIdx = sr.values.length - 1;
+        const pPath = [sr.values[startIdx], ...sr.projection]
+          .map((v, i) => `${i ? 'L' : 'M'}${x(startIdx + i).toFixed(1)},${y(v).toFixed(1)}`)
+          .join('');
+        const pDots = sr.projection
+          .map((v, i) => `<circle cx="${x(startIdx + 1 + i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5" fill="none" stroke="${sr.color}" stroke-width="1.5"/>`)
+          .join('');
+        proj = `<path d="${pPath}" fill="none" stroke="${sr.color}" stroke-width="1.5" stroke-dasharray="5 4"/>${pDots}`;
+      }
+      return `<path d="${path}" fill="none" stroke="${sr.color}" stroke-width="2.5"/>${dots}${proj}`;
     })
     .join('');
   const signed = (v) => `<strong class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</strong>`;
@@ -551,6 +652,7 @@ function renderSavingsChart(months, visitCount, sum) {
     </svg>
     <div class="legend small">
       ${series.map((sr) => `<span><i class="dot" style="background:${sr.color}"></i>${sr.label}: ${signed(sr.now)}</span>`).join('')}
+      ${hasProjection ? '<span class="muted">Katkoviiva = ennuste viimeisen 30 päivän tahdilla</span>' : ''}
     </div>`;
 }
 
@@ -646,6 +748,7 @@ function openVisit(visit) {
   form.note.value = visit?.note ?? '';
   setRating(visit?.rating || 0);
   dialog.showModal();
+  updateVisitPreview();
   if (!visit) form.title.focus();
 }
 
@@ -667,6 +770,38 @@ $('#rating-stars').addEventListener('click', (e) => {
 });
 
 const stars = (v) => '★'.repeat(v) + '☆'.repeat(5 - v);
+
+/** Ennakoiva palaute lisäys-/muokkausdialogissa: mitä tämä käynti tekee herkkutavoitteelle.
+ *  Palautte näkyy hinta hetkessä, ennen tallennusta. */
+function updateVisitPreview() {
+  const s = state.settings;
+  const preview = $('#visit-preview');
+  if (!s.annualFee || !s.ticketPrice || !form.date.value) {
+    preview.hidden = true;
+    return;
+  }
+  const counted = form.date.value >= s.seasonStart && form.date.value <= s.seasonEnd && form.date.value <= todayIso();
+  if (!counted) {
+    preview.hidden = false;
+    preview.innerHTML = 'Päivä jää laskuista pois: tulevaisuudessa tai kauden ulkopuolella.';
+    return;
+  }
+  // Perusta: nykyinen tila ilman tätä käynniä (muokatessa vanha versio pudotetaan pois)
+  const base = state.visits.filter((v) => v.id !== form.id.value).filter(isCounted);
+  const n1 = base.length + 1;
+  const extras = num(form.snacks.value) + num(form.other.value);
+  const cumExtras = base.reduce((a, v) => a + (v.snacks || 0) + (v.other || 0), 0);
+  const avgAfter = (s.annualFee + cumExtras + extras) / n1;
+  preview.hidden = false;
+  preview.innerHTML =
+    `Käynnin keskihinta kaikkia kuluja laskien tämän jälkeen: <strong class="${avgAfter < s.ticketPrice ? 'good' : ''}">${eur.format(avgAfter)}</strong> (sarjalippu ${eur.format(s.ticketPrice)})` +
+    (extras > 0
+      ? `<br>Herkut ja muut kulut (+${eur.format(extras)}) siirtävät herkkutavoitetta n. ${(extras / s.ticketPrice).toFixed(1).replace('.', ',')} käynnin verran.`
+      : '<br>Herkuton käynti ei siirrä herkkutavoitetta.');
+}
+
+form.addEventListener('input', updateVisitPreview);
+form.addEventListener('change', updateVisitPreview);
 
 $('#fab').addEventListener('click', () => openVisit(null));
 $('#cancel-visit').addEventListener('click', () => dialog.close());
@@ -717,6 +852,33 @@ $('#delete-visit').addEventListener('click', () => {
 
 $('#search').addEventListener('input', () => renderList(computeVisits()));
 
+// ---------- Kauden vaihto ----------
+
+$('#rollover-settings').addEventListener('click', () => showView('settings'));
+$('#rollover-advance').addEventListener('click', () => {
+  const addYear = (iso) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return `${y + 1}-${pad(m)}-${pad(d)}`;
+  };
+  const subYearOneDay = (iso) => {
+    // Uusi kauden alku viimeistään: kauden loppu − 1 vuosi + 1 päivä (käyttö, jos alkua ja loppua
+    // ei edelleenkään saada oikeaan järjestykseen)
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(Date.UTC(y - 1, m - 1, d + 1));
+    return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`;
+  };
+  state.settings.seasonStart = addYear(state.settings.seasonStart);
+  state.settings.seasonEnd = addYear(state.settings.seasonEnd);
+  if (state.settings.seasonStart >= state.settings.seasonEnd) {
+    state.settings.seasonStart = subYearOneDay(state.settings.seasonEnd);
+  }
+  save();
+  autoSaveToCloud();
+  fillSettings();
+  render();
+  toast('Kausi siirretty vuodella eteenpäin – tarkista vuosimaksu ja lipun hinta Asetuksista');
+});
+
 // ---------- Asetukset ----------
 
 const sForm = $('#settings-form');
@@ -732,6 +894,8 @@ sForm.addEventListener('submit', (e) => {
     ticketPrice: num(sForm.ticketPrice.value),
     seasonStart: sForm.seasonStart.value,
     seasonEnd: sForm.seasonEnd.value,
+    feeDate: sForm.feeDate.value,
+    snackBudget: num(sForm.snackBudget.value),
     location: sForm.location.value.trim(),
   };
   save();
@@ -957,8 +1121,6 @@ function loadXlsx() {
     document.head.append(s);
   });
 }
-
-const pad = (n) => String(n).padStart(2, '0');
 
 /** Muuntaa Excelin päivämäärän (sarjanumero tai teksti) muotoon YYYY-MM-DD. */
 function parseDate(v) {
