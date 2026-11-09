@@ -564,48 +564,12 @@ function renderSavingsChart(months, visitCount, sum) {
   // aloituspistettä ei enää tarvita.
   const feeMonth = /^\d{4}-\d{2}/.test(s.feeDate || '') ? s.feeDate.slice(0, 7) : null;
   const syntheticStart = !feeMonth || feeMonth >= s.seasonStart.slice(0, 7);
-
-  // Ennusteviiva: viimeisen 30 päivän käyntitahdilla jatkettu säästö kauden loppuun.
-  // Pelkkä lippu: tahdin käynnit × lipun hinta; herkut mukana keskimääräisen herkkukulun
-  // vähennyksellä (oletus: herkkuostos pysyy samalla tasolla).
-  const tKey = todayIso().slice(0, 7);
-  const endKey = s.seasonEnd.slice(0, 7);
-  const monthsLeft = endKey > tKey
-    ? (Number(endKey.slice(0, 4)) - Number(tKey.slice(0, 4))) * 12 + Number(endKey.slice(5, 7)) - Number(tKey.slice(5, 7))
-    : 0;
-  const pace = Math.max(0, sum.monthPace) * 30; // käynnit per kk
-  const hasProjection = monthsLeft > 0 && pace > 0;
-  const projection = {
-    saving: hasProjection ? pace * s.ticketPrice : 0,
-    savingAll: hasProjection ? pace * Math.max(0, s.ticketPrice - sum.extraAvg) : 0,
-  };
-
-  const labels = [
-    (syntheticStart ? [''] : []),
-    ...months.map((m) => m.short),
-    ...(hasProjection
-      ? (() => {
-          let proj = [];
-          let [y, m] = tKey.split('-').map(Number);
-          for (let k = 0; k < monthsLeft; k++) {
-            m === 12 ? (y++, (m = 1)) : m++;
-            proj.push(MONTH_NAMES[m - 1].slice(0, 3));
-          }
-          return proj;
-        })()
-      : []),
-  ];
+  const labels = syntheticStart ? ['', ...months.map((m) => m.short)] : months.map((m) => m.short);
   const series = [
     { key: 'saving', color: 'var(--accent)', label: 'Pelkkä lippu', now: sum.saving },
     { key: 'savingAll', color: 'var(--accent-2)', label: 'Herkut ja muut mukana', now: sum.savingAll },
-  ].map((sr) => ({
-    ...sr,
-    values: [...(syntheticStart ? [-s.annualFee] : []), ...months.map((m) => m[sr.key])],
-    projection: hasProjection
-      ? Array.from({ length: monthsLeft }, (_, k) => (sr.now + (k + 1) * projection[sr.key]))
-      : [],
-  }));
-  const vals = series.flatMap((sr) => [...sr.values, ...sr.projection]);
+  ].map((sr) => ({ ...sr, values: [...(syntheticStart ? [-s.annualFee] : []), ...months.map((m) => m[sr.key])] }));
+  const vals = series.flatMap((sr) => sr.values);
   // Tasaiset akselin arvot (esim. 100 €:n välein), ja tilaa nollaviivan yläpuolelle
   const span = Math.max(...vals, 0) - Math.min(...vals);
   const step = [50, 100, 200, 250, 500, 1000].find((st) => span / st <= 5) || 1000;
@@ -630,18 +594,7 @@ function renderSavingsChart(months, visitCount, sum) {
     .map((sr) => {
       const path = sr.values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
       const dots = sr.values.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5" fill="${sr.color}"/>`).join('');
-      let proj = '';
-      if (sr.projection.length) {
-        const startIdx = sr.values.length - 1;
-        const pPath = [sr.values[startIdx], ...sr.projection]
-          .map((v, i) => `${i ? 'L' : 'M'}${x(startIdx + i).toFixed(1)},${y(v).toFixed(1)}`)
-          .join('');
-        const pDots = sr.projection
-          .map((v, i) => `<circle cx="${x(startIdx + 1 + i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5" fill="none" stroke="${sr.color}" stroke-width="1.5"/>`)
-          .join('');
-        proj = `<path d="${pPath}" fill="none" stroke="${sr.color}" stroke-width="1.5" stroke-dasharray="5 4"/>${pDots}`;
-      }
-      return `<path d="${path}" fill="none" stroke="${sr.color}" stroke-width="2.5"/>${dots}${proj}`;
+      return `<path d="${path}" fill="none" stroke="${sr.color}" stroke-width="2.5"/>${dots}`;
     })
     .join('');
   const signed = (v) => `<strong class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</strong>`;
@@ -652,7 +605,6 @@ function renderSavingsChart(months, visitCount, sum) {
     </svg>
     <div class="legend small">
       ${series.map((sr) => `<span><i class="dot" style="background:${sr.color}"></i>${sr.label}: ${signed(sr.now)}</span>`).join('')}
-      ${hasProjection ? '<span class="muted">Katkoviiva = ennuste viimeisen 30 päivän tahdilla</span>' : ''}
     </div>`;
 }
 

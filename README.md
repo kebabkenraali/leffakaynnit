@@ -1,4 +1,4 @@
-# Leffakäynnit – Finnkino Premium Käyntiseuranta
+﻿# Leffakäynnit – Finnkino Premium Käyntiseuranta
 
 Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamiseen. Seuraa käyntejä, herkkukustannuksia ja vertaa sarjalippua yhden sivun, offline-toimivan sovelluksen kautta.
 
@@ -19,7 +19,6 @@ Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamis
 - **Herkkutavoite**: Montako leffaa pitää katsoa ilman herkkuja tai muita kuluja, jotta käynnin keskihinta (kaikki kulut mukaan lukien) alittaa sarjalipun hinnan – ja montako käyntiä herkut ovat kertyneisinä siirtäneet tavoitetta. Kun tavoite on saavutettu, sovellus näyttää paljonko sarjalipun hinnasta jää herkkubudjettiin joka käynnillä
 - **Herkkuvaikutus lisäysdialogissa (v18)**: Käyntiä lisättäessä dialogi näyttää reaaliajassa, miten herkut vaikuttavat: käynnin keskihinta kaikkine kuluineen tämän jälkeen ja montako käynnin verran herkut siirtävät herkkutavoitetta
 - **Kuukausibudjetti herkuille (v18)**: Asetuksissa määriteltävä kuukausiraja ja mittari, jossa näkyy tämän kuun herkkukulut suhteessa rajaan
-- **Ennusteviiva säästökaaviossa (v18)**: Kertynyt säästö jatkuu katkoviivalla viimeisen 30 päivän käyntitahdilla kauden loppuun asti (pelkkä lippu ja herkut mukana erikseen)
 - **Säästö vs. sarjaliput**: Vertailutaulukko kahdella tavalla, pelkkä lippu sekä herkut ja muut kulut Premiumin kuluiksi laskettuna: kulut, €/käynti, säästö yhteensä ja per käynti sekä mistä käynnistä alkaen Premium kannattaa
 - **Ennuste**: Käyntimäärä ja €/käynti kauden lopussa viimeisen 30 päivän tahdilla
 - **Kertynyt säästö vs. sarjaliput**: Kaksi viivaa kuukausittain (pelkkä lippu / herkut ja muut mukana), alkaa kauden alussa miinukselta (vuosimaksu) ja nousee nollan yli break-evenissä
@@ -128,7 +127,7 @@ Avaa `tests.html` selaimessa:
 - uudet laskentamuutokset tarvitsevat oman testitapauksen `tests.js`-tiedostoon
 
 ### Service Worker -päivitys
-Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v18`), `index.html`:n `app.js?v=18` ja `style.css?v=18` sekä `tests.html`:n `app.js?v=18` ja `tests.js?v=18` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
+Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v19`), `index.html`:n `app.js?v=19` ja `style.css?v=19` sekä `tests.html`:n `app.js?v=19` ja `tests.js?v=19` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
 
 ### Julkaisu
 GitHub Pages julkaisee `gh-pages`-haaran. Kehitys tehdään `main`-haarassa, ja julkaisu on sama commit molempiin:
@@ -155,12 +154,12 @@ Status update of the roadmap after v18. Completed items are listed at the end.
 - ✅ **Snack impact already in the add-visit dialog** – the dialog shows in real time how the visit's snacks and other purchases push the treat goal (per-visit all-in cost after this visit, and how many visits' worth the extras move the goal).
 - ✅ **Monthly snack budget** – configurable monthly limit in Settings with a meter in the monthly stats (red when exceeded).
 - ✅ **Season rollover helper** – when the season has ended, the Yhteenveto shows a card with a one-click "shift season one year forward" action or a shortcut to the settings.
-- ✅ **Forecast line in the savings chart** – dashed line continues the accumulated savings (both plain and extras-included) at the pace of the last 30 days until the end of the season.
 - ✅ **Automated tests for the calculations** – browser-based test page `tests.html`/`tests.js` covering `computeVisits`, `computeSummary`, `monthStats`, the treat goal, the payment-date handling and date parsing (no build tools needed).
 - ✅ **Excel reader working offline** – SheetJS is now cached by the service worker (fetched once, served from cache afterwards).
 - ✅ **Annual fee payment date** – optional setting; the savings chart and monthly stats start from the payment month with zero savings before the payment.
 
 ### Still open
+- **Forecast line in the savings chart** – attempted in v18, removed again in v19 after feedback: extending the axis to the season end compressed the real history into the far-left corner so the curves read "random". Parked until a presentation that keeps today's date at the right edge of the chart is designed (e.g. a hover tooltip instead of an axis extension).
 - **Comparison of subscription options** (Premium vs. basic card vs. regular tickets) – requires reliable price data for the alternative ticket types; postponed until the comparison prices are defined.
 - **Logging reminders** – browser notifications ("did you log your visit?") require a reliable trigger signal for when a visit happened but was not logged; postponed until a non-intrusive trigger is designed.
 - **Multi-year history** – comparing seasons requires storing per-season snapshots (the current data model derives everything from a single configured season); design work needed.
@@ -204,9 +203,8 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 - **Break-even analyysi** – pelkkä lippu `ceil(vuosimaksu / sarjalippu_hinta)`; herkut mukana ensimmäinen käynti, jolla säästö menee plussalle (arvio, jos ei vielä saavutettu)
 - **Herkkutavoite** – ilman uusia herkkuja tai muita kuluja tavoite on `floor((vuosimaksu + kertyneet herkut + muut kulut) / sarjalippu) + 1` käynnin kohdalla; pelkkä vuosimaksu vaatisi `ceil(vuosimaksu / sarjalippu)` käynnin. Tavoitteen täytyttyä herkkubudjetti joka käynnille = `sarjalippu − vuosimaksu / käynnit`
 - **Herkkuvaikutus dialogissa** – perusta = nykyiset lasketut käynnit ja kulut (muokattaessa ilman kyseistä käyntiä); ennustettu keskihinta = `(vuosimaksu + kertyneet herkut + muut + tämän käynnin herkut ja muut) / (käynnit + 1)`, tavoitteen siirtymä = `herkut ja muut / sarjalippu` käynnin verran
-- **Ennusteviiva** – viimeisen 30 päivän tahti `recent/30` käynniä/pv kerrotaan jatkossa kuukausittain: pelkkä lippu `+ tahdi × sarjalippu`, herkut mukana `+ tahdi × (sarjalippu − keskimääräinen herkkukulu/käynti)`
 - **Vuosimaksun maksupäivä** – kun asetettu ja kauden alkua edellä, kuukausitarkastelu alkaa maksukuukaudesta ja säästö lasketaan vasta maksun jälkeen nollapisteeksi; maksukuukaudessa säästöön merkitään −vuosimaksu
-- **Ennuste** – Viimeisen 30 päivän käyntitahti jatkettuna kauden loppuun
+- **Ennuste** – Viimeisen 30 päivän käyntitahti jatkettuna kauden loppuun (luku), mutta säästökaavio piirtää aina vain nykyiseen päivään asti ilman ennustetta
 - **SVG-kaaviot** – Kertyneen säästön viiva ja käynnit/kk-pylväät; €/käynti ja säästö kuukauden lopun tilanteesta
 
 ### Laadunvarmistus
