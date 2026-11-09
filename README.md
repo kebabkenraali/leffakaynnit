@@ -131,6 +131,27 @@ git push origin main:gh-pages
 
 MIT License – vapaa käyttö, muokkaus ja jakelu. Ks. [LICENSE](LICENSE).
 
+## 💡 Kehitysideat (Roadmap)
+
+Priorisoitu lista jatkokehityksestä. Ensimmäiset palvelevat suoraan sovelluksen pääideaa eli herkkukulujen hillitsemistä.
+
+### Korkea prioriteetti
+- **Herkkujen vaikutus jo lisäysdialogissa** – kulut näkyvät nyt vasta tallennuksen jälkeen. Dialogi voisi näyttää reaaliajassa esim. "36,90 € herkut siirtävät tavoitetta 2,5 käynnillä". Palautteen siirtäminen juuri ostopäätökseen on tehokkain tapa hillitä herkkukuluja.
+- **Kuukausibudjetti herkuille** – asetettava kuukausiraja (esim. 30 €/kk) ja sen täyttöä seuraava mittari kuukausitilastoissa. Herkkubudjetti (v17) on keskiarvopohjainen luku; kuukausibudjetti olisi konkreettinen ennakollinen raja.
+- **Kauden vaihto -apuri** – kun kausi on päättynyt, sovellus voisi ehdottaa uuden kauden päivämääriä ja muistuttaa vuosimaksun päivitystä. Nyt uusi kausi täytyy muistaa syöttää itse, muuten käynnit jäävät hiljalleen laskuista pois.
+- **Ennusteviiva säästökaavioon** – kertynyt säästö jatkuu katkoviivalla viimeisen 30 päivän tahtiin kauden loppuun asti, jolloin tavoitteen saavuttamishetken näkee jo etukäteen.
+
+### Keskitaso
+- **Automatisoidut testit laskennalle** – `computeVisits`, `computeSummary`, `monthStats` ja herkkutavoitekaavat ovat helposti testattavissa, mikä estäisi regressiot refaktoroinneissa. Testejä ei vielä ole.
+- **Excel-lukija toimimaan myös offlineen** – SheetJS ladataan CDN:stä, joten tuonti ei toimi ilman verkkoa. Lukijan vieminen service workerin `ASSETS`-listaan tai kevyt oma parseri täydentäisi offline-käytön.
+- **Vuosimaksun suorituspäivä** – maksupäivä kauden alkupäivän sijaan säästökaavion nollapisteeksi, jolloin ensimmäinen miinuspiste vastaa todellista maksuhetkeä.
+- **Tilausvaihtoehtojen vertailu** – Premium vs. peruskortti vs. pelkät liput samalla datalla.
+
+### Matala prioriteetti
+- **Kirjaamismuistutukset** – selaimen notifikaatio "Kirjasitko leffakäynnin?" illalla, jos kauden sisäiselle käynnille ei ole merkintää.
+- **Monivuotinen historia** – usean kauden vertailu (esim. herkkukulut per käynti eri vuosina) kannustaa pitkäjänteiseen seurantaan.
+- **Useampi käyttäjäprofiili** – perheen tai parin tilaus voi olla yhteinen; jokaisen omien herkkukulujen erittely toisi tarkemman kuvan.
+
 ## 🤝 Avustukset
 
 Pull requestit ovat tervetulleita! Ehdota parannuksia tai raportoi bugeja Issues-välilehdellä.
