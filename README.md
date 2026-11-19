@@ -127,7 +127,7 @@ Avaa `tests.html` selaimessa:
 - uudet laskentamuutokset tarvitsevat oman testitapauksen `tests.js`-tiedostoon
 
 ### Service Worker -päivitys
-Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v21`), `index.html`:n `app.js?v=21` ja `style.css?v=21` sekä `tests.html`:n `app.js?v=21` ja `tests.js?v=21` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
+Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v22`), `index.html`:n `app.js?v=22` ja `style.css?v=22` sekä `tests.html`:n `app.js?v=22` ja `tests.js?v=22` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
 
 ### Julkaisu
 GitHub Pages julkaisee `gh-pages`-haaran. Kehitys tehdään `main`-haarassa, ja julkaisu on sama commit molempiin:

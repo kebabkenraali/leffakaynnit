@@ -1,11 +1,316 @@
 'use strict';
 
+// ---------- Käännökset (i18n) ----------
+const I18N = {
+  fi: {
+    appTitle: 'Leffakäynnit',
+    heroLabel: 'Leffakäynnin hinta nyt',
+    heroSub: 'vuosimaksu ÷ käynnit',
+    snacksAndOther: 'Herkut ja muut mukana',
+    visits: 'Käynnit',
+    latestMovie: 'Viimeisin leffa',
+    treatGoal: 'Herkkutavoite',
+    season: 'Kausi',
+    dateWarningSuffix: 'jää laskuista pois',
+    dateWarningFix: 'Korjaa päivä napauttamalla käyntiä Käynnit-sivulla.',
+    rolloverTitle: 'Kausi on päättynyt',
+    rolloverText: 'Kausi päättyi {end}. Uudet käynnit jäävät laskuista, kunnes kauden päivämäärät on päivitetty.',
+    rolloverSettings: 'Muokkaa asetuksia',
+    rolloverAdvance: 'Kausi vuodella eteenpäin',
+    rolloverToast: 'Kausi siirretty vuodella eteenpäin – tarkista vuosimaksu ja lipun hinta Asetuksista',
+    premiumVsTicket: 'Premium vs. sarjalippu',
+    treatGoalCard: 'Herkkutavoite',
+    snacksTotal: 'Herkut yhteensä',
+    snacksBought: 'Herkkuja ostettu',
+    seasonLeft: 'Kautta jäljellä',
+    forecastEnd: 'Ennuste kauden lopussa (30 pv tahti)',
+    savingsVsTickets: 'Säästö vs. sarjaliput',
+    accumulatedSavings: 'Kertynyt säästö vs. sarjaliput',
+    monthly: 'Kuukausittain',
+    monthlyFootnote: 'Kuukauden lopun tilanne: vuosimaksu jaetaan kaikilla siihen mennessä kertyneillä käynneillä. Säästö = pelkkä lippu, + herkut = herkut ja muut kulut vähennettynä.',
+    movieStats: 'Elokuvatilastot',
+    mostWatched: 'Eniten katsottu',
+    visitCount: 'Käyntejä',
+    mostExpensive: 'Eniten maksanut (kaikki käynnit + herkut)',
+    total: 'Yhteensä',
+    ratings: 'Arvosanat',
+    searchPlaceholder: 'Hae elokuvaa…',
+    emptyVisits: 'Ei vielä käyntejä. Lisää ensimmäinen +-napista tai tuo Excel Asetuksista.',
+    settings: 'Asetukset',
+    subscription: 'Tilaus',
+    annualFee: 'Premium-vuosimaksu (€)',
+    ticketPrice: 'Sarjalipun hinta vertailuun (€/lippu)',
+    seasonStart: 'Kausi alkaa',
+    seasonEnd: 'Kausi päättyy',
+    feeDate: 'Vuosimaksun maksupäivä (valinnainen, säästökaavion nollapiste)',
+    snackBudget: 'Kuukausibudjetti herkuille (€/kk, 0 = ei budjettia)',
+    snackBudgetLabel: 'Herkkubudjetti tässä kuussa',
+    snackBudgetExceeded: 'Budjetti ylittynyt',
+    snackBudgetExceededDesc: 'lisäherkkuostokset viivästyttävät herkkutavoitetta.',
+    snackBudgetLeft: 'Budjettia jäljellä {amount} loppukuulle.',
+    behind: 'käynnin takana',
+    defaultTheater: 'Oletusteatteri (esitäytetään uusiin käynteihin)',
+    save: 'Tallenna',
+    settingsSaved: 'Asetukset tallennettu',
+    localFolder: 'Paikallinen kansio (vain tietokone)',
+    localFolderDesc: 'Chrome/Edge tietokoneella: varmuuskopiot tallentuvat valittuun kansioon, esim. OneDrive-synkronointikansioon.',
+    pickFolder: 'Valitse kansio',
+    autoCloudSave: 'Tallenna kansioon automaattisesti joka muutoksen jälkeen',
+    importExcel: 'Tuo Excelistä',
+    importExcelDesc: 'Valitse Finnkino_Premium_Seuranta.xlsx. Sovellus lukee välilehden, jossa on sarakkeet Päivä, Elokuva ja Herkut €.',
+    importResultReading: 'Luetaan…',
+    backup: 'Varmuuskopio',
+    backupDesc: 'Tiedot tallentuvat vain tähän selaimeen. Varmuuskopio tallentuu puhelimen tiedostoihin (Lataukset-kansio tai jakovalikko), ei selaimen välimuistiin.',
+    noBackupYet: 'Ei vielä varmuuskopiota',
+    lastBackup: 'Viimeisin varmuuskopio: {date}',
+    autoLocalBackup: 'Tallenna varmuuskopio puhelimeen automaattisesti kerran päivässä (muutoksen jälkeen)',
+    downloadBackup: 'Lataa varmuuskopio (.json)',
+    restoreBackup: 'Palauta varmuuskopio',
+    copyClipboard: 'Kopioi leikepöydälle',
+    exportCsv: 'Vie CSV (Exceliin)',
+    clearAll: 'Poista kaikki käynnit',
+    iosHint: 'iPhone/iPad: lisää sovellus Koti-valikkoon (Jaa → Lisää Koti-valikkoon), jotta selain ei poista tietoja 7 päivän käyttämättömyyden jälkeen. Varmuuskopioi säännöllisesti (Lataa varmuuskopio → Mail).',
+    importFileInvalid: 'Tiedosto ei ole kelvollinen varmuuskopio',
+    restoreConfirm: 'Palautetaanko {n} käyntiä? Nykyiset tiedot korvataan.',
+    backupRestored: 'Varmuuskopio palautettu',
+    backupDownloaded: 'Varmuuskopio tallennettu',
+    backupCopied: 'Varmuuskopio kopioitu leikepöydälle',
+    copyFailed: 'Kopiointi epäonnistui: {msg}',
+    cloudFolderSelected: 'Valittu: {name}',
+    cloudFolderPickFailed: 'Kansion valinta epäonnistui: {msg}',
+    cloudFolderUnsupported: 'Selaimesi ei tue kansiovalintaa (tarvitaan Chrome/Edge 86+)',
+    cloudAccessConfirm: 'Vahvista kansion lupa painamalla Asetuksissa "Valitse kansio"',
+    cloudSaveFailed: 'Tallennus kansioon epäonnistui: {msg}',
+    cloudPermissionGranted: 'Kansion lupa vahvistettu',
+    cloudFolderPicked: 'Kansio valittu',
+    backupReminder: 'Muista varmuuskopio: Asetukset → Lataa varmuuskopio (jakovalikko)',
+    backupSavedDesktop: 'Varmuuskopio tallennettu Lataukset-kansioon',
+    backupSavedPhone: 'Varmuuskopio tallennettu puhelimeen',
+    backupOldReminder: 'Muista varmuuskopio: Asetukset → Lataa varmuuskopio',
+    visitSaved: 'Tallennettu',
+    visitSavedNumber: 'Käynti #{n} – leffan hinta nyt {price}',
+    visitNotCounted: t('visitNotCounted'),
+    visitDeleted: 'Käynti poistettu',
+    saveFailed: 'Tallennus epäonnistui – ota varmuuskopio!',
+    allVisitsCleared: 'Kaikki käynnit poistettu',
+    clearConfirm: 'Poistetaanko KAIKKI käynnit? Tätä ei voi perua.',
+    deleteConfirm: 'Poistetaanko tämä käynti?',
+    importReading: 'Luetaan…',
+    importDone: 'Tuotiin {n} käyntiä välilehdeltä “{sheet}”.',
+    importOutside: 'Huom: {n} käynnin päivä on kauden ulkopuolella tai tulevaisuudessa – tarkista: {list}',
+    importNoVisits: 'Taulukosta ei löytynyt käyntejä (sarakkeet Päivä ja Elokuva).',
+    importReplacePrompt: 'Löytyi {n} käyntiä. OK = korvaa nykyiset {m} käyntiä, Peruuta = lisää vain uudet.',
+    xlsxLoadFailed: 'Excel-lukijan lataus epäonnistui (tarvitaan verkkoyhteys)',
+    newVisit: 'Uusi käynti',
+    editVisit: 'Muokkaa käyntiä',
+    dialogDate: 'Päivä',
+    dialogMovie: 'Elokuva',
+    dialogTheater: 'Teatteri (valinnainen)',
+    dialogSnacks: 'Herkut €',
+    dialogOther: 'Muut kulut €',
+    dialogRating: 'Arvosana (valinnainen)',
+    dialogNote: 'Muistiinpano',
+    dialogNotePlaceholder: 'esim. 4DX, seuralainen…',
+    dialogPreviewHidden: 'Päivä jää laskuista pois: tulevaisuudessa tai kauden ulkopuolella.',
+    dialogCancel: 'Peruuta',
+    dialogSave: 'Tallenna',
+    dialogDelete: 'Poista',
+    ratingStar: '{n} tähti',
+    ratingStars: '{n} tähteä',
+    futureDate: 'tarkista päivä',
+    notCounted: 'ei laskettu',
+    premiumPaidBack: 'Premium on maksanut itsensä takaisin! Jokainen käynti nyt on puhdasta voittoa sarjalippuun verrattuna.',
+    premiumNeed: 'Vielä {n} käyntiä, niin Premium on halvempi kuin sarjalippu ({price}/lippu).',
+    treatGoalReached: 'Tavoite saavutettu! Käynnin keskihinta kaikkia kuluja laskien on {price}, eli alle sarjalipun hinnan ({ticket}).',
+    treatBudget: 'Voit käyttää herkkuihin joka käynnillä jopa {budget} – niin paljon jää yli pelkän lipun hinnasta (sarjalippu {ticket}), ilman että Premium kallistuisi lippujen ostamista erikseen vastaavaksi.',
+    treatGoalLeft: 'Katso vielä {n} {unit} ilman herkkuja tai muita kuluja, niin käynnin keskihinta kaikkia kuluja laskien alittaa sarjalipun hinnan ({ticket}).',
+    treatGoalMovie: 'leffa',
+    treatGoalMovies: 'leffaa',
+    treatGoalDelay: 'Pelkkä vuosimaksu vaatisi {be} käynnin: herkut ja muut kulut ({amount}) ovat siirtäneet tavoitetta {delay} käynnillä.',
+    treatGoalNoDelay: 'Herkut ja muut kulut ({amount}) eivät ole vielä siirtäneet tavoitetta.',
+    treatGoalEmpty: 'Lisää käyntejä ja tarkista asetusten vuosimaksu sekä sarjalipun hinta, niin tämä kertoo montako leffaa pitää katsoa ilman herkkuja, jotta käynnin hinta alittaa lipun hinnan.',
+    noVisitsForSavings: 'Lisää käyntejä nähdäksesi säästön.',
+    noVisitsForChart: 'Kaavio näkyy, kun käyntejä on lisätty.',
+    noVisitsForMonths: 'Ei käyntejä',
+    ratingsEmpty: 'Anna käynnille 1–5 tähteä käynnin lomakkeessa, niin näet täällä keskiarvon ja parhaat elokuvat.',
+    ratingsAvg: 'keskiarvo · {rated} / {total} käyntiä arvioitu',
+    bestMovies: 'Parhaat',
+    worstMovies: 'Heikoimmat',
+    langLabel: 'Kieli / Language',
+    langFi: 'Suomi',
+    langEn: 'English',
+  },
+  en: {
+    appTitle: 'Movie Visits',
+    heroLabel: 'Cost per visit now',
+    heroSub: 'annual fee ÷ visits',
+    snacksAndOther: 'Snacks & other included',
+    visits: 'Visits',
+    latestMovie: 'Latest movie',
+    treatGoal: 'Treat goal',
+    season: 'Season',
+    dateWarningSuffix: 'excluded from calculations',
+    dateWarningFix: 'Fix the date by tapping the visit on the Visits page.',
+    rolloverTitle: 'Season has ended',
+    rolloverText: 'Season ended on {end}. New visits are excluded until season dates are updated.',
+    rolloverSettings: 'Edit settings',
+    rolloverAdvance: 'Advance season by one year',
+    rolloverToast: 'Season advanced by one year – check annual fee and ticket price in Settings',
+    premiumVsTicket: 'Premium vs. ticket book',
+    treatGoalCard: 'Treat goal',
+    snacksTotal: 'Snacks total',
+    snacksBought: 'Snacks bought',
+    seasonLeft: 'Season left',
+    forecastEnd: 'Forecast at season end (30-day pace)',
+    savingsVsTickets: 'Savings vs. tickets',
+    accumulatedSavings: 'Accumulated savings vs. tickets',
+    monthly: 'Monthly',
+    monthlyFootnote: 'End-of-month situation: annual fee divided by all visits so far. Savings = ticket only; + snacks = snacks and other costs deducted.',
+    movieStats: 'Movie stats',
+    mostWatched: 'Most watched',
+    visitCount: 'Visits',
+    mostExpensive: 'Most expensive (all visits + snacks)',
+    total: 'Total',
+    ratings: 'Ratings',
+    searchPlaceholder: 'Search movie…',
+    emptyVisits: 'No visits yet. Add the first one with the + button or import from Excel in Settings.',
+    settings: 'Settings',
+    subscription: 'Subscription',
+    annualFee: 'Premium annual fee (€)',
+    ticketPrice: 'Ticket price for comparison (€/ticket)',
+    seasonStart: 'Season starts',
+    seasonEnd: 'Season ends',
+    feeDate: 'Annual fee payment date (optional, savings chart zero point)',
+    snackBudget: 'Monthly snack budget (€/month, 0 = none)',
+    snackBudgetLabel: 'Snack budget this month',
+    snackBudgetExceeded: 'Budget exceeded',
+    snackBudgetExceededDesc: 'extra snack purchases delay the treat goal.',
+    snackBudgetLeft: 'Budget left {amount} for the rest of the month.',
+    behind: 'visits behind',
+    defaultTheater: 'Default theater (prefilled for new visits)',
+    save: 'Save',
+    settingsSaved: 'Settings saved',
+    localFolder: 'Local folder (desktop only)',
+    localFolderDesc: 'Chrome/Edge on desktop: backups are saved to a chosen folder, e.g. a OneDrive sync folder.',
+    pickFolder: 'Choose folder',
+    autoCloudSave: 'Save to folder automatically after every change',
+    importExcel: 'Import from Excel',
+    importExcelDesc: 'Select Finnkino_Premium_Seuranta.xlsx. The app reads the sheet with columns Day, Movie and Snacks €.',
+    importResultReading: 'Reading…',
+    backup: 'Backup',
+    backupDesc: 'Data is stored only in this browser. Backups are saved to the phone\'s files (Downloads folder or share sheet), not browser cache.',
+    noBackupYet: 'No backup yet',
+    lastBackup: 'Last backup: {date}',
+    autoLocalBackup: 'Save backup to phone automatically once a day (after a change)',
+    downloadBackup: 'Download backup (.json)',
+    restoreBackup: 'Restore backup',
+    copyClipboard: 'Copy to clipboard',
+    exportCsv: 'Export CSV (to Excel)',
+    clearAll: 'Delete all visits',
+    iosHint: 'iPhone/iPad: add the app to the Home Screen (Share → Add to Home Screen) so the browser does not delete data after 7 days of inactivity. Back up regularly (Download backup → Mail).',
+    importFileInvalid: 'File is not a valid backup',
+    restoreConfirm: 'Restore {n} visits? Current data will be replaced.',
+    backupRestored: 'Backup restored',
+    backupDownloaded: 'Backup saved',
+    backupCopied: 'Backup copied to clipboard',
+    copyFailed: 'Copy failed: {msg}',
+    cloudFolderSelected: 'Selected: {name}',
+    cloudFolderPickFailed: 'Folder selection failed: {msg}',
+    cloudFolderUnsupported: 'Your browser does not support folder selection (Chrome/Edge 86+ required)',
+    cloudAccessConfirm: 'Confirm folder access by pressing "Choose folder" in Settings',
+    cloudSaveFailed: 'Saving to folder failed: {msg}',
+    cloudPermissionGranted: 'Folder access confirmed',
+    cloudFolderPicked: 'Folder selected',
+    backupReminder: 'Remember to back up: Settings → Download backup (share sheet)',
+    backupSavedDesktop: 'Backup saved to Downloads folder',
+    backupSavedPhone: 'Backup saved to phone',
+    backupOldReminder: 'Remember to back up: Settings → Download backup',
+    visitSaved: 'Saved',
+    visitSavedNumber: 'Visit #{n} – cost per visit now {price}',
+    visitNotCounted: 'Saved, but not counted: date is in the future or outside the season',
+    visitDeleted: 'Visit deleted',
+    saveFailed: 'Save failed – take a backup!',
+    allVisitsCleared: 'All visits deleted',
+    clearConfirm: 'Delete ALL visits? This cannot be undone.',
+    deleteConfirm: 'Delete this visit?',
+    importReading: 'Reading…',
+    importDone: 'Imported {n} visits from sheet “{sheet}”.',
+    importOutside: 'Note: {n} visit(s) have a date outside the season or in the future – check: {list}',
+    importNoVisits: 'No visits found in the sheet (columns Day and Movie).',
+    importReplacePrompt: 'Found {n} visits. OK = replace current {m} visits, Cancel = add only new ones.',
+    xlsxLoadFailed: 'Failed to load Excel reader (network connection required)',
+    newVisit: 'New visit',
+    editVisit: 'Edit visit',
+    dialogDate: 'Date',
+    dialogMovie: 'Movie',
+    dialogTheater: 'Theater (optional)',
+    dialogSnacks: 'Snacks €',
+    dialogOther: 'Other costs €',
+    dialogRating: 'Rating (optional)',
+    dialogNote: 'Note',
+    dialogNotePlaceholder: 'e.g. 4DX, companion…',
+    dialogPreviewHidden: 'Date excluded from calculations: in the future or outside the season.',
+    dialogCancel: 'Cancel',
+    dialogSave: 'Save',
+    dialogDelete: 'Delete',
+    ratingStar: '{n} star',
+    ratingStars: '{n} stars',
+    futureDate: 'check date',
+    notCounted: 'not counted',
+    premiumPaidBack: 'Premium has paid for itself! Every visit now is pure profit compared to a ticket book.',
+    premiumNeed: 'Still {n} visits until Premium is cheaper than a ticket book ({price}/ticket).',
+    treatGoalReached: 'Goal reached! Cost per visit including all costs is {price}, below the ticket price ({ticket}).',
+    treatBudget: 'You can spend up to {budget} on snacks per visit – that much is left over from the ticket price (ticket {ticket}), without Premium becoming more expensive than buying tickets separately.',
+    treatGoalLeft: 'Watch {n} more {unit} without snacks or other costs, so the cost per visit including all costs falls below the ticket price ({ticket}).',
+    treatGoalMovie: 'movie',
+    treatGoalMovies: 'movies',
+    treatGoalDelay: 'The annual fee alone would require {be} visits: snacks and other costs ({amount}) have delayed the goal by {delay} visits.',
+    treatGoalNoDelay: 'Snacks and other costs ({amount}) have not yet delayed the goal.',
+    treatGoalEmpty: 'Add visits and check the annual fee and ticket price in settings, and this will tell you how many movies to watch without snacks so the cost per visit falls below the ticket price.',
+    noVisitsForSavings: 'Add visits to see savings.',
+    noVisitsForChart: 'Chart appears once visits are added.',
+    noVisitsForMonths: 'No visits',
+    ratingsEmpty: 'Rate a visit 1–5 stars in the visit form to see the average and best movies here.',
+    ratingsAvg: 'average · {rated} / {total} visits rated',
+    bestMovies: 'Best',
+    worstMovies: 'Worst',
+    langLabel: 'Language / Kieli',
+    langFi: 'Suomi',
+    langEn: 'English',
+  }
+};
+
+let currentLang = 'fi';
+function t(key, vars) {
+  const dict = I18N[currentLang] || I18N.fi;
+  let s = (dict[key] != null) ? dict[key] : ((I18N.fi[key] != null) ? I18N.fi[key] : key);
+  if (vars) {
+    for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  }
+  return s;
+}
+function setLang(lang) {
+  if (!I18N[lang]) return;
+  currentLang = lang;
+  if (typeof state !== 'undefined' && state && state.settings) state.settings.lang = lang;
+  applyTranslations();
+  if (typeof render === 'function') render();
+}
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  document.documentElement.lang = currentLang;
+}
+
 const STORAGE_KEY = 'leffakaynnit.v1';
 const XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 const DAY = 86400000;
 
 const DEFAULT_STATE = {
   settings: {
+    lang: 'fi',
     annualFee: 372.90,
     ticketPrice: 14.45,
     seasonStart: '2026-09-01',
@@ -55,7 +360,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot()));
   } catch {
-    toast('Tallennus epäonnistui – ota varmuuskopio!');
+    toast(t('saveFailed'));
   }
 }
 
@@ -105,6 +410,8 @@ async function restoreCloudHandle() {
 }
 
 let state = load();
+currentLang = (state.settings && state.settings.lang) || 'fi';
+if (!I18N[currentLang]) currentLang = 'fi';
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const num = (v) => {
@@ -285,11 +592,11 @@ function renderSummary(rows, sum) {
 
   const pct = sum.breakEven ? Math.min(100, (sum.n / sum.breakEven) * 100) : 0;
   $('#be-bar').style.width = pct + '%';
-  $('#be-label').textContent = `${sum.n} / ${sum.breakEven} käyntiä`;
+  $('#be-label').textContent = `${sum.n} / ${sum.breakEven} ${t('visits').toLowerCase()}`;
   $('#be-text').textContent =
     sum.n >= sum.breakEven
-      ? `Premium on maksanut itsensä takaisin! Jokainen käynti nyt on puhdasta voittoa sarjalippuun verrattuna.`
-      : `Vielä ${sum.breakEven - sum.n} käyntiä, niin Premium on halvempi kuin sarjalippu (${eur.format(s.ticketPrice)}/lippu).`;
+      ? t('premiumPaidBack')
+      : t('premiumNeed', {n: sum.breakEven - sum.n, price: eur.format(s.ticketPrice)});
 
   renderSnackGoal(sum);
 
@@ -297,9 +604,9 @@ function renderSummary(rows, sum) {
   const warn = $('#date-warning');
   warn.hidden = !suspects.length;
   warn.innerHTML = suspects.length
-    ? `<strong>${suspects.length === 1 ? '1 käynti jää' : `${suspects.length} käyntiä jää`} laskuista pois</strong><br><span class="small">Päivä on tulevaisuudessa tai kauden ulkopuolella: ` +
+    ? `<strong>${suspects.length} ${t('dateWarningSuffix')}</strong><br><span class="small">${t('dateWarningPrefix')}: ` +
       suspects.map((v) => `${esc(v.title)} (${fmtDate(v.date)})`).join(', ') +
-      '. Korjaa päivä napauttamalla käyntiä Käynnit-sivulla.</span>'
+      '. ' + t('dateWarningFix') + '</span>'
     : '';
 
   renderRollover();
@@ -344,7 +651,7 @@ function renderRollover() {
   $('#rollover').hidden = !expired;
   if (expired) {
     $('#rollover-text').textContent =
-      `Kausi päättyi ${fmtDate(s.seasonEnd)}. Uudet käynnit jäävät laskuista, kunnes kauden päivämäärät on päivitetty.`;
+      t('rolloverText', {end: fmtDate(s.seasonEnd)});
   }
 }
 
@@ -363,11 +670,11 @@ function renderSnackBudget(months) {
   const pct = Math.min(100, (spent / budget) * 100);
   el.hidden = false;
   el.innerHTML = `
-    <div class="row-between"><strong>Herkkubudjetti tässä kuussa</strong><span>${eur.format(spent)} / ${eur.format(budget)}</span></div>
+    <div class="row-between"><strong>${t('snackBudgetLabel')}</strong><span>${eur.format(spent)} / ${eur.format(budget)}</span></div>
     <div class="bar"><div style="width:${pct}%;${spent > budget ? 'background:var(--bad)' : ''}"></div></div>
     <div class="small">${spent > budget
-      ? '<span class="bad">Budjetti ylittynyt</span> – lisäherkkuostokset viivästyttävät herkkutavoitetta.'
-      : `Budjettia jäljellä ${eur.format(budget - spent)} loppukuulle.`}</div>`;
+      ? '<span class="bad">' + t('snackBudgetExceeded') + '</span> – ' + t('snackBudgetExceededDesc')
+      : t('snackBudgetLeft', {amount: eur.format(budget - spent)})}</div>`;
 }
 
 /** Herkkutavoite: montako leffaa pitää katsoa ilman herkkuja ja muita kuluja, jotta
@@ -383,26 +690,25 @@ function renderSnackGoal(sum) {
   if (!sum.n || sum.snackGoalTotal == null) {
     bar.style.width = '0';
     label.textContent = '';
-    text.innerHTML = 'Lisää käyntejä ja tarkista asetusten vuosimaksu sekä sarjalipun hinta, niin tämä kertoo montako leffaa pitää katsoa ilman herkkuja, jotta käynnin hinta alittaa lipun hinnan.';
+    text.innerHTML = t('treatGoalEmpty');
     budget.textContent = '';
     return;
   }
   if (sum.snackGoalLeft <= 0) {
     bar.style.width = '100%';
-    label.textContent = `${sum.n} käynnin takana`;
-    text.innerHTML = `Tavoite saavutettu! Käynnin keskihinta kaikkia kuluja laskien on <span class="good">${eur.format(sum.withExtras)}</span>, eli alle sarjalipun hinnan (${eur.format(s.ticketPrice)}).`;
-    budget.innerHTML = `Voit käyttää herkkuihin joka käynnillä jopa <strong class="good">${eur.format(sum.treatBudget)}</strong> – niin paljon jää yli pelkän lipun hinnasta (sarjalippu ${eur.format(s.ticketPrice)}), ilman että Premium kallistuisi lippujen ostamista erikseen vastaavaksi.`;
+    label.textContent = `${sum.n} ${t('behind')}`;
+    text.innerHTML = t('treatGoalReached', {price: eur.format(sum.withExtras), ticket: eur.format(s.ticketPrice)});
+    budget.innerHTML = t('treatBudget', {budget: eur.format(sum.treatBudget), ticket: eur.format(s.ticketPrice)});
     return;
   }
   bar.style.width = Math.min(100, (sum.n / sum.snackGoalTotal) * 100) + '%';
-  label.textContent = `${sum.n} / ${sum.snackGoalTotal} käyntiä`;
+  label.textContent = `${sum.n} / ${sum.snackGoalTotal} ${t('visits').toLowerCase()}`;
   text.innerHTML =
-    `Katso vielä <strong>${sum.snackGoalLeft}</strong> ${sum.snackGoalLeft === 1 ? 'leffa' : 'leffaa'} ilman herkkuja tai muita kuluja, ` +
-    `niin käynnin keskihinta kaikkia kuluja laskien alittaa sarjalipun hinnan (${eur.format(s.ticketPrice)}).`;
+    t('treatGoalLeft', {n: sum.snackGoalLeft, unit: (sum.snackGoalLeft === 1 ? t('treatGoalMovie') : t('treatGoalMovies')), ticket: eur.format(s.ticketPrice)});
   budget.innerHTML =
     sum.snackDelay > 0
-      ? `Pelkkä vuosimaksu vaatisi ${sum.breakEven} käynnin: herkut ja muut kulut (${eur.format(sum.snacks + sum.other)}) ovat siirtäneet tavoitetta ${sum.snackDelay} käynnillä.`
-      : `Herkut ja muut kulut (${eur.format(sum.snacks + sum.other)}) eivät ole vielä siirtäneet tavoitetta.`;
+      ? t('treatGoalDelay', {be: sum.breakEven, amount: eur.format(sum.snacks + sum.other), delay: sum.snackDelay})
+      : t('treatGoalNoDelay', {amount: eur.format(sum.snacks + sum.other)});
 }
 
 /** Arvosanat: keskiarvo, jakauma sekä parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). */
@@ -410,7 +716,7 @@ function renderRatings(rows) {
   const el = $('#ratings');
   const rated = rows.filter((r) => r.rating > 0);
   if (!rated.length) {
-    el.innerHTML = '<p class="muted small">Anna käynnille 1–5 tähteä käynnin lomakkeessa, niin näet täällä keskiarvon ja parhaat elokuvat.</p>';
+    el.innerHTML = '<p class="muted small">' + t('ratingsEmpty') + '</p>';
     return;
   }
   const fmt1 = (v) => v.toFixed(1).replace('.', ',');
@@ -458,7 +764,7 @@ function renderSavingsCompare(sum) {
   const s = state.settings;
   const el = $('#savings-compare');
   if (!sum.n) {
-    el.innerHTML = '<p class="muted small">Lisää käyntejä nähdäksesi säästön.</p>';
+    el.innerHTML = '<p class="muted small">' + t('noVisitsForSavings') + '</p>';
     return;
   }
   const money = (v) => eur.format(v);
@@ -484,6 +790,8 @@ function renderSavingsCompare(sum) {
 }
 
 const MONTH_NAMES =['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
+const MONTH_NAMES_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function monthNames() { return (typeof currentLang !== 'undefined' && currentLang === 'en') ? MONTH_NAMES_EN : MONTH_NAMES; }
 
 /**
  * Kuukausikohtaiset luvut kauden alusta kuluvaan kuukauteen, myös kuukaudet ilman käyntejä.
@@ -509,8 +817,8 @@ function monthStats(rows) {
     const cumExtras = upTo.reduce((a, r) => a + (r.snacks || 0) + (r.other || 0), 0);
     months.push({
       key,
-      label: `${MONTH_NAMES[m - 1]} ${String(y).slice(2)}`,
-      short: MONTH_NAMES[m - 1].slice(0, 3),
+      label: `${monthNames()[m - 1]} ${String(y).slice(2)}`,
+      short: monthNames()[m - 1].slice(0, 3),
       count: inMonth.length,
       snacks: inMonth.reduce((a, r) => a + (r.snacks || 0), 0),
       movie: cumCount ? s.annualFee / cumCount : null,
@@ -529,7 +837,7 @@ function renderMonths(months, visitCount) {
         .map((m) => `<tr><td>${m.label}</td><td>${m.count}</td><td>${eur.format(m.snacks)}</td>
           <td>${fmt(m.movie)}</td><td>${signed(m.saving)}</td><td>${signed(m.savingAll)}</td></tr>`)
         .join('')
-    : '<tr><td colspan="6" class="muted">Ei käyntejä</td></tr>';
+    : '<tr><td colspan="6" class="muted">' + t('noVisitsForMonths') + '</td></tr>';
   renderVisitsChart(months, visitCount);
 }
 
@@ -574,7 +882,7 @@ function renderVisitsChart(months, visitCount) {
 function renderSavingsChart(months, visitCount, sum) {
   const el = $('#savings-chart');
   if (!visitCount) {
-    el.innerHTML = '<p class="muted small">Kaavio näkyy, kun käyntejä on lisätty.</p>';
+    el.innerHTML = '<p class="muted small">' + t('noVisitsForChart') + '</p>';
     return;
   }
   const s = state.settings;
@@ -807,19 +1115,19 @@ form.addEventListener('submit', (e) => {
   dialog.close();
   const rows = computeVisits();
   const me = rows.find((r) => r.title === data.title && r.date === data.date);
-  if (!me) toast('Tallennettu, mutta ei lasketa: päivä on tulevaisuudessa tai kauden ulkopuolella');
-  else toast(id ? 'Tallennettu' : `Käynti #${me.nro} – leffan hinta nyt ${eur.format(computeSummary(rows).movie)}`);
+  if (!me) toast(t('visitNotCounted'));
+  else toast(id ? t('visitSaved') : t('visitSavedNumber', {n: me.nro, price: eur.format(computeSummary(rows).movie)}));
 });
 
 $('#delete-visit').addEventListener('click', () => {
   const id = form.id.value;
-  if (!id || !confirm('Poistetaanko tämä käynti?')) return;
+  if (!id || !confirm(t('deleteConfirm'))) return;
   state.visits = state.visits.filter((v) => v.id !== id);
   save();
   autoSaveToCloud();
   render();
   dialog.close();
-  toast('Käynti poistettu');
+  toast(t('visitDeleted'));
 });
 
 $('#search').addEventListener('input', () => renderList(computeVisits()));
@@ -848,7 +1156,7 @@ $('#rollover-advance').addEventListener('click', () => {
   autoSaveToCloud();
   fillSettings();
   render();
-  toast('Kausi siirretty vuodella eteenpäin – tarkista vuosimaksu ja lipun hinta Asetuksista');
+  toast(t('rolloverToast'));
 });
 
 // ---------- Asetukset ----------
@@ -862,6 +1170,9 @@ function fillSettings() {
     const last = state.settings.lastLocalBackup;
     bs.textContent = last ? `Viimeisin varmuuskopio: ${fmtDate(last)}` : 'Ei vielä varmuuskopiota';
   }
+  // Kielivalitsin synkronointi
+  const ls = $('#lang-select');
+  if (ls) ls.value = currentLang;
   // iOS: muistutus Koti-valikkoon lisäämisestä
   const iosHint = $('#ios-hint');
   if (iosHint) {
@@ -886,7 +1197,7 @@ sForm.addEventListener('submit', (e) => {
   save();
   autoSaveToCloud();
   render();
-  toast('Asetukset tallennettu');
+  toast(t('settingsSaved'));
 });
 
 // Kansion valinta
@@ -895,14 +1206,14 @@ $('#pick-cloud-folder').addEventListener('click', async () => {
   const saved = state.settings.cloudFolderHandle;
   if (saved && (await saved.requestPermission({ mode: 'readwrite' })) === 'granted') {
     showCloudStatus();
-    toast('Kansion lupa vahvistettu');
+    toast(t('cloudPermissionGranted'));
     return;
   }
   const handle = await pickCloudFolder();
   if (handle) {
     state.settings.cloudFolderHandle = handle;
     showCloudStatus();
-    toast('Kansio valittu');
+    toast(t('cloudFolderPicked'));
   }
 });
 
@@ -916,7 +1227,7 @@ function showCloudStatus() {
 $('#auto-cloud-save').addEventListener('change', (e) => {
   if (e.target.checked && !state.settings.cloudFolderHandle) {
     e.target.checked = false;
-    toast('Valitse ensin kansio');
+    toast(t('selectFolderFirst'));
   }
   state.settings.autoCloudSave = e.target.checked;
   save();
@@ -943,7 +1254,7 @@ async function download(name, content, type) {
 /** Avaa kansiovalikon (esim. OneDrive-synkronointikansio tietokoneella) */
 async function pickCloudFolder() {
   if (!('showDirectoryPicker' in window)) {
-    toast('Selaimesi ei tue kansiovalintaa (tarvitaan Chrome/Edge 86+)');
+    toast(t('cloudFolderUnsupported'));
     return null;
   }
   try {
@@ -952,7 +1263,7 @@ async function pickCloudFolder() {
     return handle;
   } catch (err) {
     if (err.name !== 'AbortError') {
-      toast('Kansion valinta epäonnistui: ' + err.message);
+      toast(t('cloudFolderPickFailed', {msg: err.message}));
     }
     return null;
   }
@@ -962,7 +1273,7 @@ async function pickCloudFolder() {
 async function saveToCloudFolder(handle, fileName, content, type) {
   if (!handle) return false;
   if (!(await hasCloudWriteAccess(handle))) {
-    toast('Vahvista kansion lupa painamalla Asetuksissa "Valitse kansio"');
+    toast(t('cloudAccessConfirm'));
     return false;
   }
   try {
@@ -972,7 +1283,7 @@ async function saveToCloudFolder(handle, fileName, content, type) {
     await writable.close();
     return true;
   } catch (err) {
-    toast('Tallennus kansioon epäonnistui: ' + err.message);
+    toast(t('cloudSaveFailed', {msg: err.message}));
     return false;
   }
 }
@@ -1012,7 +1323,7 @@ function runLocalBackup() {
     save();
     const bs = $('#backup-status');
     if (bs) bs.textContent = `Viimeisin varmuuskopio: ${fmtDate(today)}`;
-    toast('Muista varmuuskopio: Asetukset → Lataa varmuuskopio (jakovalikko)');
+    toast(t('backupReminder'));
     return;
   }
   saveFile(`leffakaynnit-${today}.json`, JSON.stringify(snapshot(), null, 2), 'application/json');
@@ -1020,7 +1331,7 @@ function runLocalBackup() {
   save();
   const bs = $('#backup-status');
   if (bs) bs.textContent = `Viimeisin varmuuskopio: ${fmtDate(today)}`;
-  toast('Varmuuskopio tallennettu Lataukset-kansioon');
+  toast(t('backupSavedDesktop'));
 }
 
 $('#auto-local-backup').addEventListener('change', (e) => {
@@ -1033,7 +1344,7 @@ $('#auto-local-backup').addEventListener('change', (e) => {
 function remindBackup() {
   const last = state.settings.lastLocalBackup;
   if (!state.visits.length || (last && daysBetween(last, todayIso()) < 7)) return;
-  toast('Muista varmuuskopio: Asetukset → Lataa varmuuskopio');
+  toast(t('backupOldReminder'));
 }
 
 function daysBetween(a, b) {
@@ -1073,7 +1384,7 @@ $('#copy-backup').addEventListener('click', async () => {
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
-      toast('Varmuuskopio kopioitu leikepöydälle');
+      toast(t('backupCopied'));
     } else {
       // Fallback: näytä teksti valittavana
       const ta = document.createElement('textarea');
@@ -1084,10 +1395,10 @@ $('#copy-backup').addEventListener('click', async () => {
       ta.select();
       document.execCommand('copy');
       ta.remove();
-      toast('Varmuuskopio kopioitu leikepöydälle');
+      toast(t('backupCopied'));
     }
   } catch (err) {
-    toast('Kopiointi epäonnistui: ' + err.message);
+    toast(t('copyFailed', {msg: err.message}));
   }
 });
 
@@ -1106,8 +1417,8 @@ async function restoreBackup(text) {
   } catch {
     data = null;
   }
-  if (!data || !Array.isArray(data.visits)) return toast('Tiedosto ei ole kelvollinen varmuuskopio');
-  if (!confirm(`Palautetaanko ${data.visits.length} käyntiä? Nykyiset tiedot korvataan.`)) return;
+  if (!data || !Array.isArray(data.visits)) return toast(t('importFileInvalid'));
+  if (!confirm(t('restoreConfirm', {n: data.visits.length}))) return;
   state = {
     settings: { ...DEFAULT_STATE.settings, ...data.settings, cloudFolderHandle: state.settings.cloudFolderHandle },
     visits: data.visits,
@@ -1116,7 +1427,7 @@ async function restoreBackup(text) {
   fillSettings();
   render();
   showCloudStatus();
-  toast('Varmuuskopio palautettu');
+  toast(t('backupRestored'));
 }
 
 $('#export-csv').addEventListener('click', () => {
@@ -1124,12 +1435,12 @@ $('#export-csv').addEventListener('click', () => {
 });
 
 $('#clear-all').addEventListener('click', () => {
-  if (!state.visits.length || !confirm('Poistetaanko KAIKKI käynnit? Tätä ei voi perua.')) return;
+  if (!state.visits.length || !confirm(t('clearConfirm'))) return;
   state.visits = [];
   save();
   autoSaveToCloud();
   render();
-  toast('Kaikki käynnit poistettu');
+  toast(t('allVisitsCleared'));
 });
 
 // ---------- Excel-tuonti ----------
@@ -1262,7 +1573,7 @@ $('#xlsx-file').addEventListener('change', async (e) => {
     let replace = false;
     if (state.visits.length) {
       replace = confirm(
-        `Löytyi ${found.rows.length} käyntiä. OK = korvaa nykyiset ${state.visits.length} käyntiä, Peruuta = lisää vain uudet.`
+        t('importReplacePrompt', {n: found.rows.length, m: state.visits.length})
       );
     }
     const key = (v) => v.date + '|' + v.title.toLowerCase();
@@ -1293,6 +1604,14 @@ $('#xlsx-file').addEventListener('change', async (e) => {
 
 // ---------- Käynnistys ----------
 
+// Kielivalitsin
+const langSelect = $('#lang-select');
+if (langSelect) {
+  langSelect.value = currentLang;
+  langSelect.addEventListener('change', (e) => setLang(e.target.value));
+}
+
+applyTranslations();
 fillSettings();
 $('#auto-cloud-save').checked = state.settings.autoCloudSave;
 $('#auto-local-backup').checked = state.settings.autoLocalBackup;

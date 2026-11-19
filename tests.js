@@ -30,7 +30,7 @@ const eqMoney = (a, b) => eq(a, b);
 /** Poimii laskentafunktiot app.js-lähteestä hiekkalaatikkofunktioksi.
  *  Palauttaa objektin: computeVisit jne. + setState(state) tilan asettamiseksi. */
 async function loadCalcApi() {
-  const src = await (await fetch('app.js?v=21')).text();
+  const src = await (await fetch('app.js?v=22')).text();
 
   const fnSource = (name) => {
     const m = src.match(new RegExp('function ' + name + '\\([\\s\\S]*?\\n\\}'));
@@ -47,12 +47,14 @@ async function loadCalcApi() {
     constSource('const DAY ='),
     constSource('const pad ='),
     constSource('const MONTH_NAMES'),
+    constSource('const MONTH_NAMES_EN'),
     'let state = null;',
     fnSource('todayIso'),
     fnSource('isCounted'),
     fnSource('suspectVisits'),
     fnSource('computeVisits'),
     fnSource('computeSummary'),
+    fnSource('monthNames'),
     fnSource('monthStats'),
     fnSource('parseDate'),
     'return { computeVisits, computeSummary, monthStats, parseDate, setState: (s) => { state = s; } };',
