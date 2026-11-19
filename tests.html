@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="fi">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Leffakäynnit – Laskentatestit</title>
-  <link rel="stylesheet" href="style.css?v=23">
+  <title>Leffakäynnit – Calculation tests</title>
+  <link rel="stylesheet" href="style.css?v=26">
 </head>
 <body style="max-width: 640px; margin: 0 auto; padding: 16px 12px;">
-  <h1>Laskentatestit</h1>
-  <p class="small muted">Aukaise tämä sivu selaimessa: se poimii app.js:n laskentafunktiot
-    (computeSummary, computeVisits, monthStats, herkkutavoitteet) lähteestä hiekkalaatikkoon
-    ja ajaa testit ilman käyttöliittymää. Testit eivät tallenna mitään – save()-funktiota
-    ei kutsuta, joten sovelluksen tila ei muutu.</p>
+  <h1>Calculation tests</h1>
+  <p class="small muted">Open this page in a browser: it extracts the calculation functions
+    from the app.js source (computeSummary, computeVisits, monthStats, treat goals) into a
+    sandbox and runs the tests without the user interface. The tests do not save anything –
+    save() is never called, so the app's state is unchanged.</p>
   <div id="results"></div>
-  <script src="tests.js?v=23"></script>
+  <script src="tests.js?v=26"></script>
 </body>
 </html>

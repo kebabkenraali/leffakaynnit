@@ -11,8 +11,8 @@ const I18N = {
     latestMovie: 'Viimeisin leffa',
     treatGoal: 'Herkkutavoite',
     season: 'Kausi',
-    dateWarningSuffix: 'jää laskuista pois',
     dateWarningPrefix: 'Päivä on tulevaisuudessa tai kauden ulkopuolella',
+    dateWarningSuffix: 'jää laskuista pois',
     dateWarningFix: 'Korjaa päivä napauttamalla käyntiä Käynnit-sivulla.',
     rolloverTitle: 'Kausi on päättynyt',
     rolloverText: 'Kausi päättyi {end}. Uudet käynnit jäävät laskuista, kunnes kauden päivämäärät on päivitetty.',
@@ -51,8 +51,10 @@ const I18N = {
     snackBudgetLeft: 'Budjettia jäljellä {amount} loppukuulle.',
     behind: 'käynnin takana',
     defaultTheater: 'Oletusteatteri (esitäytetään uusiin käynteihin)',
+    defaultTheaterPlaceholder: 'esim. Finnkino Tennispalatsi',
     save: 'Tallenna',
     settingsSaved: 'Asetukset tallennettu',
+    selectFolderFirst: 'Valitse ensin kansio',
     localFolder: 'Paikallinen kansio (vain tietokone)',
     localFolderDesc: 'Chrome/Edge tietokoneella: varmuuskopiot tallentuvat valittuun kansioon, esim. OneDrive-synkronointikansioon.',
     pickFolder: 'Valitse kansio',
@@ -80,7 +82,6 @@ const I18N = {
     cloudFolderSelected: 'Valittu: {name}',
     cloudFolderPickFailed: 'Kansion valinta epäonnistui: {msg}',
     cloudFolderUnsupported: 'Selaimesi ei tue kansiovalintaa (tarvitaan Chrome/Edge 86+)',
-    selectFolderFirst: 'Valitse ensin kansio',
     cloudAccessConfirm: 'Vahvista kansion lupa painamalla Asetuksissa "Valitse kansio"',
     cloudSaveFailed: 'Tallennus kansioon epäonnistui: {msg}',
     cloudPermissionGranted: 'Kansion lupa vahvistettu',
@@ -91,7 +92,7 @@ const I18N = {
     backupOldReminder: 'Muista varmuuskopio: Asetukset → Lataa varmuuskopio',
     visitSaved: 'Tallennettu',
     visitSavedNumber: 'Käynti #{n} – leffan hinta nyt {price}',
-    visitNotCounted: 'Tallennettu, mutta ei lasketa: päivä on tulevaisuudessa tai kauden ulkopuolella',
+    visitNotCounted: 'Tallennettu, mutta ei laskettu: päivä on tulevaisuudessa tai kauden ulkopuolella.',
     visitDeleted: 'Käynti poistettu',
     saveFailed: 'Tallennus epäonnistui – ota varmuuskopio!',
     allVisitsCleared: 'Kaikki käynnit poistettu',
@@ -141,6 +142,52 @@ const I18N = {
     langLabel: 'Kieli / Language',
     langFi: 'Suomi',
     langEn: 'English',
+    switchToEnglish: 'Vaihda englantiin',
+    switchToFinnish: 'Vaihda suomeen',
+    tabsSummary: 'Yhteenveto',
+    addVisit: 'Lisää käynti',
+    achieved: '✓ Saavutettu',
+    treatBudgetPerMovie: 'herkkubudjetti {amount}/leffa',
+    movieLeft: '{n} leffa',
+    moviesLeft: '{n} leffaa',
+    avgPurchase: 'keskiostos {amount}',
+    daysLeft: '{n} pv',
+    pieces: '{n} kpl',
+    monthHdr: 'Kk',
+    visitsHdr: 'Käyn.',
+    snacksHdr: 'Herkut',
+    perVisitHdr: '€/käynti',
+    savingsHdr: 'Säästö',
+    plusSnacksHdr: '+ herkut',
+    ratingAria1: '1 tähti',
+    ratingAria2: '2 tähteä',
+    ratingAria3: '3 tähteä',
+    ratingAria4: '4 tähteä',
+    ratingAria5: '5 tähteä',
+    zeroAmount: '0,00',
+    ticketOnly: 'Pelkkä lippu',
+    withSnacks: 'Herkut ja muut mukana',
+    premiumCostTotal: 'Premium-kulut yhteensä',
+    premiumPerVisit: 'Premium €/käynti',
+    ticketPerVisit: 'Sarjalippu €/käynti',
+    savingsTotal: 'Säästö yhteensä',
+    savingsPerVisit: 'Säästö / käynti',
+    premiumWorthFrom: 'Premium kannattaa alkaen',
+    approx: 'n.',
+    visitOrdinal: '{n}. käynti',
+    compareFootnote: 'Pelkkä lippu: vuosimaksu verrattuna sarjalippuihin ({n} × {price} = {tickets}). Herkut ja muut mukana: herkut {snacks} ja muut kulut {other} lasketaan Premiumin kuluiksi, sarjalippupuolelle vain liput.',
+    monthlyVisitsAria: 'Käynnit kuukausittain',
+    breakEvenLine: '0 € = Premium maksanut itsensä',
+    savingsAria: 'Kertynyt säästö sarjalippuihin verrattuna',
+    snacksMeta: 'herkut {amount}',
+    allCosts: 'kaikki kulut {amount}',
+    previewCostAfter: 'Käynnin keskihinta kaikkia kuluja laskien tämän jälkeen: ',
+    previewTicket: '(sarjalippu {ticket})',
+    previewDelay: 'Herkut ja muut kulut (+{amount}) siirtävät herkkutavoitetta n. {n} käynnin verran.',
+    previewNoDelay: 'Herkuton käynti ei siirrä herkkutavoitetta.',
+    avgAbbrev: 'ka',
+    csvHeaders: 'Käynti nro|Päivä|Elokuva|Teatteri|Herkut €|Muut kulut €|Premium €/käynti|Kaikki kulut €/käynti|Arvosana|Muistiinpano',
+    csvNotCounted: 'ei laskettu: tarkista päivä',
   },
   en: {
     appTitle: 'Movie Visits',
@@ -151,8 +198,8 @@ const I18N = {
     latestMovie: 'Latest movie',
     treatGoal: 'Treat goal',
     season: 'Season',
-    dateWarningSuffix: 'excluded from calculations',
     dateWarningPrefix: 'Date is in the future or outside the season',
+    dateWarningSuffix: 'excluded from calculations',
     dateWarningFix: 'Fix the date by tapping the visit on the Visits page.',
     rolloverTitle: 'Season has ended',
     rolloverText: 'Season ended on {end}. New visits are excluded until season dates are updated.',
@@ -191,8 +238,10 @@ const I18N = {
     snackBudgetLeft: 'Budget left {amount} for the rest of the month.',
     behind: 'visits behind',
     defaultTheater: 'Default theater (prefilled for new visits)',
+    defaultTheaterPlaceholder: 'e.g. Finnkino Tennispalatsi',
     save: 'Save',
     settingsSaved: 'Settings saved',
+    selectFolderFirst: 'Select a folder first',
     localFolder: 'Local folder (desktop only)',
     localFolderDesc: 'Chrome/Edge on desktop: backups are saved to a chosen folder, e.g. a OneDrive sync folder.',
     pickFolder: 'Choose folder',
@@ -220,7 +269,6 @@ const I18N = {
     cloudFolderSelected: 'Selected: {name}',
     cloudFolderPickFailed: 'Folder selection failed: {msg}',
     cloudFolderUnsupported: 'Your browser does not support folder selection (Chrome/Edge 86+ required)',
-    selectFolderFirst: 'Select a folder first',
     cloudAccessConfirm: 'Confirm folder access by pressing "Choose folder" in Settings',
     cloudSaveFailed: 'Saving to folder failed: {msg}',
     cloudPermissionGranted: 'Folder access confirmed',
@@ -281,6 +329,52 @@ const I18N = {
     langLabel: 'Language / Kieli',
     langFi: 'Suomi',
     langEn: 'English',
+    switchToEnglish: 'Switch to English',
+    switchToFinnish: 'Switch to Finnish',
+    tabsSummary: 'Summary',
+    addVisit: 'Add visit',
+    achieved: '✓ Achieved',
+    treatBudgetPerMovie: 'snack budget {amount}/movie',
+    movieLeft: '{n} movie',
+    moviesLeft: '{n} movies',
+    avgPurchase: 'avg. purchase {amount}',
+    daysLeft: '{n} days',
+    pieces: '{n} pcs',
+    monthHdr: 'Month',
+    visitsHdr: 'Visits',
+    snacksHdr: 'Snacks',
+    perVisitHdr: '€/visit',
+    savingsHdr: 'Savings',
+    plusSnacksHdr: '+ snacks',
+    ratingAria1: '1 star',
+    ratingAria2: '2 stars',
+    ratingAria3: '3 stars',
+    ratingAria4: '4 stars',
+    ratingAria5: '5 stars',
+    zeroAmount: '0.00',
+    ticketOnly: 'Ticket only',
+    withSnacks: 'Snacks & other included',
+    premiumCostTotal: 'Total Premium costs',
+    premiumPerVisit: 'Premium €/visit',
+    ticketPerVisit: 'Ticket €/visit',
+    savingsTotal: 'Total savings',
+    savingsPerVisit: 'Savings / visit',
+    premiumWorthFrom: 'Premium pays off from',
+    approx: '~',
+    visitOrdinal: 'visit {n}',
+    compareFootnote: 'Ticket only: annual fee compared with tickets ({n} × {price} = {tickets}). Snacks & other included: snacks {snacks} and other costs {other} are counted as Premium costs; only tickets on the ticket-book side.',
+    monthlyVisitsAria: 'Visits per month',
+    breakEvenLine: '€0 = Premium has paid for itself',
+    savingsAria: 'Accumulated savings vs. tickets',
+    snacksMeta: 'snacks {amount}',
+    allCosts: 'all costs {amount}',
+    previewCostAfter: 'Cost per visit including all costs after this visit: ',
+    previewTicket: '(ticket {ticket})',
+    previewDelay: 'Snacks and other costs (+{amount}) delay the treat goal by about {n} visits.',
+    previewNoDelay: 'A visit without snacks does not delay the treat goal.',
+    avgAbbrev: 'avg',
+    csvHeaders: 'Visit no.|Date|Movie|Theater|Snacks €|Other costs €|Premium €/visit|All costs €/visit|Rating|Note',
+    csvNotCounted: 'not counted: check date',
   }
 };
 
@@ -293,10 +387,17 @@ function t(key, vars) {
   }
   return s;
 }
+// Välilehtien tekstit päivitetään myös suoraan koodista, jotta ne kääntyvät
+// myös silloin, jos selain näyttää vanhaa HTML:ää ilman data-i18n-attribuutteja.
+const TAB_I18N = { summary: 'tabsSummary', list: 'visits', settings: 'settings' };
+
 function setLang(lang) {
   if (!I18N[lang]) return;
   currentLang = lang;
-  if (typeof state !== 'undefined' && state && state.settings) state.settings.lang = lang;
+  if (typeof state !== 'undefined' && state && state.settings) {
+    state.settings.lang = lang;
+    save(); // kielivalinta säilyy seuraavassa avauksessa
+  }
   applyTranslations();
   if (typeof render === 'function') render();
 }
@@ -305,7 +406,28 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   document.querySelectorAll('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  document.querySelectorAll('.tabs button').forEach((b) => {
+    const key = TAB_I18N[b.dataset.view];
+    if (key) b.textContent = t(key);
+  });
+  // Yläpalkin lipunappi näyttää sen kielen lipun, johon napsautuksella vaihdetaan:
+  // suomenkielisessä näkymässä USA:n lippu (-> English), englanninkielisessä Suomen lippu (-> Suomi).
+  const nextLang = currentLang === 'en' ? 'fi' : 'en';
+  const flag = $('#lang-flag');
+  if (flag) {
+    flag.src = nextLang === 'en' ? 'flag-us.svg' : 'flag-fi.svg';
+    flag.alt = nextLang === 'en' ? 'English' : 'Suomi';
+  }
+  const toggleLabel = $('#lang-toggle-label');
+  if (toggleLabel) toggleLabel.textContent = nextLang.toUpperCase();
+  const langToggle = $('#lang-toggle');
+  if (langToggle) {
+    const action = t(nextLang === 'en' ? 'switchToEnglish' : 'switchToFinnish');
+    langToggle.title = action;
+    langToggle.setAttribute('aria-label', action);
+  }
   document.documentElement.lang = currentLang;
+  document.title = t('appTitle');
 }
 
 const STORAGE_KEY = 'leffakaynnit.v1';
@@ -330,12 +452,18 @@ const DEFAULT_STATE = {
   visits: [],
 };
 
-const eur = new Intl.NumberFormat('fi-FI', { style: 'currency', currency: 'EUR' });
+// Muotoilut seuraavat valittua kieltä: suomeksi 372,90 € / 5.10.2026,
+// englanniksi €372.90 / 10/5/2026.
+const EUR_FI = new Intl.NumberFormat('fi-FI', { style: 'currency', currency: 'EUR' });
+const EUR_EN = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' });
+const eur = { format: (v) => (currentLang === 'en' ? EUR_EN : EUR_FI).format(v) };
 const pad = (n) => String(n).padStart(2, '0');
 const fmtDate = (iso) => {
+  if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
-  return `${d}.${m}.${y}`;
+  return currentLang === 'en' ? `${m}/${d}/${y}` : `${d}.${m}.${y}`;
 };
+const dec1 = (v) => currentLang === 'en' ? v.toFixed(1) : v.toFixed(1).replace('.', ',');
 const $ = (sel) => document.querySelector(sel);
 
 // ---------- Tallennus ----------
@@ -583,12 +711,12 @@ function renderSummary(rows, sum) {
     goal.textContent = '–';
     $('#h-goal-sub').textContent = '';
   } else if (sum.snackGoalLeft <= 0) {
-    goal.textContent = '✓ Saavutettu';
+    goal.textContent = t('achieved');
     $('#h-goal-sub').textContent = sum.treatBudget != null
-      ? `herkkubudjetti ${eur.format(sum.treatBudget)}/leffa`
+      ? t('treatBudgetPerMovie', {amount: eur.format(sum.treatBudget)})
       : '';
   } else {
-    goal.textContent = `${sum.snackGoalLeft} leffaa`;
+    goal.textContent = t(sum.snackGoalLeft === 1 ? 'movieLeft' : 'moviesLeft', {n: sum.snackGoalLeft});
     $('#h-goal-sub').textContent =
       `${sum.n} / ${sum.snackGoalTotal}` +
       (sum.withExtras != null ? ` · ${eur.format(sum.withExtras)} vs ${eur.format(state.settings.ticketPrice)}` : '');
@@ -617,11 +745,11 @@ function renderSummary(rows, sum) {
 
   $('#s-snacks').textContent = eur.format(sum.snacks);
   $('#s-snacks-avg').textContent = sum.n ? `${sum.snackVisits} / ${sum.n}` : '–';
-  $('#s-snacks-avg-sub').textContent = sum.snackAvg != null ? `keskiostos ${eur.format(sum.snackAvg)}` : '';
+  $('#s-snacks-avg-sub').textContent = sum.snackAvg != null ? t('avgPurchase', {amount: eur.format(sum.snackAvg)}) : '';
   renderSavingsCompare(sum);
-  $('#s-left').textContent = `${sum.daysLeft} pv`;
+  $('#s-left').textContent = t('daysLeft', {n: sum.daysLeft});
   $('#s-proj').textContent = sum.projected
-    ? `${sum.projected} kpl · ${eur.format(sum.projectedPrice)}`
+    ? `${t('pieces', {n: sum.projected})} · ${eur.format(sum.projectedPrice)}`
     : '–';
 
   // Elokuvatilastot
@@ -723,7 +851,7 @@ function renderRatings(rows) {
     el.innerHTML = '<p class="muted small">' + t('ratingsEmpty') + '</p>';
     return;
   }
-  const fmt1 = (v) => v.toFixed(1).replace('.', ',');
+  const fmt1 = dec1;
   const avg = rated.reduce((a, r) => a + r.rating, 0) / rated.length;
   const dist = [5, 4, 3, 2, 1].map((v) => ({ v, count: rated.filter((r) => r.rating === v).length }));
   const maxCount = Math.max(...dist.map((d) => d.count));
@@ -737,19 +865,19 @@ function renderRatings(rows) {
     byTitle.set(key, m);
   }
   const films = [...byTitle.values()].map((m) => ({ ...m, avg: m.sum / m.count }));
-  const byBest = (a, b) => b.avg - a.avg || a.title.localeCompare(b.title, 'fi');
+  const byBest = (a, b) => b.avg - a.avg || a.title.localeCompare(b.title, currentLang === 'en' ? 'en' : 'fi');
   const best = [...films].sort(byBest).slice(0, 3);
   // Heikoimmat vasta kun arvioituja elokuvia on tarpeeksi, ettei sama elokuva näy molemmissa listoissa
   const worst = films.length >= 6 ? [...films].sort((a, b) => -byBest(a, b)).slice(0, 3) : [];
   const list = (items) =>
     items
-      .map((f) => `<li><span class="stars-small">${stars(Math.round(f.avg))}</span> ${esc(f.title)}${f.count > 1 ? ` <span class="muted">(${f.count}×, ka ${fmt1(f.avg)})</span>` : ''}</li>`)
+      .map((f) => `<li><span class="stars-small">${stars(Math.round(f.avg))}</span> ${esc(f.title)}${f.count > 1 ? ` <span class="muted">(${f.count}×, ${t('avgAbbrev')} ${fmt1(f.avg)})</span>` : ''}</li>`)
       .join('');
 
   el.innerHTML = `
     <div class="rating-summary">
       <div class="rating-avg">★ ${fmt1(avg)}</div>
-      <div class="small muted">keskiarvo · ${rated.length} / ${rows.length} käyntiä arvioitu</div>
+      <div class="small muted">${t('ratingsAvg', {rated: rated.length, total: rows.length})}</div>
     </div>
     <div class="dist">
       ${dist
@@ -758,9 +886,9 @@ function renderRatings(rows) {
           <span>${d.count}</span></div>`)
         .join('')}
     </div>
-    <div class="small"><strong>Parhaat</strong></div>
+    <div class="small"><strong>${t('bestMovies')}</strong></div>
     <ul class="rating-list">${list(best)}</ul>
-    ${worst.length ? `<div class="small"><strong>Heikoimmat</strong></div><ul class="rating-list">${list(worst)}</ul>` : ''}`;
+    ${worst.length ? `<div class="small"><strong>${t('worstMovies')}</strong></div><ul class="rating-list">${list(worst)}</ul>` : ''}`;
 }
 
 /** Vertailu: säästö ja €/käynti ilman herkkuja ja muita kuluja sekä niiden kanssa. */
@@ -773,24 +901,27 @@ function renderSavingsCompare(sum) {
   }
   const money = (v) => eur.format(v);
   const signed = (v) => `<span class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</span>`;
-  const be = (count, estimated) => (count == null ? '–' : `${estimated ? 'n. ' : ''}${count}. käynti`);
+  const be = (count, estimated) => (count == null ? '–'
+    : (estimated ? t('approx') + ' ' : '') + t('visitOrdinal', {n: count}));
   const rowsHtml = [
-    ['Premium-kulut yhteensä', money(s.annualFee), money(sum.total)],
-    ['Premium €/käynti', money(sum.movie), money(sum.withExtras)],
-    ['Sarjalippu €/käynti', money(s.ticketPrice), money(s.ticketPrice)],
-    ['Säästö yhteensä', signed(sum.saving), signed(sum.savingAll)],
-    ['Säästö / käynti', signed(sum.saving / sum.n), signed(sum.savingAll / sum.n)],
-    ['Premium kannattaa alkaen', be(sum.breakEven, false), be(sum.breakEvenAll, sum.breakEvenAllEstimated)],
+    [t('premiumCostTotal'), money(s.annualFee), money(sum.total)],
+    [t('premiumPerVisit'), money(sum.movie), money(sum.withExtras)],
+    [t('ticketPerVisit'), money(s.ticketPrice), money(s.ticketPrice)],
+    [t('savingsTotal'), signed(sum.saving), signed(sum.savingAll)],
+    [t('savingsPerVisit'), signed(sum.saving / sum.n), signed(sum.savingAll / sum.n)],
+    [t('premiumWorthFrom'), be(sum.breakEven, false), be(sum.breakEvenAll, sum.breakEvenAllEstimated)],
   ]
     .map(([label, a, b]) => `<tr><td>${label}</td><td>${a}</td><td>${b}</td></tr>`)
     .join('');
   el.innerHTML = `
     <table class="months compare">
-      <thead><tr><th></th><th>Pelkkä lippu</th><th>Herkut ja muut mukana</th></tr></thead>
+      <thead><tr><th></th><th>${t('ticketOnly')}</th><th>${t('withSnacks')}</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    <p class="small muted">Pelkkä lippu: vuosimaksu verrattuna sarjalippuihin (${sum.n} × ${money(s.ticketPrice)} = ${money(sum.ticketsTotal)}).
-      Herkut ja muut mukana: herkut ${money(sum.snacks)} ja muut kulut ${money(sum.other)} lasketaan Premiumin kuluiksi, sarjalippupuolelle vain liput.</p>`;
+    <p class="small muted">${t('compareFootnote', {
+      n: sum.n, price: money(s.ticketPrice), tickets: money(sum.ticketsTotal),
+      snacks: money(sum.snacks), other: money(sum.other),
+    })}</p>`;
 }
 
 const MONTH_NAMES =['tammi', 'helmi', 'maalis', 'huhti', 'touko', 'kesä', 'heinä', 'elo', 'syys', 'loka', 'marras', 'joulu'];
@@ -873,7 +1004,7 @@ function renderVisitsChart(months, visitCount) {
     .join('');
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Käynnit kuukausittain">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('monthlyVisitsAria')}">
       <line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--border)"/>
       ${bars}
     </svg>`;
@@ -898,8 +1029,8 @@ function renderSavingsChart(months, visitCount, sum) {
   const syntheticStart = !feeMonth || feeMonth >= s.seasonStart.slice(0, 7);
   const labels = syntheticStart ? ['', ...months.map((m) => m.short)] : months.map((m) => m.short);
   const series = [
-    { key: 'saving', color: 'var(--accent)', label: 'Pelkkä lippu', now: sum.saving },
-    { key: 'savingAll', color: 'var(--accent-2)', label: 'Herkut ja muut mukana', now: sum.savingAll },
+    { key: 'saving', color: 'var(--accent)', label: t('ticketOnly'), now: sum.saving },
+    { key: 'savingAll', color: 'var(--accent-2)', label: t('withSnacks'), now: sum.savingAll },
   ].map((sr) => ({ ...sr, values: [...(syntheticStart ? [-s.annualFee] : []), ...months.map((m) => m[sr.key])] }));
   const vals = series.flatMap((sr) => sr.values);
   // Tasaiset akselin arvot (esim. 100 €:n välein), ja tilaa nollaviivan yläpuolelle
@@ -917,7 +1048,7 @@ function renderSavingsChart(months, visitCount, sum) {
       <text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${v} €</text>`)
     .join('');
   const zero = `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-dasharray="4 3"/>
-    <text x="${L + 3}" y="${y(0) - 4}" class="small">0 € = Premium maksanut itsensä</text>`;
+    <text x="${L + 3}" y="${y(0) - 4}" class="small">${t('breakEvenLine')}</text>`;
   const labelEvery = labels.length > 9 ? 2 : 1;
   const xLabels = labels
     .map((l, i) => (l && i % labelEvery === 1 % labelEvery ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${l}</text>` : ''))
@@ -932,7 +1063,7 @@ function renderSavingsChart(months, visitCount, sum) {
   const signed = (v) => `<strong class="${v >= 0 ? 'good' : 'bad'}">${v >= 0 ? '+' : ''}${eur.format(v)}</strong>`;
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kertynyt säästö sarjalippuihin verrattuna">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('savingsAria')}">
       ${grid}${zero}${xLabels}${lines}
     </svg>
     <div class="legend small">
@@ -954,8 +1085,8 @@ function renderList(rows) {
       return `<li class="visit suspect" data-id="${r.id}">
         <div class="nro">!</div>
         <div class="title">${esc(r.title)}</div>
-        <div class="price"><span>ei laskettu</span></div>
-        <div class="meta">${meta} · tarkista päivä</div>
+        <div class="price"><span>${t('notCounted')}</span></div>
+        <div class="meta">${meta} · ${t('futureDate')}</div>
       </li>`;
     })
     .join('');
@@ -964,8 +1095,8 @@ function renderList(rows) {
     .map((r) => {
       const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
       const rating = r.rating ? `<span class="stars-small">${stars(r.rating)}</span> ` : '';
-      const snack = r.snacks ? ` · <span class="snack">herkut ${eur.format(r.snacks)}</span>` : '';
-      const withSnacks = r.snacks || r.other ? `<span>kaikki kulut ${eur.format(r.totalAt)}</span>` : '';
+      const snack = r.snacks ? ` · <span class="snack">${t('snacksMeta', {amount: eur.format(r.snacks)})}</span>` : '';
+      const withSnacks = r.snacks || r.other ? `<span>${t('allCosts', {amount: eur.format(r.totalAt)})}</span>` : '';
       return `<li class="visit" data-id="${r.id}">
         <div class="nro">${r.nro}</div>
         <div class="title">${esc(r.title)}</div>
@@ -1020,7 +1151,7 @@ function todayIso() {
 
 function openVisit(visit) {
   form.reset();
-  $('#dialog-title').textContent = visit ? 'Muokkaa käyntiä' : 'Uusi käynti';
+  $('#dialog-title').textContent = t(visit ? 'editVisit' : 'newVisit');
   $('#delete-visit').hidden = !visit;
   form.id.value = visit?.id ?? '';
   form.date.value = visit?.date ?? todayIso();
@@ -1067,7 +1198,7 @@ function updateVisitPreview() {
   const counted = form.date.value >= s.seasonStart && form.date.value <= s.seasonEnd && form.date.value <= todayIso();
   if (!counted) {
     preview.hidden = false;
-    preview.innerHTML = 'Päivä jää laskuista pois: tulevaisuudessa tai kauden ulkopuolella.';
+    preview.innerHTML = t('dialogPreviewHidden');
     return;
   }
   // Perusta: nykyinen tila ilman tätä käynniä (muokatessa vanha versio pudotetaan pois)
@@ -1078,10 +1209,12 @@ function updateVisitPreview() {
   const avgAfter = (s.annualFee + cumExtras + extras) / n1;
   preview.hidden = false;
   preview.innerHTML =
-    `Käynnin keskihinta kaikkia kuluja laskien tämän jälkeen: <strong class="${avgAfter < s.ticketPrice ? 'good' : ''}">${eur.format(avgAfter)}</strong> (sarjalippu ${eur.format(s.ticketPrice)})` +
+    t('previewCostAfter') +
+    `<strong class="${avgAfter < s.ticketPrice ? 'good' : ''}">${eur.format(avgAfter)}</strong> ` +
+    t('previewTicket', {ticket: eur.format(s.ticketPrice)}) +
     (extras > 0
-      ? `<br>Herkut ja muut kulut (+${eur.format(extras)}) siirtävät herkkutavoitetta n. ${(extras / s.ticketPrice).toFixed(1).replace('.', ',')} käynnin verran.`
-      : '<br>Herkuton käynti ei siirrä herkkutavoitetta.');
+      ? '<br>' + t('previewDelay', {amount: eur.format(extras), n: dec1(extras / s.ticketPrice)})
+      : '<br>' + t('previewNoDelay'));
 }
 
 form.addEventListener('input', updateVisitPreview);
@@ -1172,7 +1305,7 @@ function fillSettings() {
   const bs = $('#backup-status');
   if (bs) {
     const last = state.settings.lastLocalBackup;
-    bs.textContent = last ? `Viimeisin varmuuskopio: ${fmtDate(last)}` : 'Ei vielä varmuuskopiota';
+    bs.textContent = last ? t('lastBackup', {date: fmtDate(last)}) : t('noBackupYet');
   }
   // Kielivalitsin synkronointi
   const ls = $('#lang-select');
@@ -1223,7 +1356,7 @@ $('#pick-cloud-folder').addEventListener('click', async () => {
 
 function showCloudStatus() {
   const h = state.settings.cloudFolderHandle;
-  $('#cloud-folder-status').textContent = h ? `Valittu: ${h.name}` : '';
+  $('#cloud-folder-status').textContent = h ? t('cloudFolderSelected', {name: h.name}) : '';
   $('#auto-cloud-save').disabled = !h;
 }
 
@@ -1326,7 +1459,7 @@ function runLocalBackup() {
     state.settings.lastLocalBackup = today;
     save();
     const bs = $('#backup-status');
-    if (bs) bs.textContent = `Viimeisin varmuuskopio: ${fmtDate(today)}`;
+    if (bs) bs.textContent = t('lastBackup', {date: fmtDate(today)});
     toast(t('backupReminder'));
     return;
   }
@@ -1334,7 +1467,7 @@ function runLocalBackup() {
   state.settings.lastLocalBackup = today;
   save();
   const bs = $('#backup-status');
-  if (bs) bs.textContent = `Viimeisin varmuuskopio: ${fmtDate(today)}`;
+  if (bs) bs.textContent = t('lastBackup', {date: fmtDate(today)});
   toast(t('backupSavedDesktop'));
 }
 
@@ -1367,16 +1500,19 @@ async function saveToFolderNow() {
 }
 
 function generateCSV() {
-  const dec = (v) => v.toFixed(2).replace('.', ',');
-  const lines = [['Käynti nro', 'Päivä', 'Elokuva', 'Teatteri', 'Herkut €', 'Muut kulut €', 'Premium €/käynti', 'Kaikki kulut €/käynti', 'Arvosana', 'Muistiinpano']];
+  const dec = (v) => currentLang === 'en' ? v.toFixed(2) : v.toFixed(2).replace('.', ',');
+  const lines = [t('csvHeaders').split('|')];
   for (const r of computeVisits()) {
     lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.rating || '', r.note || '']);
   }
   // Laskemattomat käynnit mukaan ilman järjestysnumeroa ja hintoja, jotta mitään ei katoa
   for (const r of suspectVisits()) {
-    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', r.rating || '', [r.note, 'ei laskettu: tarkista päivä'].filter(Boolean).join(' · ')]);
+    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', r.rating || '', [r.note, t('csvNotCounted')].filter(Boolean).join(' · ')]);
   }
-  return '﻿' + lines.map((l) => l.map((c) => `\"${String(c).replace(/\"/g, '\"\"')}\"`).join(';')).join('\r\n');
+  // Englanninkielisessä CSV:ssä erotin on pilkku ja desimaalipiste; suomeksi puolipiste ja pilkku.
+  // parseCSV tunnistaa molemmat, joten vienti ja tuonti toimivat kummalla kielellä tahansa.
+  const sep = currentLang === 'en' ? ',' : ';';
+  return '\uFEFF' + lines.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(sep)).join('\r\n');
 }
 
 $('#export-json').addEventListener('click', () => {
@@ -1454,7 +1590,7 @@ function loadXlsx() {
   return new Promise((resolve, reject) => {
     const s = Object.assign(document.createElement('script'), { src: XLSX_URL });
     s.onload = () => resolve(window.XLSX);
-    s.onerror = () => reject(new Error('Excel-lukijan lataus epäonnistui (tarvitaan verkkoyhteys)'));
+    s.onerror = () => reject(new Error(t('xlsxLoadFailed')));
     document.head.append(s);
   });
 }
@@ -1476,18 +1612,20 @@ function parseDate(v) {
 
 /** Muuntaa soluruudukon (2D-taulukko) käyntiriveiksi. Käytetään sekä Excel- että CSV-tuonnissa. */
 function rowsFromGrid(grid, sheetName) {
-  const hi = grid.findIndex((row) => row.some((c) => /elokuva/i.test(String(c))));
+  // Otsikot tunnistetaan sekä suomeksi että englanniksi, jotta sovelluksen oma CSV-vienti
+  // voidaan tuoda takaisin kummalla kielellä tahansa.
+  const hi = grid.findIndex((row) => row.some((c) => /elokuva|movie|film/i.test(String(c))));
   if (hi < 0) return null;
   // Ääkköset pois, jotta "Paiva" ja "Päivä" tunnistetaan samoin
   const head = grid[hi].map((c) => String(c).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
   const col = (re) => head.findIndex((h) => re.test(h));
   const c = {
     date: col(/paiva|pvm|date/),
-    title: col(/elokuva/),
-    snacks: col(/herku|karkk/),
-    other: col(/muut/),
-    theater: col(/teatteri|sali/),
-    note: col(/muist|huom/),
+    title: col(/elokuva|movie|film/),
+    snacks: col(/herku|karkk|snack/),
+    other: col(/muut|other/),
+    theater: col(/teatteri|sali|theater|cinema/),
+    note: col(/muist|huom|note/),
     rating: col(/arvosana|arvio|tahdet|rating/),
   };
   if (c.date < 0) return null;
@@ -1561,7 +1699,7 @@ $('#xlsx-file').addEventListener('change', async (e) => {
   e.target.value = '';
   if (!file) return;
   const result = $('#import-result');
-  result.textContent = 'Luetaan…';
+  result.textContent = t('importReading');
   try {
     let found;
     if (file.name.toLowerCase().endsWith('.csv')) {
@@ -1572,7 +1710,7 @@ $('#xlsx-file').addEventListener('change', async (e) => {
       const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
       found = rowsFromWorkbook(XLSX, wb);
     }
-    if (!found || !found.rows.length) throw new Error('Taulukosta ei löytynyt käyntejä (sarakkeet Päivä ja Elokuva).');
+    if (!found || !found.rows.length) throw new Error(t('importNoVisits'));
 
     let replace = false;
     if (state.visits.length) {
@@ -1596,10 +1734,12 @@ $('#xlsx-file').addEventListener('change', async (e) => {
     const today = todayIso();
     const outside = added.filter((v) => v.date < seasonStart || v.date > seasonEnd || v.date > today);
     result.innerHTML =
-      `Tuotiin ${added.length} käyntiä välilehdeltä “${esc(found.sheet)}”.` +
+      t('importDone', {n: added.length, sheet: esc(found.sheet)}) +
       (outside.length
-        ? `<br><span class="bad">Huom: ${outside.length} käynnin päivä on kauden ulkopuolella tai tulevaisuudessa – tarkista: ` +
-          outside.map((v) => `${esc(v.title)} (${fmtDate(v.date)})`).join(', ') + '</span>'
+        ? '<br><span class="bad">' + t('importOutside', {
+            n: outside.length,
+            list: outside.map((v) => `${esc(v.title)} (${fmtDate(v.date)})`).join(', '),
+          }) + '</span>'
         : '');
   } catch (err) {
     result.innerHTML = `<span class="bad">${esc(err.message)}</span>`;
@@ -1613,6 +1753,11 @@ const langSelect = $('#lang-select');
 if (langSelect) {
   langSelect.value = currentLang;
   langSelect.addEventListener('change', (e) => setLang(e.target.value));
+}
+// Etusivun yläpalkin lippukuva: napsautus vaihtaa suomen ja englannin välillä.
+const langToggle = $('#lang-toggle');
+if (langToggle) {
+  langToggle.addEventListener('click', () => setLang(currentLang === 'fi' ? 'en' : 'fi'));
 }
 
 applyTranslations();

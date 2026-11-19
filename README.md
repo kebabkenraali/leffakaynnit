@@ -1,136 +1,139 @@
-# Leffakäynnit – Finnkino Premium Käyntiseuranta
+# Leffakäynnit – Finnkino Premium Visit Tracker
 
-Yksityiskohtainen PWA-sovellus Finnkino Premium -tilauksen hyötyarvon seuraamiseen. Seuraa käyntejä, herkkukustannuksia ja vertaa sarjalippua yhden sivun, offline-toimivan sovelluksen kautta.
+Leffakäynnit is a detailed PWA app for tracking the value you get from your Finnkino Premium subscription. Track visits, snack costs and compare the ticket book — all in a single-page, offline-capable app.
 
 ![Leffakäynnit](icon.svg)
 
-## 🎬 Ominaisuudet
+## 🎬 Features
 
-### Käyntien hallinta
-- **Manuaalisyöttö**: Lisää käynnit yksitellen (päivä, elokuva, teatteri, herkut, muut kulut, arvosana 1–5 tähteä, muistiinpano)
-- **Excel-tuonti**: Tuo Finnkino Premium -seurantataulukosta (`.xlsx`) suoraan sovellukseen
-- **Muokkaus & poisto**: Klikkaa käyntiä muuttaaksesi tai poistaaksesi sen
-- **Hakutoiminto**: Suodata käyntilistaa elokuvan nimen perusteella
+### Visit management
+- **Manual entry**: Add visits one by one (date, movie, theater, snacks, other expenses, rating 1–5 stars, notes)
+- **Excel import**: Import directly from your Finnkino Premium tracking spreadsheet (`.xlsx`)
+- **Edit & delete**: Click a visit to edit or delete it
+- **Search**: Filter the visit list by movie name
 
-### Laskelmat & analyysi
-- **Leffakäynnin hinta nyt**: Vuosimaksu jaettuna käyntien määrällä – ylälaatikossa lisäksi viimeisin katsottu elokuva (päivä ja käyntinumero), käynnit yhteensä ja herkkutavoitteen tila (jäljellä olevat leffat tai "✓ Saavutettu" + herkkubudjetti per leffa)
-- **Herkut ja muut mukana**: (Vuosimaksu + herkut + muut kulut) / käynnit
-- **Break-even -mittari**: Kuinka monta käyntiä tarvitaan, jotta Premium on halvempi kuin sarjalippu
-- **Herkkutavoite**: Montako leffaa pitää katsoa ilman herkkuja tai muita kuluja, jotta käynnin keskihinta (kaikki kulut mukaan lukien) alittaa sarjalipun hinnan – ja montako käyntiä herkut ovat kertyneisinä siirtäneet tavoitetta. Kun tavoite on saavutettu, sovellus näyttää paljonko sarjalipun hinnasta jää herkkubudjettiin joka käynnillä
-- **Herkkuvaikutus lisäysdialogissa (v18)**: Käyntiä lisättäessä dialogi näyttää reaaliajassa, miten herkut vaikuttavat: käynnin keskihinta kaikkine kuluineen tämän jälkeen ja montako käynnin verran herkut siirtävät herkkutavoitetta
-- **Kuukausibudjetti herkuille (v18)**: Asetuksissa määriteltävä kuukausiraja ja mittari, jossa näkyy tämän kuun herkkukulut suhteessa rajaan
-- **Säästö vs. sarjaliput**: Vertailutaulukko kahdella tavalla, pelkkä lippu sekä herkut ja muut kulut Premiumin kuluiksi laskettuna: kulut, €/käynti, säästö yhteensä ja per käynti sekä mistä käynnistä alkaen Premium kannattaa
-- **Ennuste**: Käyntimäärä ja €/käynti kauden lopussa viimeisen 30 päivän tahdilla
-- **Kertynyt säästö vs. sarjaliput**: Kaksi viivaa kuukausittain (pelkkä lippu / herkut ja muut mukana), alkaa kauden alussa miinukselta (vuosimaksu) ja nousee nollan yli break-evenissä
-- **Kuukausittain**: Käynnit/kk-pylväät ja taulukko (käynnit, herkut, €/käynti ja säästö kuukauden lopussa), myös kuukaudet ilman käyntejä
-- **Herkut**: Yhteensä, monellako käynnillä ostettu ja keskiostos
-- **Päivämäärätarkistus**: Tulevaisuuteen tai kauden ulkopuolelle merkityt käynnit jäävät laskuista pois ja näkyvät varoituksena
+### Calculations & analysis
+- **Cost per movie visit now**: Annual fee divided by the number of visits — the top box also shows the most recently watched movie (date and visit number), total visits, and the treat goal status (movies remaining or "✓ Achieved" + snack budget per movie)
+- **Snacks and other costs included**: (Annual fee + snacks + other expenses) / visits
+- **Break-even indicator**: How many visits are needed for Premium to be cheaper than the ticket book
+- **Treat goal**: How many movies you need to watch without snacks or other expenses for the average cost per visit (including all expenses) to fall below the ticket book price — and how many visits' worth of accumulated snacks have pushed the goal back. Once the goal is achieved, the app shows how much of the ticket book price is left as a snack budget for each visit
+- **Snack impact in the add dialog (v18)**: When adding a visit, the dialog shows in real time how snacks affect things: the all-in average cost per visit after this visit, and how many visits' worth the snacks shift the treat goal
+- **Monthly snack budget (v18)**: A monthly limit configurable in Settings and a meter showing this month's snack expenses relative to the limit
+- **Savings vs. ticket books**: Comparison table in two ways — ticket only, and snacks and other expenses counted as Premium costs: expenses, €/visit, total and per-visit savings, and from which visit onward Premium pays off
+- **Forecast**: Number of visits and €/visit at the end of the season at the pace of the last 30 days
+- **Cumulative savings vs. ticket books**: Two lines by month (ticket only / snacks and other costs included), starting negative at the beginning of the season (annual fee) and crossing above zero at break-even
+- **Monthly**: Visits-per-month bars and a table (visits, snacks, €/visit and savings at month end), including months with no visits
+- **Snacks**: Total, how many visits they were bought on, and average purchase
+- **Date check**: Visits dated in the future or outside the season are excluded from calculations and shown as a warning
 
-### Elokuvatilastot
-- **Eniten katsottu elokuva**: Elokuva, jota olet katsonut eniten kertoja
-- **Eniten maksanut elokuva**: Samannimisten käyntien leffaosuudet + herkut yhteensä
-- **Arvosanat**: Keskiarvo, jakauma (1–5 tähteä), parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). Saman tähden napautus uudelleen poistaa arvosanan
+### Movie statistics
+- **Most watched movie**: The movie you have seen the most times
+- **Most expensive movie**: The movie-ticket portions of visits with the same name + snacks combined
+- **Ratings**: Average, distribution (1–5 stars), best and worst movies (visits of the same movie averaged). Tapping the same star again removes the rating
 
-### Asetukset
-- **Tilausasetukset**: Vuosimaksu, sarjalipun vertailuhinta, kauden alkupäivä ja loppupäivä
-- **Vuosimaksun maksupäivä (v18)**: Valinnainen – säästökaavion nollapiste siirtyy maksukuukaudeksi (keskiarvo €/käynti voi tulla siten tarkemmaksi, kun maksu ja kauden alku eroavat)
-- **Kuukausibudjetti herkuille (v18)**: Kuukausiraja herkkukuluille (€/kk, 0 = ei budjettia)
-- **Kauden vaihto -apuri (v18)**: Kun kausi on päättynyt, Yhteenveto näyttää kortin, josta voi siirtää kauden päivämäärät vuodella eteenpäin tai siirtyä muokkaamaan asetuksia
-- **Oletusteatteri**: Tilaus-asetuksissa; uusien käyntien Teatteri-kenttä esitäytetään tällä
-- **Varmuuskopiot**: Päivittäinen automaattinen tallennus puhelimen tiedostoihin, tietokoneella valittuun kansioon (ks. [Varmuuskopiot](#-varmuuskopiot))
+### Settings
+- **Language**: Finnish (default) and English — switch by clicking the **flag image in the top-left corner** (US flag → English, Finnish flag → Suomi) or under **Settings → Kieli / Language**. The choice is saved automatically and applies to every UI text, chart label, date/number format, toast message and CSV export.
+- **Subscription settings**: Annual fee, ticket book comparison price, season start date and end date
+- **Annual fee payment date (v18)**: Optional — the savings chart's zero point shifts to the payment month (the average €/visit can thus be more accurate when the payment date and season start differ)
+- **Monthly snack budget (v18)**: Monthly limit for snack expenses (€/month, 0 = no budget)
+- **Season rollover helper (v18)**: When the season has ended, the Summary shows a card for shifting the season dates one year forward or for going to edit the settings
+- **Default theater**: In the subscription settings; the Theater field of new visits is pre-filled with this
+- **Backups**: Automatic daily saving to the phone's files, or on a computer to a selected folder (see [Backups](#-backups))
 
-### Varmuuskopiot & tietojen hallinta
-- **Lataa varmuuskopio (.json)**: Kokonaistilan tallennus (asetukset + käynnit)
-- **Palauta varmuuskopio**: Tuo aiemmin ladattu `.json`-tiedosto
-- **Vie CSV (Exceliin)**: Kaikki käynnit taulukkomuodossa Exceliä varten
-- **Poista kaikki käynnit**: Tyhjennä käyntitietokanta (asetukset säilyvät)
+### Backups & data management
+- **Download backup (.json)**: Save the full state (settings + visits)
+- **Restore backup**: Import a previously downloaded `.json` file
+- **Export CSV (for Excel)**: All visits in tabular form for Excel
+- **Delete all visits**: Clear the visit database (settings are preserved)
 
-### Tekniset ominaisuudet
-- **PWA (Progressive Web App)**: Asennettava puhelimeen/työpöydälle, toimii offline
-- **Service Worker**: Välimuistittaa resurssit, sovellus aukeaa ilman verkkoa
-- **localStorage**: Tiedot tallentuvat selaimeen, ei palvelimelle
-- **File System Access API**: paikallinen kansio (Chrome/Edge 86+)
-- **Web Share API**: Mobiililaitteilla jakovalikko (Tallenna OneDriveen, Google Driveen jne.)
-- **IndexedDB**: Valitun kansion kahvan säilyttäminen sovelluksen uudelleenavauksen yli
-- **Laskentatestit (v18)**: `tests.html` selaimessa ajettava testikattaus laskennalle – ei build-ketjua, ei riippuvuuksia
+### Technical features
+- **PWA (Progressive Web App)**: Installable on phone/desktop, works offline
+- **Service Worker**: Caches resources, so the app opens without a network connection
+- **localStorage**: Data is stored in the browser, not on a server
+- **File System Access API**: local folder (Chrome/Edge 86+)
+- **Web Share API**: share menu on mobile devices (Save to OneDrive, Google Drive, etc.)
+- **IndexedDB**: Persists the selected folder handle across app restarts
+- **Calculation tests (v18)**: `tests.html` — browser-based test coverage for the calculations; no build pipeline, no dependencies
 
-## 🚀 Käyttöönotto
+## 🚀 Getting started
 
-### GitHub Pages (suositus)
-1. Forkkaa tai kloonaa tämä repositorio
-2. Mene repositorion **Settings → Pages**
-3. Valitse **Source: Deploy from a branch**, branch `gh-pages` (kansio `/ (root)`)
-4. Sovellus on käytettävissä osoitteessa `https://<käyttäjänimesi>.github.io/leffakaynnit/`
+### GitHub Pages (recommended)
+1. Fork or clone this repository
+2. Go to the repository's **Settings → Pages**
+3. Select **Source: Deploy from a branch**, branch `gh-pages` (folder `/ (root)`)
+4. The app is available at `https://<your-username>.github.io/leffakaynnit/`
 
-### Paikallinen kehitys
+### Local development
 ```bash
-# Kloonaa
+# Clone
 git clone https://github.com/kebabkenraali/leffakaynnit.git
 cd leffakaynnit
 
-# Käynnistä paikallinen palvelin (index.html suoraan tiedostona ei aja service workeria)
+# Start a local server (opening index.html directly as a file won't run the service worker)
 python -m http.server 8000
-# TAI
+# OR
 npx serve .
 ```
 
-## 📊 Excel-tuonti – ohjeet
+## 📊 Excel import – instructions
 
-1. Mene **Asetukset**-välilehdelle
-2. Valitse tiedosto **Finnkino_Premium_Seuranta.xlsx** tuontikentästä
-3. Sovellus etsii automaattisesti välilehden, jossa on sarakkeet:
-   - **Päivä** (myös Paiva/pvm/date)
+1. Go to the **Settings** tab
+2. Select the file **Finnkino_Premium_Seuranta.xlsx** in the import field
+3. The app automatically looks for a sheet with the columns:
+   - **Päivä** (also Paiva/pvm/date)
    - **Elokuva** (elokuva)
    - **Herkut €** (herku/karkki)
-   - Valinnaiset: **Teatteri/Sali**, **Muut kulut €** (muu), **Arvosana** (1–5), **Muistio/Huomio**
-4. Varmista, että otsikkorivi on oikeilla nimillä (ääkköset eivät väliä)
-5. Jos käyntejä on jo, sovellus kysyy: **OK** korvaa nykyiset käynnit, **Peruuta** lisää vain uudet (duplikaatit tunnistetaan päivän + elokuvan perusteella)
+   - Optional: **Teatteri/Sali**, **Muut kulut €** (muu), **Arvosana** (1–5), **Muistio/Huomio**
+4. Make sure the header row uses the correct names (accents don't matter). English headers are also supported (Date, Movie, Snacks €, Other costs €, Theater, Rating, Note), so a CSV exported by the app in English can be imported back
+5. If visits already exist, the app asks: **OK** replaces the current visits, **Cancel** adds only the new ones (duplicates are identified by date + movie)
 
-## 💾 Varmuuskopiot
+## 💾 Backups
 
-Tiedot tallentuvat selaimeen. Varmuuskopiot ovat tavallisia tiedostoja laitteen muistissa, eivät selaimen välimuistia.
+Data is stored in the browser. Backups are ordinary files in the device's storage, not in the browser cache.
 
-### Puhelin
-- **Tallenna varmuuskopio puhelimeen automaattisesti kerran päivässä**: muutoksen jälkeen sovellus lataa `leffakaynnit-YYYY-MM-DD.json` ja `.csv` Lataukset-kansioon, enintään kerran päivässä.
-- **Lataa varmuuskopio** / **Vie CSV**: avaa jakovalikon, josta tiedoston voi tallentaa haluamaansa paikkaan.
-- Jos varmuuskopio on yli viikon vanha, sovellus muistuttaa avattaessa.
+### Phone
+- **Automatically save a backup to the phone once a day**: after a change, the app downloads `leffakaynnit-YYYY-MM-DD.json` and `.csv` to the Downloads folder, at most once a day.
+- **Download backup** / **Export CSV**: opens the share menu, where the file can be saved wherever you like.
+- If a backup is more than a week old, the app reminds you when you open it.
 
-### Tietokone (Chrome/Edge)
-**Valitse kansio** tallentaa varmuuskopiot valittuun kansioon, esim. `D:\OneDrive\...`, jolloin OneDrive-synkronointi hoitaa loput. Kansio muistetaan, ja selain voi kysyä luvan uudelleen.
+### Computer (Chrome/Edge)
+**Choose folder** saves backups to the selected folder, e.g. `D:\OneDrive\...`, so OneDrive sync takes care of the rest. The folder is remembered, and the browser may ask for permission again.
 
-### Palautus
-**Palauta varmuuskopio** lukee `.json`-tiedoston ja korvaa nykyiset tiedot (vahvistus kysytään).
+### Restore
+**Restore backup** reads a `.json` file and replaces the current data (confirmation is requested).
 
-## 📁 Tiedostorakenne
+## 📁 File structure
 
 ```
 leffakaynnit/
-├── index.html        # Pääkäyttöliittymä
-├── app.js            # Kaikki logiikka (laskenta, tallennus, renderöinti, varmuuskopiot)
-├── style.css         # Teema, responsiivisuus, tummavaalea-tila
-├── sw.js             # Service Worker (offline-tuki, sis. Excel-lukijan välimuisti)
-├── manifest.webmanifest  # PWA-manifesti
-├── icon.svg          # Sovelluskuvake
-├── tests.html        # Laskentatestit (selaimessa ajettava)
-├── tests.js          # Testitapaukset app.js:n laskennalle
-├── LICENSE           # MIT-lisenssi
-└── README.md         # Tämä tiedosto
+├── index.html        # Main UI
+├── app.js            # All logic (calculations, storage, rendering, backups)
+├── style.css         # Theme, responsiveness, dark/light mode
+├── sw.js             # Service Worker (offline support, incl. Excel reader cache)
+├── manifest.webmanifest  # PWA manifest
+├── icon.svg          # App icon
+├── flag-fi.svg       # Finnish flag image (language switcher)
+├── flag-us.svg       # US flag image (language switcher)
+├── tests.html        # Calculation tests (run in browser)
+├── tests.js          # Test cases for app.js calculations
+├── LICENSE           # MIT license
+└── README.md         # This file
 ```
 
-## 🔧 Kehittäjäohjeet
+## 🔧 Developer guide
 
-### Laskentatestit
-Avaa `tests.html` selaimessa:
+### Calculation tests
+Open `tests.html` in a browser:
 
-- sivu ajaa `app.js`:n laskentafunktiot koetapauksesilla ja näyttää tulokset luettelona
-- testit eivät kutsu `save()`-funktiota, joten localStorage-tilassa ei tapahdu muutoksia
-- uudet laskentamuutokset tarvitsevat oman testitapauksen `tests.js`-tiedostoon
+- the page runs `app.js`'s calculation functions with test cases and displays the results as a list
+- the tests don't call the `save()` function, so nothing changes in the localStorage state
+- new calculation changes need their own test case in the `tests.js` file
 
-### Service Worker -päivitys
-Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v22`), `index.html`:n `app.js?v=22` ja `style.css?v=22` sekä `tests.html`:n `app.js?v=22` ja `tests.js?v=22` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
+### Service Worker update
+When publishing, bump the same number everywhere it appears: `sw.js`'s `CACHE` (`leffakaynnit-v26`), `index.html`'s `app.js?v=26` and `style.css?v=26`, and `tests.html`'s `app.js?v=26` and `tests.js?v=26` (also in `sw.js`'s `ASSETS` list). The version number in the filename prevents GitHub Pages' 10-minute cache from combining new HTML with an old `app.js`.
 
-### Julkaisu
-GitHub Pages julkaisee `gh-pages`-haaran. Kehitys tehdään `main`-haarassa, ja julkaisu on sama commit molempiin:
+### Publishing
+GitHub Pages publishes the `gh-pages` branch. Development is done on the `main` branch, and the release is the same commit in both:
 
 ```bash
 git pull --ff-only origin main
@@ -138,13 +141,13 @@ git push origin main
 git push origin main:gh-pages
 ```
 
-- **Kotisivu**: `https://kebabkenraali.github.io/leffakaynnit/`
-- Hae aina ensin uusin versio (`git pull`), jos repoa muokataan useammalla työkalulla tai koneella (esim. Cline ja Claude Code). Muuten vanhan version päälle pushattu muutos voi kumota aiemmat korjaukset.
-- Älä käytä `git push --force` -komentoa `main`- tai `gh-pages`-haaraan.
+- **Homepage**: `https://kebabkenraali.github.io/leffakaynnit/`
+- Always fetch the latest version first (`git pull`) if the repo is edited with multiple tools or machines (e.g. Cline and Claude Code). Otherwise, a change pushed on top of an old version can undo earlier fixes.
+- Do not use the `git push --force` command on the `main` or `gh-pages` branch.
 
-## 📝 Lisenssi
+## 📝 License
 
-MIT License – vapaa käyttö, muokkaus ja jakelu. Ks. [LICENSE](LICENSE).
+MIT License — free to use, modify and distribute. See [LICENSE](LICENSE).
 
 ## 💡 Development Ideas (Roadmap)
 
@@ -153,7 +156,7 @@ Status update of the roadmap after v18. Completed items are listed at the end.
 ### Completed in v18
 - ✅ **Snack impact already in the add-visit dialog** – the dialog shows in real time how the visit's snacks and other purchases push the treat goal (per-visit all-in cost after this visit, and how many visits' worth the extras move the goal).
 - ✅ **Monthly snack budget** – configurable monthly limit in Settings with a meter in the monthly stats (red when exceeded).
-- ✅ **Season rollover helper** – when the season has ended, the Yhteenveto shows a card with a one-click "shift season one year forward" action or a shortcut to the settings.
+- ✅ **Season rollover helper** – when the season has ended, the Summary shows a card with a one-click "shift season one year forward" action or a shortcut to the settings.
 - ✅ **Automated tests for the calculations** – browser-based test page `tests.html`/`tests.js` covering `computeVisits`, `computeSummary`, `monthStats`, the treat goal, the payment-date handling and date parsing (no build tools needed).
 - ✅ **Excel reader working offline** – SheetJS is now cached by the service worker (fetched once, served from cache afterwards).
 - ✅ **Annual fee payment date** – optional setting; the savings chart and monthly stats start from the payment month with zero savings before the payment.
@@ -163,63 +166,65 @@ Status update of the roadmap after v18. Completed items are listed at the end.
 - **Comparison of subscription options** (Premium vs. basic card vs. regular tickets) – requires reliable price data for the alternative ticket types; postponed until the comparison prices are defined.
 - **Logging reminders** – browser notifications ("did you log your visit?") require a reliable trigger signal for when a visit happened but was not logged; postponed until a non-intrusive trigger is designed.
 - **Multi-year history** – comparing seasons requires storing per-season snapshots (the current data model derives everything from a single configured season); design work needed.
-- **Multiple user profiles** – shared subscriptions need a per-visit "who is here" field and per-person totals; nice-to-have, not yet scheduled.## 🤝 Avustukset
+- **Multiple user profiles** – shared subscriptions need a per-visit "who is here" field and per-person totals; nice-to-have, not yet scheduled.
 
-Pull requestit ovat tervetulleita! Ehdota parannuksia tai raportoi bugeja Issues-välilehdellä.
+## 🤝 Contributions
+
+Pull requests are welcome! Suggest improvements or report bugs on the Issues tab.
 
 ---
 
-## 🛠️ Työkalut ja tekniikat
+## 🛠️ Tools and technologies
 
-Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI-avustettua kehitystyönkulkuja:
+This app was developed using modern web technologies and AI-assisted development workflows:
 
-### Kehitysympäristö ja työkalut
-- **Cline (AI Coding Agent)** – Koodin generointi, refaktorointi, debuggaus ja arkkitehtuurisuunnittelu
-- **Claude Code** – Sovelluksen ensimmäinen versio, laskennan ja kaavioiden uudistus, virheenkorjaukset ja testaus
-- **Visual Studio Code** – Pääkehitysympäristö
-- **Git & GitHub** – Versiohallinta ja GitHub Pages -hostaus
-- **Chrome/Edge DevTools** – Debuggaus, PWA-testaus, performance-profilointi
+### Development environment and tools
+- **Cline (AI Coding Agent)** – code generation, refactoring, debugging and architectural design
+- **Claude Code** – the first version of the app, overhaul of calculations and charts, bug fixes and testing
+- **Visual Studio Code** – main development environment
+- **Git & GitHub** – version control and GitHub Pages hosting
+- **Chrome/Edge DevTools** – debugging, PWA testing, performance profiling
 
-### Frontend-tekniikat
-- **Vanilla JavaScript (ES6+)** – Ei frameworkseja, kevyttä ja nopeaa
-- **HTML5 + CSS3** – Semanttinen HTML, CSS Custom Properties (teemat), Grid/Flexbox
+### Frontend technologies
+- **Vanilla JavaScript (ES6+)** – no frameworks, lightweight and fast
+- **HTML5 + CSS3** – semantic HTML, CSS Custom Properties (themes), Grid/Flexbox
 - **Progressive Web App (PWA)** – `manifest.webmanifest`, Service Worker (`sw.js`)
-- **File System Access API** – Paikallinen kansio (vain tietokone)
-- **Web Share API** – Mobiililaitteiden jakovalikko
-- **IndexedDB** – Valitun kansion kahvan tallennus
-- **localStorage** – Paikallinen tietovarasto
-- **SheetJS (xlsx)** – Excel-tiedostojen lukeminen CDN:stä
+- **File System Access API** – local folder (desktop only)
+- **Web Share API** – share menu on mobile devices
+- **IndexedDB** – stores the selected folder handle
+- **localStorage** – local data store
+- **SheetJS (xlsx)** – reading Excel files from a CDN
 
-### Arkkitehtuuri
-- **Single Page Application (SPA)** – Ilman build-työkaluja tai bundlereita
-- **Offline-first** – Service Worker välimuistaa kaikki staattiset resurssit
-- **Modulaarinen rakenne** – Yksi `app.js` modulaarilla funktioilla (laskenta, tallennus, renderöinti, I/O)
-- **Tilaan perustuva renderöinti** – `state` objekti → `compute` → `render`
+### Architecture
+- **Single Page Application (SPA)** – no build tools or bundlers
+- **Offline-first** – the Service Worker caches all static assets
+- **Modular structure** – a single `app.js` with modular functions (calculations, storage, rendering, I/O)
+- **State-driven rendering** – `state` object → `compute` → `render`
 
-### Laskentamalli
-- **Kumulatiivinen keskihinta** – `movieAt = vuosimaksu / käynnit`, `totalAt = (vuosimaksu + herkut + muut kulut) / käynnit`
-- **Säästö** – pelkkä lippu: `käynnit × sarjalippu − vuosimaksu`; herkut ja muut mukana: `käynnit × sarjalippu − (vuosimaksu + herkut + muut kulut)`
-- **Laskettavat käynnit** – vain kauden sisällä ja tähän päivään mennessä; muut näytetään varoituksena
-- **Break-even analyysi** – pelkkä lippu `ceil(vuosimaksu / sarjalippu_hinta)`; herkut mukana ensimmäinen käynti, jolla säästö menee plussalle (arvio, jos ei vielä saavutettu)
-- **Herkkutavoite** – ilman uusia herkkuja tai muita kuluja tavoite on `floor((vuosimaksu + kertyneet herkut + muut kulut) / sarjalippu) + 1` käynnin kohdalla; pelkkä vuosimaksu vaatisi `ceil(vuosimaksu / sarjalippu)` käynnin. Tavoitteen täytyttyä herkkubudjetti joka käynnille = `sarjalippu − vuosimaksu / käynnit`
-- **Herkkuvaikutus dialogissa** – perusta = nykyiset lasketut käynnit ja kulut (muokattaessa ilman kyseistä käyntiä); ennustettu keskihinta = `(vuosimaksu + kertyneet herkut + muut + tämän käynnin herkut ja muut) / (käynnit + 1)`, tavoitteen siirtymä = `herkut ja muut / sarjalippu` käynnin verran
-- **Vuosimaksun maksupäivä** – kun asetettu ja kauden alkua edellä, kuukausitarkastelu alkaa maksukuukaudesta ja säästö lasketaan vasta maksun jälkeen nollapisteeksi; maksukuukaudessa säästöön merkitään −vuosimaksu
-- **Ennuste** – Viimeisen 30 päivän käyntitahti jatkettuna kauden loppuun (luku), mutta säästökaavio piirtää aina vain nykyiseen päivään asti ilman ennustetta
-- **SVG-kaaviot** – Kertyneen säästön viiva ja käynnit/kk-pylväät; €/käynti ja säästö kuukauden lopun tilanteesta
+### Calculation model
+- **Cumulative average cost** – `movieAt = annual fee / visits`, `totalAt = (annual fee + snacks + other expenses) / visits`
+- **Savings** – ticket only: `visits × ticket book − annual fee`; snacks and other costs included: `visits × ticket book − (annual fee + snacks + other expenses)`
+- **Counted visits** – only within the season and up to today; others are shown as a warning
+- **Break-even analysis** – ticket only: `ceil(annual fee / ticket book price)`; with snacks, the first visit where savings turn positive (an estimate if not yet achieved)
+- **Treat goal** – without new snacks or other expenses, the goal is reached at `floor((annual fee + accumulated snacks + other expenses) / ticket book) + 1` visits; the annual fee alone would require `ceil(annual fee / ticket book)` visits. Once the goal is met, the snack budget per visit = `ticket book − annual fee / visits`
+- **Snack impact in the dialog** – baseline = currently counted visits and expenses (when editing, excluding that visit); predicted average cost = `(annual fee + accumulated snacks + other expenses + this visit's snacks and other expenses) / (visits + 1)`, goal shift = `snacks and other expenses / ticket book` visits' worth
+- **Annual fee payment date** – when set and earlier than the season start, the monthly review starts from the payment month and savings are calculated from zero only after the payment; in the payment month, savings are recorded as `−annual fee`
+- **Forecast** – the visit pace of the last 30 days extended to the end of the season (as a number), but the savings chart always draws only up to the current day, without a forecast
+- **SVG charts** – a cumulative savings line and visits-per-month bars; €/visit and savings at month end
 
-### Laadunvarmistus
-- **Virheenkäsittely** – `try/catch` kaikissa I/O-operaatioissa, käyttäjäystävälliset toast-viestit
-- **Graceful degradation** – File System Access API ei tue kaikki selainta → fallback Web Share API:hin
-
----
-
-## 👤 Tekijä ja AI-avustus
-
-**Kehittäjä**: [kebabkenraali](https://github.com/kebabkenraali)  
-**AI-avustus**: [Cline](https://cline.bot) ja [Claude Code](https://claude.com/claude-code) – AI-koodausagentit, jotka ovat kirjoittaneet ja refaktoroineet koodia, suunnitelleet arkkitehtuuria, korjanneet bugeja ja dokumentoineet ominaisuuksia.
-
-> *Tämä projekti demonstroi miten moderni AI-avustettu kehitysnopeus yhdistettynä vanillan web-tekniikoihin voi tuottaa tuotantovalmiin, offline-toimivan PWA-sovelluksen ilman monimutkaisia build-ketjuja.*
+### Quality assurance
+- **Error handling** – `try/catch` for all I/O operations, user-friendly toast messages
+- **Graceful degradation** – not all browsers support the File System Access API → falls back to the Web Share API
 
 ---
 
-**Versio**: 2026.11 v21 (ylälaatikko: viimeisin leffa ja herkkutavoite; herkkuennuste dialogissa, kuukausibudjetti, kauden vaihto -apuri, laskentatestit, offline-Excel-tuonti ja maksupäivä (v18–v21); säästökaavio ilman ennustetta (v19); herkkutavoite ja herkkubudjetti (v17); säästövertailu herkuilla ja ilman, kuukausikaaviot, arvosanat, päivämäärätarkistus, päivittäinen varmuuskopio)
+## 👤 Author and AI assistance
+
+**Developer**: [kebabkenraali](https://github.com/kebabkenraali)  
+**AI assistance**: [Cline](https://cline.bot) and [Claude Code](https://claude.com/claude-code) — AI coding agents that have written and refactored code, designed the architecture, fixed bugs and documented features.
+
+> *This project demonstrates how modern AI-assisted development speed combined with vanilla web technologies can produce a production-ready, offline-capable PWA app without complex build pipelines.*
+
+---
+
+**Version**: 2026.11 v26 (Finnish and English UI with a clickable flag image in the top-left corner and a language selector in Settings; top box: latest movie and treat goal; snack forecast in the dialog, monthly snack budget, season rollover helper, calculation tests, offline Excel import and payment date (v18–v21); savings chart without forecast (v19); treat goal and snack budget (v17); savings comparison with and without snacks, monthly charts, ratings, date check, daily backup)

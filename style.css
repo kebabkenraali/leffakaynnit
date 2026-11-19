@@ -40,6 +40,19 @@ body {
   padding: calc(14px + env(safe-area-inset-top)) 16px 8px;
 }
 .top h1 { font-size: 1.25rem; margin: 0; }
+.top-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lang-toggle {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+  color: var(--text); font: inherit; font-size: .72rem; font-weight: 700; line-height: 1;
+  padding: 3px 9px 3px 4px; cursor: pointer;
+}
+.lang-toggle img {
+  display: block; width: 24px; height: 16px; border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+}
+.lang-toggle:hover { border-color: var(--accent); }
+.lang-toggle:active { transform: scale(.96); }
 main { padding: 0 16px; max-width: 640px; margin: 0 auto; }
 
 .view { display: none; }

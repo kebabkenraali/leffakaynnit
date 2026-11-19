@@ -8,11 +8,17 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=26">
 </head>
 <body>
   <header class="top">
-    <h1 data-i18n="appTitle">Leffakäynnit</h1>
+    <div class="top-left">
+      <h1 data-i18n="appTitle">Leffakäynnit</h1>
+      <button id="lang-toggle" class="lang-toggle" type="button" title="Vaihda englantiin" aria-label="Vaihda englantiin">
+        <img id="lang-flag" src="flag-us.svg" alt="English" width="24" height="16">
+        <span id="lang-toggle-label">EN</span>
+      </button>
+    </div>
     <span id="season-label" class="muted"></span>
   </header>
 
@@ -25,11 +31,11 @@
         <div class="hero-sub" data-i18n="heroSub">vuosimaksu ÷ käynnit</div>
         <div class="hero-split">
           <div>
-            <div class="small muted">Herkut ja muut mukana</div>
+            <div class="small muted" data-i18n="snacksAndOther">Herkut ja muut mukana</div>
             <div class="big" id="h-total">–</div>
           </div>
           <div>
-            <div class="small muted">Käyntejä</div>
+            <div class="small muted" data-i18n="visits">Käyntejä</div>
             <div class="big" id="h-count">0</div>
           </div>
           <div>
@@ -51,8 +57,8 @@
         <strong data-i18n="rolloverTitle">Kausi on päättynyt</strong>
         <div class="small" id="rollover-text"></div>
         <div class="actions">
-          <button id="rollover-settings" class="btn" type="button">Muokkaa asetuksia</button>
-          <button id="rollover-advance" class="btn primary" type="button">Kausi vuodella eteenpäin</button>
+          <button id="rollover-settings" class="btn" type="button" data-i18n="rolloverSettings">Muokkaa asetuksia</button>
+          <button id="rollover-advance" class="btn primary" type="button" data-i18n="rolloverAdvance">Kausi vuodella eteenpäin</button>
         </div>
       </div>
 
@@ -97,7 +103,10 @@
         <div id="snack-budget" class="small" hidden></div>
         <div id="visits-chart" class="chart"></div>
         <table class="months">
-          <thead><tr><th>Kk</th><th>Käyn.</th><th>Herkut</th><th>€/käynti</th><th>Säästö</th><th>+ herkut</th></tr></thead>
+          <thead><tr>
+            <th data-i18n="monthHdr">Kk</th><th data-i18n="visitsHdr">Käyn.</th><th data-i18n="snacksHdr">Herkut</th>
+            <th data-i18n="perVisitHdr">€/käynti</th><th data-i18n="savingsHdr">Säästö</th><th data-i18n="plusSnacksHdr">+ herkut</th>
+          </tr></thead>
           <tbody id="months"></tbody>
         </table>
         <p class="small muted" data-i18n="monthlyFootnote">Kuukauden lopun tilanne: vuosimaksu jaetaan kaikilla siihen mennessä kertyneillä käynneillä. Säästö = pelkkä lippu, + herkut = herkut ja muut kulut vähennettynä.</p>
@@ -155,7 +164,7 @@
         <label><span data-i18n="seasonEnd">Kausi päättyy</span><input name="seasonEnd" type="date" required></label>
         <label><span data-i18n="feeDate">Vuosimaksun maksupäivä (valinnainen, säästökaavion nollapiste)</span><input name="feeDate" type="date"></label>
         <label><span data-i18n="snackBudget">Kuukausibudjetti herkuille (€/kk, 0 = ei budjettia)</span><input name="snackBudget" type="number" step="0.01" min="0" inputmode="decimal"></label>
-        <label><span data-i18n="defaultTheater">Oletusteatteri (esitäytetään uusiin käynteihin)</span><input name="location" type="text" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
+        <label><span data-i18n="defaultTheater">Oletusteatteri (esitäytetään uusiin käynteihin)</span><input name="location" type="text" data-i18n-placeholder="defaultTheaterPlaceholder" placeholder="esim. Finnkino Tennispalatsi" list="locations"></label>
         <datalist id="locations"></datalist>
         <button type="submit" class="btn primary" data-i18n="save">Tallenna</button>
       </form>
@@ -186,7 +195,7 @@
           <input id="auto-local-backup" type="checkbox">
           <span data-i18n="autoLocalBackup">Tallenna varmuuskopio puhelimeen automaattisesti kerran päivässä (muutoksen jälkeen)</span>
         </label>
-        <div id="ios-hint" class="small muted" hidden>iPhone/iPad: lisää sovellus Koti-valikkoon (Jaa → Lisää Koti-valikkoon), jotta selain ei poista tietoja 7 päivän käyttämättömyyden jälkeen. Varmuuskopioi säännöllisesti (Lataa varmuuskopio → Mail).</div>
+        <div id="ios-hint" class="small muted" hidden data-i18n="iosHint">iPhone/iPad: lisää sovellus Koti-valikkoon (Jaa → Lisää Koti-valikkoon), jotta selain ei poista tietoja 7 päivän käyttämättömyyden jälkeen. Varmuuskopioi säännöllisesti (Lataa varmuuskopio → Mail).</div>
         <div class="actions">
           <button id="export-json" class="btn" type="button" data-i18n="downloadBackup">Lataa varmuuskopio (.json)</button>
           <button id="copy-backup" class="btn" type="button" data-i18n="copyClipboard">Kopioi leikepöydälle</button>
@@ -198,17 +207,17 @@
     </section>
   </main>
 
-  <button id="fab" class="fab" aria-label="Lisää käynti">+</button>
+  <button id="fab" class="fab" aria-label="Lisää käynti" data-i18n-aria="addVisit">+</button>
 
   <nav class="tabs">
-    <button data-view="summary" class="active">Yhteenveto</button>
-    <button data-view="list">Käynnit</button>
-    <button data-view="settings">Asetukset</button>
+    <button data-view="summary" class="active" data-i18n="tabsSummary">Yhteenveto</button>
+    <button data-view="list" data-i18n="visits">Käynnit</button>
+    <button data-view="settings" data-i18n="settings">Asetukset</button>
   </nav>
 
   <dialog id="visit-dialog">
     <form id="visit-form" method="dialog" class="form">
-      <h2 id="dialog-title">Uusi käynti</h2>
+      <h2 id="dialog-title" data-i18n="newVisit">Uusi käynti</h2>
       <input type="hidden" name="id">
       <label><span data-i18n="dialogDate">Päivä</span><input name="date" type="date" required></label>
       <label><span data-i18n="dialogMovie">Elokuva</span><input name="title" type="text" required list="titles" autocomplete="off"></label>
@@ -216,26 +225,26 @@
       <label><span data-i18n="dialogTheater">Teatteri (valinnainen)</span><input name="theater" type="text" list="theaters" autocomplete="off"></label>
       <datalist id="theaters"></datalist>
       <div class="two">
-        <label><span data-i18n="dialogSnacks">Herkut €</span><input name="snacks" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00"></label>
-        <label><span data-i18n="dialogOther">Muut kulut €</span><input name="other" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00"></label>
+        <label><span data-i18n="dialogSnacks">Herkut €</span><input name="snacks" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
+        <label><span data-i18n="dialogOther">Muut kulut €</span><input name="other" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
       </div>
       <div class="rating-field">
-        <span>Arvosana (valinnainen)</span>
-        <div class="stars" id="rating-stars" role="radiogroup" aria-label="Arvosana">
-          <button type="button" role="radio" data-v="1" aria-label="1 tähti">★</button>
-          <button type="button" role="radio" data-v="2" aria-label="2 tähteä">★</button>
-          <button type="button" role="radio" data-v="3" aria-label="3 tähteä">★</button>
-          <button type="button" role="radio" data-v="4" aria-label="4 tähteä">★</button>
-          <button type="button" role="radio" data-v="5" aria-label="5 tähteä">★</button>
+        <span data-i18n="dialogRating">Arvosana (valinnainen)</span>
+        <div class="stars" id="rating-stars" role="radiogroup" aria-label="Arvosana" data-i18n-aria="dialogRating">
+          <button type="button" role="radio" data-v="1" aria-label="1 tähti" data-i18n-aria="ratingAria1">★</button>
+          <button type="button" role="radio" data-v="2" aria-label="2 tähteä" data-i18n-aria="ratingAria2">★</button>
+          <button type="button" role="radio" data-v="3" aria-label="3 tähteä" data-i18n-aria="ratingAria3">★</button>
+          <button type="button" role="radio" data-v="4" aria-label="4 tähteä" data-i18n-aria="ratingAria4">★</button>
+          <button type="button" role="radio" data-v="5" aria-label="5 tähteä" data-i18n-aria="ratingAria5">★</button>
         </div>
         <input type="hidden" name="rating">
       </div>
       <label><span data-i18n="dialogNote">Muistiinpano</span><input name="note" type="text" placeholder="esim. 4DX, seuralainen…" data-i18n-placeholder="dialogNotePlaceholder"></label>
       <div id="visit-preview" class="small muted" hidden></div>
       <div class="actions">
-        <button type="button" id="delete-visit" class="btn danger" hidden>Poista</button>
+        <button type="button" id="delete-visit" class="btn danger" hidden data-i18n="dialogDelete">Poista</button>
         <span class="spacer"></span>
-        <button type="button" id="cancel-visit" class="btn">Peruuta</button>
+        <button type="button" id="cancel-visit" class="btn" data-i18n="dialogCancel">Peruuta</button>
         <button type="submit" class="btn primary" data-i18n="save">Tallenna</button>
       </div>
     </form>
@@ -243,6 +252,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=23"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>

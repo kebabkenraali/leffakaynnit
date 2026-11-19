@@ -1,15 +1,17 @@
 // Sovelluksen tiedostot välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
-const CACHE = 'leffakaynnit-v23';
+const CACHE = 'leffakaynnit-v26';
 // Versionumero samaksi kuin index.html:n app.js?v= ja style.css?v=, nosta molemmat julkaistessa
 const ASSETS = [
   './',
   'index.html',
-  'style.css?v=23',
-  'app.js?v=23',
+  'style.css?v=26',
+  'app.js?v=26',
   'manifest.webmanifest',
   'icon.svg',
+  'flag-fi.svg',
+  'flag-us.svg',
   'tests.html',
-  'tests.js?v=23',
+  'tests.js?v=26',
   // Excel-lukija välimuistiin, jotta tuonti toimii myös ilman verkkoa
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
 ];
