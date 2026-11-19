@@ -127,7 +127,7 @@ Avaa `tests.html` selaimessa:
 - uudet laskentamuutokset tarvitsevat oman testitapauksen `tests.js`-tiedostoon
 
 ### Service Worker -päivitys
-Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v20`), `index.html`:n `app.js?v=20` ja `style.css?v=20` sekä `tests.html`:n `app.js?v=20` ja `tests.js?v=20` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
+Julkaistessa nosta sama numero kaikkialla, missä se esiintyy: `sw.js`:n `CACHE` (`leffakaynnit-v21`), `index.html`:n `app.js?v=21` ja `style.css?v=21` sekä `tests.html`:n `app.js?v=21` ja `tests.js?v=21` (myös `sw.js`:n `ASSETS`-listassa). Versionumero tiedostonimessä estää GitHub Pagesin 10 minuutin välimuistia yhdistämästä uutta HTML:ää vanhaan `app.js`:ään.
 
 ### Julkaisu
 GitHub Pages julkaisee `gh-pages`-haaran. Kehitys tehdään `main`-haarassa, ja julkaisu on sama commit molempiin:
@@ -222,4 +222,4 @@ Tämä sovellus on kehitetty hyödyntämään modernia verkkoteknologioita ja AI
 
 ---
 
-**Versio**: 2026.11 v20 (ylälaatikko: viimeisin leffa ja herkkutavoite; herkkuennuste dialogissa, kuukausibudjetti, kauden vaihto -apuri, laskentatestit, offline-Excel-tuonti ja maksupäivä (v18–v20); säästökaavio ilman ennustetta (v19); herkkutavoite ja herkkubudjetti (v17); säästövertailu herkuilla ja ilman, kuukausikaaviot, arvosanat, päivämäärätarkistus, päivittäinen varmuuskopio)
+**Versio**: 2026.11 v21 (ylälaatikko: viimeisin leffa ja herkkutavoite; herkkuennuste dialogissa, kuukausibudjetti, kauden vaihto -apuri, laskentatestit, offline-Excel-tuonti ja maksupäivä (v18–v21); säästökaavio ilman ennustetta (v19); herkkutavoite ja herkkubudjetti (v17); säästövertailu herkuilla ja ilman, kuukausikaaviot, arvosanat, päivämäärätarkistus, päivittäinen varmuuskopio)

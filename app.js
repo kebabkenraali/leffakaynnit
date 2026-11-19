@@ -856,6 +856,19 @@ $('#rollover-advance').addEventListener('click', () => {
 const sForm = $('#settings-form');
 function fillSettings() {
   for (const [k, v] of Object.entries(state.settings)) if (sForm[k]) sForm[k].value = v;
+  // Varmuuskopion tila asetuksissa
+  const bs = $('#backup-status');
+  if (bs) {
+    const last = state.settings.lastLocalBackup;
+    bs.textContent = last ? `Viimeisin varmuuskopio: ${fmtDate(last)}` : 'Ei vielä varmuuskopiota';
+  }
+  // iOS: muistutus Koti-valikkoon lisäämisestä
+  const iosHint = $('#ios-hint');
+  if (iosHint) {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    iosHint.hidden = standalone || !isIOS;
+  }
 }
 sForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -985,15 +998,29 @@ function saveFile(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** Kerran päivässä muutoksen jälkeen, jos asetus on päällä. Ei jaa tiedostoa, vain tallentaa. */
+/** Kerran päivässä muutoksen jälkeen, jos asetus on päällä.
+ *  Desktopilla tallennetaan Lataukset-kansioon hiljaa (yksi JSON-tiedosto).
+ *  Mobiilissa ei avata jakovalikkoa automaattisesti (häiritsevää) — sen sijaan
+ *  muistutetaan kerran päivässä, jolloin käyttäjä voi itse valita jakovalikosta
+ *  Mail/Drive/Tiedostot. */
 function runLocalBackup() {
   const today = todayIso();
   if (!state.settings.autoLocalBackup || !state.visits.length || state.settings.lastLocalBackup === today) return;
+  const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  if (isMobile) {
+    state.settings.lastLocalBackup = today;
+    save();
+    const bs = $('#backup-status');
+    if (bs) bs.textContent = `Viimeisin varmuuskopio: ${fmtDate(today)}`;
+    toast('Muista varmuuskopio: Asetukset → Lataa varmuuskopio (jakovalikko)');
+    return;
+  }
   saveFile(`leffakaynnit-${today}.json`, JSON.stringify(snapshot(), null, 2), 'application/json');
-  saveFile(`leffakaynnit-${today}.csv`, generateCSV(), 'text/csv');
   state.settings.lastLocalBackup = today;
   save();
-  toast('Varmuuskopio tallennettu puhelimeen');
+  const bs = $('#backup-status');
+  if (bs) bs.textContent = `Viimeisin varmuuskopio: ${fmtDate(today)}`;
+  toast('Varmuuskopio tallennettu Lataukset-kansioon');
 }
 
 $('#auto-local-backup').addEventListener('change', (e) => {
@@ -1039,6 +1066,29 @@ function generateCSV() {
 
 $('#export-json').addEventListener('click', () => {
   download(`leffakaynnit-${todayIso()}.json`, JSON.stringify(snapshot(), null, 2), 'application/json');
+});
+
+$('#copy-backup').addEventListener('click', async () => {
+  const text = JSON.stringify(snapshot(), null, 2);
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      toast('Varmuuskopio kopioitu leikepöydälle');
+    } else {
+      // Fallback: näytä teksti valittavana
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.append(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast('Varmuuskopio kopioitu leikepöydälle');
+    }
+  } catch (err) {
+    toast('Kopiointi epäonnistui: ' + err.message);
+  }
 });
 
 $('#import-json').addEventListener('change', async (e) => {
@@ -1109,42 +1159,86 @@ function parseDate(v) {
   return null;
 }
 
+/** Muuntaa soluruudukon (2D-taulukko) käyntiriveiksi. Käytetään sekä Excel- että CSV-tuonnissa. */
+function rowsFromGrid(grid, sheetName) {
+  const hi = grid.findIndex((row) => row.some((c) => /elokuva/i.test(String(c))));
+  if (hi < 0) return null;
+  // Ääkköset pois, jotta "Paiva" ja "Päivä" tunnistetaan samoin
+  const head = grid[hi].map((c) => String(c).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+  const col = (re) => head.findIndex((h) => re.test(h));
+  const c = {
+    date: col(/paiva|pvm|date/),
+    title: col(/elokuva/),
+    snacks: col(/herku|karkk/),
+    other: col(/muut/),
+    theater: col(/teatteri|sali/),
+    note: col(/muist|huom/),
+    rating: col(/arvosana|arvio|tahdet|rating/),
+  };
+  if (c.date < 0) return null;
+  const out = [];
+  for (const row of grid.slice(hi + 1)) {
+    const title = String(row[c.title] ?? '').trim();
+    const date = parseDate(row[c.date]);
+    if (!title || !date) continue;
+    out.push({
+      date,
+      title,
+      snacks: c.snacks >= 0 ? num(row[c.snacks]) : 0,
+      other: c.other >= 0 ? num(row[c.other]) : 0,
+      theater: c.theater >= 0 ? String(row[c.theater] ?? '').trim() : '',
+      note: c.note >= 0 ? String(row[c.note] ?? '').trim() : '',
+      rating: c.rating >= 0 ? Math.min(5, Math.max(0, Math.round(num(row[c.rating])))) : 0,
+    });
+  }
+  return { sheet: sheetName, rows: out };
+}
+
 function rowsFromWorkbook(XLSX, wb) {
   for (const name of wb.SheetNames) {
     const grid = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: '' });
-    const hi = grid.findIndex((row) => row.some((c) => /elokuva/i.test(String(c))));
-    if (hi < 0) continue;
-    // Ääkköset pois, jotta "Paiva" ja "Päivä" tunnistetaan samoin
-    const head = grid[hi].map((c) => String(c).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''));
-    const col = (re) => head.findIndex((h) => re.test(h));
-    const c = {
-      date: col(/paiva|pvm|date/),
-      title: col(/elokuva/),
-      snacks: col(/herku|karkk/),
-      other: col(/muut/),
-      theater: col(/teatteri|sali/),
-      note: col(/muist|huom/),
-      rating: col(/arvosana|arvio|tahdet|rating/),
-    };
-    if (c.date < 0) continue;
-    const out = [];
-    for (const row of grid.slice(hi + 1)) {
-      const title = String(row[c.title] ?? '').trim();
-      const date = parseDate(row[c.date]);
-      if (!title || !date) continue;
-      out.push({
-        date,
-        title,
-        snacks: c.snacks >= 0 ? num(row[c.snacks]) : 0,
-        other: c.other >= 0 ? num(row[c.other]) : 0,
-        theater: c.theater >= 0 ? String(row[c.theater]).trim() : '',
-        note: c.note >= 0 ? String(row[c.note]).trim() : '',
-        rating: c.rating >= 0 ? Math.min(5, Math.max(0, Math.round(num(row[c.rating])))) : 0,
-      });
-    }
-    return { sheet: name, rows: out };
+    const found = rowsFromGrid(grid, name);
+    if (found) return found;
   }
   return null;
+}
+
+/** Parsii CSV-tekstin 2D-taulukoksi (käsittelee lainausmerkit ja ;- tai ,-erottimen). */
+function parseCSV(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const lines = text.split(/\r?\n/);
+  // Erotin: päättely ensimmäisestä ei-tyhjästä rivistä
+  let sep = ';';
+  for (const ln of lines) {
+    if (ln.trim() === '') continue;
+    const sc = (ln.match(/;/g) || []).length;
+    const cc = (ln.match(/,/g) || []).length;
+    if (cc > sc) sep = ',';
+    break;
+  }
+  const grid = [];
+  for (const line of lines) {
+    if (line.trim() === '') continue;
+    const cells = [];
+    let cur = '';
+    let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = false;
+        } else cur += ch;
+      } else {
+        if (ch === '"') inQ = true;
+        else if (ch === sep) { cells.push(cur); cur = ''; }
+        else cur += ch;
+      }
+    }
+    cells.push(cur);
+    grid.push(cells);
+  }
+  return grid;
 }
 
 $('#xlsx-file').addEventListener('change', async (e) => {
@@ -1154,9 +1248,15 @@ $('#xlsx-file').addEventListener('change', async (e) => {
   const result = $('#import-result');
   result.textContent = 'Luetaan…';
   try {
-    const XLSX = await loadXlsx();
-    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-    const found = rowsFromWorkbook(XLSX, wb);
+    let found;
+    if (file.name.toLowerCase().endsWith('.csv')) {
+      const text = await file.text();
+      found = rowsFromGrid(parseCSV(text), file.name);
+    } else {
+      const XLSX = await loadXlsx();
+      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+      found = rowsFromWorkbook(XLSX, wb);
+    }
     if (!found || !found.rows.length) throw new Error('Taulukosta ei löytynyt käyntejä (sarakkeet Päivä ja Elokuva).');
 
     let replace = false;

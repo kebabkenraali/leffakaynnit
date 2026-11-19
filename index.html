@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
   <header class="top">
@@ -174,11 +174,16 @@
       <div class="card form">
         <strong>Varmuuskopio</strong>
         <p class="small muted">Tiedot tallentuvat vain tähän selaimeen. Varmuuskopio tallentuu puhelimen tiedostoihin (Lataukset-kansio tai jakovalikko), ei selaimen välimuistiin.</p>
+        <p id="backup-status" class="small muted"></p>
         <label class="two">
           <input id="auto-local-backup" type="checkbox">
           <span>Tallenna varmuuskopio puhelimeen automaattisesti kerran päivässä (muutoksen jälkeen)</span>
         </label>
-        <button id="export-json" class="btn" type="button">Lataa varmuuskopio (.json)</button>
+        <div id="ios-hint" class="small muted" hidden>iPhone/iPad: lisää sovellus Koti-valikkoon (Jaa → Lisää Koti-valikkoon), jotta selain ei poista tietoja 7 päivän käyttämättömyyden jälkeen. Varmuuskopioi säännöllisesti (Lataa varmuuskopio → Mail).</div>
+        <div class="actions">
+          <button id="export-json" class="btn" type="button">Lataa varmuuskopio (.json)</button>
+          <button id="copy-backup" class="btn" type="button">Kopioi leikepöydälle</button>
+        </div>
         <label class="btn file-btn">Palauta varmuuskopio<input id="import-json" type="file" accept=".json,application/json" hidden></label>
         <button id="export-csv" class="btn" type="button">Vie CSV (Exceliin)</button>
         <button id="clear-all" class="btn danger" type="button">Poista kaikki käynnit</button>
@@ -231,6 +236,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=20"></script>
+  <script src="app.js?v=21"></script>
 </body>
 </html>
