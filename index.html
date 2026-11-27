@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=29">
+  <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
   <header class="top">
@@ -73,7 +73,7 @@
 
       <div class="card">
         <div class="row-between">
-          <strong data-i18n="treatGoalCard">Herkkutavoite</strong>
+          <strong data-i18n="treatGoalCard">Milloin herkut kannattavat</strong>
           <span id="sg-label" class="muted small"></span>
         </div>
         <div class="bar"><div id="sg-bar"></div></div>
@@ -97,12 +97,12 @@
       </div>
 
       <div class="card">
-        <strong data-i18n="savingsVsTickets">Säästö vs. sarjaliput</strong>
+        <strong data-i18n="savingsVsTickets">Säästövertailu</strong>
         <div id="savings-compare"></div>
       </div>
 
       <div class="card">
-        <strong data-i18n="accumulatedSavings">Kertynyt säästö vs. sarjaliput</strong>
+        <strong data-i18n="accumulatedSavings">Säästön kehitys</strong>
         <div id="savings-chart" class="chart"></div>
       </div>
 
@@ -112,12 +112,12 @@
         <div id="visits-chart" class="chart"></div>
         <table class="months">
           <thead><tr>
-            <th data-i18n="monthHdr">Kk</th><th data-i18n="visitsHdr">Käyn.</th><th data-i18n="snacksHdr">Herkut</th>
-            <th data-i18n="perVisitHdr">€/käynti</th><th data-i18n="savingsHdr">Säästö</th><th data-i18n="plusSnacksHdr">+ herkut</th>
+            <th data-i18n="monthHdr">Kk</th><th data-i18n="visitsHdr">Käynnit</th><th data-i18n="snacksHdr">Herkut</th>
+            <th data-i18n="perVisitHdr">€/käynti</th><th data-i18n="savingsHdr">Säästö</th><th data-i18n="plusSnacksHdr">Säästö (herkut mukana)</th>
           </tr></thead>
           <tbody id="months"></tbody>
         </table>
-        <p class="small muted" data-i18n="monthlyFootnote">Kuukauden lopun tilanne: vuosimaksu jaetaan kaikilla siihen mennessä kertyneillä käynneillä. Säästö = pelkkä lippu, + herkut = herkut ja muut kulut vähennettynä.</p>
+        <p class="small muted" data-i18n="monthlyFootnote">Kuukauden lopun tilanne: vuosimaksu jaetaan kaikilla siihen mennessä kertyneillä käynneillä. Säästö = pelkkä lippu, Säästö (herkut mukana) = herkut ja muut kulut vähennettynä.</p>
       </div>
 
       <div class="card">
@@ -184,7 +184,7 @@
         </select>
       </div>
       <form id="settings-form" class="card form">
-        <strong data-i18n="subscription">Tilaus</strong>
+        <strong data-i18n="subscription">Tilaus ja hinnat</strong>
         <label><span data-i18n="annualFee">Premium-vuosimaksu (€)</span><input name="annualFee" type="number" step="0.01" min="0" inputmode="decimal" required></label>
         <label><span data-i18n="ticketPrice">Sarjalipun hinta vertailuun (€/lippu)</span><input name="ticketPrice" type="number" step="0.01" min="0" inputmode="decimal" required></label>
         <label><span data-i18n="seasonStart">Kausi alkaa</span><input name="seasonStart" type="date" required></label>
@@ -208,7 +208,7 @@
       </div>
 
       <div class="card form">
-        <strong data-i18n="importExcel">Tuo Excelistä</strong>
+        <strong data-i18n="importExcel">Tuo käyntejä Excelistä</strong>
         <p class="small muted" data-i18n="importExcelDesc">Valitse Finnkino_Premium_Seuranta.xlsx. Sovellus lukee välilehden, jossa on sarakkeet Päivä, Elokuva ja Herkut €.</p>
         <input id="xlsx-file" type="file" accept=".xlsx,.xls,.csv">
         <div id="import-result" class="small"></div>
@@ -225,7 +225,7 @@
         <div id="ios-hint" class="small muted" hidden data-i18n="iosHint">iPhone/iPad: lisää sovellus Koti-valikkoon (Jaa → Lisää Koti-valikkoon), jotta selain ei poista tietoja 7 päivän käyttämättömyyden jälkeen. Varmuuskopioi säännöllisesti (Lataa varmuuskopio → Mail).</div>
         <div class="actions">
           <button id="export-json" class="btn" type="button" data-i18n="downloadBackup">Lataa varmuuskopio (.json)</button>
-          <button id="copy-backup" class="btn" type="button" data-i18n="copyClipboard">Kopioi leikepöydälle</button>
+          <button id="copy-backup" class="btn" type="button" data-i18n="copyClipboard">Kopioi varmuuskopio leikepöydälle</button>
         </div>
         <label class="btn file-btn" data-i18n="restoreBackup">Palauta varmuuskopio<input id="import-json" type="file" accept=".json,application/json" hidden></label>
         <button id="export-csv" class="btn" type="button" data-i18n="exportCsv">Vie CSV (Exceliin)</button>
@@ -246,7 +246,7 @@
     <form id="visit-form" method="dialog" class="form">
       <h2 id="dialog-title" data-i18n="newVisit">Uusi käynti</h2>
       <input type="hidden" name="id">
-      <label><span data-i18n="dialogDate">Päivä</span><input name="date" type="date" required></label>
+      <label><span data-i18n="dialogDate">Käyntipäivä</span><input name="date" type="date" required></label>
       <label>
         <span data-i18n="dialogMovie">Elokuva</span>
         <input name="title" type="text" required list="titles" autocomplete="off">
@@ -256,8 +256,8 @@
       <label><span data-i18n="dialogTheater">Teatteri (valinnainen)</span><input name="theater" type="text" list="theaters" autocomplete="off"></label>
       <datalist id="theaters"></datalist>
       <div class="two">
-        <label><span data-i18n="dialogSnacks">Herkut €</span><input name="snacks" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
-        <label><span data-i18n="dialogOther">Muut kulut €</span><input name="other" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
+        <label><span data-i18n="dialogSnacks">Herkut yhteensä €</span><input name="snacks" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
+        <label><span data-i18n="dialogOther">Muut kulut yhteensä €</span><input name="other" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
       </div>
       <div class="rating-field">
         <span data-i18n="dialogRating">Arvio (valinnainen)</span>
@@ -278,6 +278,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=29"></script>
+  <script src="app.js?v=30"></script>
 </body>
 </html>

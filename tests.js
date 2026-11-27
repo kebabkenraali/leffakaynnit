@@ -30,7 +30,7 @@ const eqMoney = (a, b) => eq(a, b);
 /** Extracts the calculation functions from the app.js source into a sandbox function.
  *  Returns an object: computeVisits etc. plus setState(state) to set the state. */
 async function loadCalcApi() {
-  const src = await (await fetch('app.js?v=29')).text();
+  const src = await (await fetch('app.js?v=30')).text();
 
   const fnSource = (name) => {
     const m = src.match(new RegExp('function ' + name + '\\([\\s\\S]*?\\n\\}'));
