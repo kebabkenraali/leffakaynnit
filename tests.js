@@ -30,7 +30,7 @@ const eqMoney = (a, b) => eq(a, b);
 /** Extracts the calculation functions from the app.js source into a sandbox function.
  *  Returns an object: computeVisits etc. plus setState(state) to set the state. */
 async function loadCalcApi() {
-  const src = await (await fetch('app.js?v=26')).text();
+  const src = await (await fetch('app.js?v=27')).text();
 
   const fnSource = (name) => {
     const m = src.match(new RegExp('function ' + name + '\\([\\s\\S]*?\\n\\}'));
@@ -48,6 +48,7 @@ async function loadCalcApi() {
     constSource('const pad ='),
     constSource('const MONTH_NAMES'),
     constSource('const MONTH_NAMES_EN'),
+    constSource('const RATING_QUESTIONS'),
     'let state = null;',
     fnSource('todayIso'),
     fnSource('isCounted'),
@@ -57,7 +58,14 @@ async function loadCalcApi() {
     fnSource('monthNames'),
     fnSource('monthStats'),
     fnSource('parseDate'),
-    'return { computeVisits, computeSummary, monthStats, parseDate, setState: (s) => { state = s; } };',
+    fnSource('levenshtein'),
+    fnSource('normalizeTitleKey'),
+    fnSource('canonicalTitle'),
+    fnSource('legacyRatingToScore'),
+    fnSource('answerScore'),
+    fnSource('overallRating'),
+    fnSource('migrateVisits'),
+    'return { computeVisits, computeSummary, monthStats, parseDate, normalizeTitleKey, canonicalTitle, legacyRatingToScore, answerScore, overallRating, migrateVisits, setState: (s) => { state = s; } };',
   ].join('\n');
 
   return new Function('"use strict";\n' + code)();
@@ -173,6 +181,69 @@ function runTests() {
     const sum = Calc.computeSummary(Calc.computeVisits());
     assert(eq(sum.monthPace, 0), 'pace ' + sum.monthPace);
     assert(eq(sum.extraAvg, 0), 'extra ' + sum.extraAvg);
+  });
+
+  test('overallRating: perfect answers give 10, reverse questions are inverted', () => {
+    const perfect = { liked: 5, time: 5, length: 'right', bored: 1, slept: 1, story: 5 };
+    const worst = { liked: 1, time: 1, length: 'long', bored: 5, slept: 5, story: 1 };
+    assert(eq(Calc.overallRating(perfect), 10), 'perfect ' + Calc.overallRating(perfect));
+    assert(eq(Calc.overallRating(worst), 0.6), 'worst ' + Calc.overallRating(worst));
+  });
+
+  test('overallRating: unanswered questions are ignored', () => {
+    assert(eq(Calc.overallRating({ liked: 3 }), 5), 'one answer ' + Calc.overallRating({ liked: 3 }));
+    assert(eq(Calc.overallRating({}), 0), 'no answers');
+  });
+
+  test('legacyRatingToScore: 1–5 stars map to 0–10', () => {
+    assert(eq(Calc.legacyRatingToScore(1), 0), '1 star');
+    assert(eq(Calc.legacyRatingToScore(3), 5), '3 stars');
+    assert(eq(Calc.legacyRatingToScore(5), 10), '5 stars');
+  });
+
+  test('migrateVisits: old ratings converted and duplicate titles unified', () => {
+    const visits = [
+      visit('2026-10-01', 'Star Wars', 0, 0),
+      visit('2026-10-02', 'star wars', 0, 0),
+      visit('2026-10-03', 'Starwars', 0, 0),
+    ];
+    visits[0].rating = 4;
+    const migrated = Calc.migrateVisits(visits);
+    assert(eq(migrated.renamed, 2), 'renamed ' + migrated.renamed);
+    assert(migrated.visits.every((v) => v.title === 'Star Wars'), 'titles not unified');
+    assert(eq(migrated.visits[0].rating, 7.5), 'rating ' + migrated.visits[0].rating);
+  });
+
+  test('migrateVisits: migration is idempotent', () => {
+    const visits = [{ title: 'A', rating: 3 }];
+    const once = Calc.migrateVisits(visits);
+    assert(eq(once.visits[0].rating, 5), 'first ' + once.visits[0].rating);
+    const twice = Calc.migrateVisits(once.visits);
+    assert(eq(twice.visits[0].rating, 5), 'second ' + twice.visits[0].rating);
+  });
+
+  test('canonicalTitle: known spelling wins, different movies stay separate', () => {
+    Calc.setState(makeState({ annualFee: 100, ticketPrice: 14.45, visits: [
+      visit('2026-10-01', 'Alien'), visit('2026-10-02', 'Star Wars'),
+    ] }));
+    assert(Calc.canonicalTitle('alien') === 'Alien', 'case difference');
+    assert(Calc.canonicalTitle('Star wars') === 'Star Wars', 'spacing difference');
+    assert(Calc.canonicalTitle('Aliens') === 'Aliens', 'different movie merged');
+    assert(Calc.canonicalTitle('Star Wara') === 'Star Wars', 'typo not fixed');
+  });
+
+  test('unique movies: count, once/repeat split and rewatches', () => {
+    const visits = [
+      visit('2026-10-01', 'A'), visit('2026-10-02', 'A'), visit('2026-10-03', 'A'),
+      visit('2026-10-04', 'B'), visit('2026-10-05', 'C'), visit('2026-10-06', 'C'),
+    ];
+    Calc.setState(makeState({ annualFee: 100, ticketPrice: 14.45, visits }));
+    const u = Calc.computeSummary(Calc.computeVisits()).unique;
+    assert(eq(u.movies, 3), 'movies ' + u.movies);
+    assert(eq(u.once, 1), 'once ' + u.once);
+    assert(eq(u.repeat, 2), 'repeat ' + u.repeat);
+    assert(eq(u.rewatches, 3), 'rewatches ' + u.rewatches);
+    assert(eq(u.top[0].count, 3), 'top ' + u.top[0].count);
   });
 
   return testResults;

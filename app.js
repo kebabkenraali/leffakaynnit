@@ -34,7 +34,14 @@ const I18N = {
     visitCount: 'Käyntejä',
     mostExpensive: 'Eniten maksanut (kaikki käynnit + herkut)',
     total: 'Yhteensä',
-    ratings: 'Arvosanat',
+    ratings: 'Arviot',
+    uniqueMovies: 'Uniikit elokuvat',
+    watchedOnce: 'Katsottu kerran',
+    watchedAgain: 'Useamman kerran',
+    topMovies: 'Eniten katsotut',
+    uniqueSummary: '{movies} elokuvaa · {visits} käyntiä',
+    uniquePerMovie: '{n} käyntiä / elokuva',
+    rewatches: 'Uusintakäyntejä yhteensä: {n}',
     searchPlaceholder: 'Hae elokuvaa…',
     emptyVisits: 'Ei vielä käyntejä. Lisää ensimmäinen +-napista tai tuo Excel Asetuksista.',
     settings: 'Asetukset',
@@ -111,15 +118,21 @@ const I18N = {
     dialogTheater: 'Teatteri (valinnainen)',
     dialogSnacks: 'Herkut €',
     dialogOther: 'Muut kulut €',
-    dialogRating: 'Arvosana (valinnainen)',
+    dialogRating: 'Arvio (valinnainen)',
+    ratingInstructions: 'Vastaa haluamiisi kysymyksiin. Kokonaisarvio (0–10) on vastausten keskiarvo.',
+    ratingTotal: 'Kokonaisarvio',
+    questionAverages: 'Kysymyskohtaiset keskiarvot',
+    answerCount: '{n} vastausta',
+    answerCountOne: '{n} vastaus',
+    didYouMean: 'Tarkoititko:',
+    titleNormalized: 'Elokuvan nimi yhdenmukaistettu: {title}',
+    titlesUnified: 'Yhdenmukaistettu {n} elokuvan nimeä',
     dialogNote: 'Muistiinpano',
     dialogNotePlaceholder: 'esim. 4DX, seuralainen…',
     dialogPreviewHidden: 'Päivä jää laskuista pois: tulevaisuudessa tai kauden ulkopuolella.',
     dialogCancel: 'Peruuta',
     dialogSave: 'Tallenna',
     dialogDelete: 'Poista',
-    ratingStar: '{n} tähti',
-    ratingStars: '{n} tähteä',
     futureDate: 'tarkista päivä',
     notCounted: 'ei laskettu',
     premiumPaidBack: 'Premium on maksanut itsensä takaisin! Jokainen käynti nyt on puhdasta voittoa sarjalippuun verrattuna.',
@@ -135,8 +148,8 @@ const I18N = {
     noVisitsForSavings: 'Lisää käyntejä nähdäksesi säästön.',
     noVisitsForChart: 'Kaavio näkyy, kun käyntejä on lisätty.',
     noVisitsForMonths: 'Ei käyntejä',
-    ratingsEmpty: 'Anna käynnille 1–5 tähteä käynnin lomakkeessa, niin näet täällä keskiarvon ja parhaat elokuvat.',
-    ratingsAvg: 'keskiarvo · {rated} / {total} käyntiä arvioitu',
+    ratingsEmpty: 'Vastaa käynnin arviokysymyksiin, niin näet täällä keskiarvon, jakauman ja parhaat elokuvat.',
+    ratingsAvg: 'keskiarvo /10 · {rated} / {total} käyntiä arvioitu',
     bestMovies: 'Parhaat',
     worstMovies: 'Heikoimmat',
     langLabel: 'Kieli / Language',
@@ -159,11 +172,6 @@ const I18N = {
     perVisitHdr: '€/käynti',
     savingsHdr: 'Säästö',
     plusSnacksHdr: '+ herkut',
-    ratingAria1: '1 tähti',
-    ratingAria2: '2 tähteä',
-    ratingAria3: '3 tähteä',
-    ratingAria4: '4 tähteä',
-    ratingAria5: '5 tähteä',
     zeroAmount: '0,00',
     ticketOnly: 'Pelkkä lippu',
     withSnacks: 'Herkut ja muut mukana',
@@ -185,8 +193,7 @@ const I18N = {
     previewTicket: '(sarjalippu {ticket})',
     previewDelay: 'Herkut ja muut kulut (+{amount}) siirtävät herkkutavoitetta n. {n} käynnin verran.',
     previewNoDelay: 'Herkuton käynti ei siirrä herkkutavoitetta.',
-    avgAbbrev: 'ka',
-    csvHeaders: 'Käynti nro|Päivä|Elokuva|Teatteri|Herkut €|Muut kulut €|Premium €/käynti|Kaikki kulut €/käynti|Arvosana|Muistiinpano',
+    csvHeaders: 'Käynti nro|Päivä|Elokuva|Teatteri|Herkut €|Muut kulut €|Premium €/käynti|Kaikki kulut €/käynti|Arvio 0-10|Tykäkäsitkö|Hyvä ajankäyttö|Pituus|Tylsistytkö|Nukahditko|Tarina|Muistiinpano',
     csvNotCounted: 'ei laskettu: tarkista päivä',
   },
   en: {
@@ -222,6 +229,13 @@ const I18N = {
     mostExpensive: 'Most expensive (all visits + snacks)',
     total: 'Total',
     ratings: 'Ratings',
+    uniqueMovies: 'Unique movies',
+    watchedOnce: 'Watched once',
+    watchedAgain: 'More than once',
+    topMovies: 'Most watched',
+    uniqueSummary: '{movies} movies · {visits} visits',
+    uniquePerMovie: '{n} visits / movie',
+    rewatches: 'Repeat visits in total: {n}',
     searchPlaceholder: 'Search movie…',
     emptyVisits: 'No visits yet. Add the first one with the + button or import from Excel in Settings.',
     settings: 'Settings',
@@ -299,14 +313,20 @@ const I18N = {
     dialogSnacks: 'Snacks €',
     dialogOther: 'Other costs €',
     dialogRating: 'Rating (optional)',
+    ratingInstructions: 'Answer the questions you like. The overall rating (0–10) is the average of the answers.',
+    ratingTotal: 'Overall rating',
+    questionAverages: 'Average by question',
+    answerCount: '{n} answers',
+    answerCountOne: '{n} answer',
+    didYouMean: 'Did you mean:',
+    titleNormalized: 'Movie title unified: {title}',
+    titlesUnified: 'Unified the spelling of {n} movie titles',
     dialogNote: 'Note',
     dialogNotePlaceholder: 'e.g. 4DX, companion…',
     dialogPreviewHidden: 'Date excluded from calculations: in the future or outside the season.',
     dialogCancel: 'Cancel',
     dialogSave: 'Save',
     dialogDelete: 'Delete',
-    ratingStar: '{n} star',
-    ratingStars: '{n} stars',
     futureDate: 'check date',
     notCounted: 'not counted',
     premiumPaidBack: 'Premium has paid for itself! Every visit now is pure profit compared to a ticket book.',
@@ -322,8 +342,8 @@ const I18N = {
     noVisitsForSavings: 'Add visits to see savings.',
     noVisitsForChart: 'Chart appears once visits are added.',
     noVisitsForMonths: 'No visits',
-    ratingsEmpty: 'Rate a visit 1–5 stars in the visit form to see the average and best movies here.',
-    ratingsAvg: 'average · {rated} / {total} visits rated',
+    ratingsEmpty: 'Answer the rating questions in the visit form to see the average, distribution and best movies here.',
+    ratingsAvg: 'average /10 · {rated} / {total} visits rated',
     bestMovies: 'Best',
     worstMovies: 'Worst',
     langLabel: 'Language / Kieli',
@@ -346,11 +366,6 @@ const I18N = {
     perVisitHdr: '€/visit',
     savingsHdr: 'Savings',
     plusSnacksHdr: '+ snacks',
-    ratingAria1: '1 star',
-    ratingAria2: '2 stars',
-    ratingAria3: '3 stars',
-    ratingAria4: '4 stars',
-    ratingAria5: '5 stars',
     zeroAmount: '0.00',
     ticketOnly: 'Ticket only',
     withSnacks: 'Snacks & other included',
@@ -372,13 +387,55 @@ const I18N = {
     previewTicket: '(ticket {ticket})',
     previewDelay: 'Snacks and other costs (+{amount}) delay the treat goal by about {n} visits.',
     previewNoDelay: 'A visit without snacks does not delay the treat goal.',
-    avgAbbrev: 'avg',
-    csvHeaders: 'Visit no.|Date|Movie|Theater|Snacks €|Other costs €|Premium €/visit|All costs €/visit|Rating|Note',
+    csvHeaders: 'Visit no.|Date|Movie|Theater|Snacks €|Other costs €|Premium €/visit|All costs €/visit|Rating 0-10|Liked|Good use of time|Length|Got bored|Fell asleep|Story|Note',
     csvNotCounted: 'not counted: check date',
   }
 };
 
+// Arviokysymykset: jokaisen käynnin vastaukset tallentuvat erikseen, joten samasta elokuvasta
+// voi olla useita eri arvioita. Kokonaisarvio on vastausten keskiarvo asteikolla 0–10.
+// scale: vastaus 1–5 (reverse kääntää asteikon), choice: yksi vaihtoehdoista.
+// p-arvo on vastauksen laatu 0–1, josta kokonaisarvio lasketaan.
+const RATING_QUESTIONS = [
+  {
+    key: 'liked', type: 'scale', reverse: false,
+    fi: 'Tykäkäsitkö elokuvasta?', en: 'Did you like the movie?',
+    low: { fi: 'Ei', en: 'Not at all' }, high: { fi: 'Kyllä, erittäin', en: 'Yes, very much' },
+  },
+  {
+    key: 'time', type: 'scale', reverse: false,
+    fi: 'Oliko hyvä tapa käyttää aikaa?', en: 'Was it a good use of time?',
+    low: { fi: 'Ei ollenkaan', en: 'Not at all' }, high: { fi: 'Erinomainen', en: 'Excellent' },
+  },
+  {
+    key: 'length', type: 'choice',
+    fi: 'Miten elokuvan pituus tuntui?', en: 'How did the length feel?',
+    options: [
+      { v: 'short', p: 0.6, fi: 'Liian lyhyt', en: 'Too short' },
+      { v: 'right', p: 1, fi: 'Sopiva', en: 'About right' },
+      { v: 'long', p: 0.35, fi: 'Liian pitkä', en: 'Too long' },
+    ],
+  },
+  {
+    key: 'bored', type: 'scale', reverse: true,
+    fi: 'Tylsistytkö?', en: 'Did you get bored?',
+    low: { fi: 'En lainkaan', en: 'Not at all' }, high: { fi: 'Kyllä, paljon', en: 'Yes, a lot' },
+  },
+  {
+    key: 'slept', type: 'scale', reverse: true,
+    fi: 'Nukahditko?', en: 'Did you fall asleep?',
+    low: { fi: 'En', en: 'No' }, high: { fi: 'Kyllä', en: 'Yes' },
+  },
+  {
+    key: 'story', type: 'scale', reverse: false,
+    fi: 'Tarina', en: 'Story',
+    low: { fi: 'Heikko', en: 'Poor' }, high: { fi: 'Erinomainen', en: 'Excellent' },
+  },
+];
+
 let currentLang = 'fi';
+let formAnswers = {}; // Arviokysymysten vastaukset parhaillaan avoimessa käyntidialogissa
+let ratingFallback = 0; // Vanha arvio, jos käynnillä ei ole kysymysvastauksia
 function t(key, vars) {
   const dict = I18N[currentLang] || I18N.fi;
   let s = (dict[key] != null) ? dict[key] : ((I18N.fi[key] != null) ? I18N.fi[key] : key);
@@ -399,6 +456,7 @@ function setLang(lang) {
     save(); // kielivalinta säilyy seuraavassa avauksessa
   }
   applyTranslations();
+  if ($('#rating-questions')) renderRatingForm(formAnswers);
   if (typeof render === 'function') render();
 }
 function applyTranslations() {
@@ -466,16 +524,122 @@ const fmtDate = (iso) => {
 const dec1 = (v) => currentLang === 'en' ? v.toFixed(1) : v.toFixed(1).replace('.', ',');
 const $ = (sel) => document.querySelector(sel);
 
+// ---------- Arvioiden ja nimien yhdenmukaistus ----------
+
+/** Avain elokuvan nimen vertailuun: kirjankoko, ääkköset, välilyönnit ja välimerkit pois. */
+function normalizeTitleKey(title) {
+  return String(title || '').toLowerCase().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+/** Toisen asteen muokkausetäisyys pienten kirjoitusvirheiden tunnistamiseen. */
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+/** Vanha 1–5 tähtiarvio uudelle 0–10 asteikolle (1→0, 3→5, 5→10). */
+function legacyRatingToScore(rating) {
+  const n = Number(rating);
+  return Number.isFinite(n) ? Math.round(Math.max(0, Math.min(5, n) - 1) * 2.5 * 10) / 10 : 0;
+}
+
+/** Yhden kysymyksen vastaus luvuksi 0–1 (1 = paras mahdollinen vastaus). */
+function answerScore(q, value) {
+  if (value == null || value === '') return null;
+  if (q.type === 'choice') {
+    const o = q.options.find((x) => x.v === value);
+    return o ? o.p : null;
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 1 || n > 5) return null;
+  return (q.reverse ? 5 - n : n - 1) / 4;
+}
+
+/** Kokonaisarvio 0–10: vastattujen kysymysten keskiarvo, yhden desimaalin tarkkuudella. */
+function overallRating(answers) {
+  if (!answers) return 0;
+  const scores = RATING_QUESTIONS.map((q) => answerScore(q, answers[q.key])).filter((s) => s !== null);
+  if (!scores.length) return 0;
+  return Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) / 10;
+}
+
+/** Palauttaa aiemmin tallennetun, samaa elokuvaa tarkoittavan nimen, jos sellainen löytyy. */
+function canonicalTitle(input) {
+  const raw = String(input || '').trim();
+  const key = normalizeTitleKey(raw);
+  if (!key) return raw;
+  const known = [...new Set(state.visits.map((v) => v.title).filter(Boolean))];
+  const exact = known.find((title) => normalizeTitleKey(title) === key);
+  if (exact) return exact;
+  // Sumen ehdotus vain riittävän pitkille nimille, ettei esim. "Alien" ja "Aliens" yhdisty.
+  if (key.length < 8) return raw;
+  let best = null;
+  let bestDist = Infinity;
+  for (const title of known) {
+    const k = normalizeTitleKey(title);
+    if (k.length < 8) continue;
+    const d = levenshtein(key, k);
+    const limit = Math.min(2, Math.max(1, Math.floor(Math.min(key.length, k.length) / 10)));
+    if (d <= limit && d < bestDist) { best = title; bestDist = d; }
+  }
+  return best || raw;
+}
+
+/** Siirtymä vanhasta datasta: 1–5 arviot 0–10 asteikolle ja saman elokuvan nimet yhdenmukaiseen asuun. */
+function migrateVisits(visits) {
+  for (const v of visits) {
+    const r = Number(v.rating);
+    // Merkki estää jo kerran muunnetun arvion muuntamisen uudelleen (3→5→10).
+    if (v.ratingScale !== 10 && !v.answers && r >= 1 && r <= 5) v.rating = legacyRatingToScore(r);
+    else v.rating = Number.isFinite(r) ? Math.max(0, Math.min(10, r)) : 0;
+    v.ratingScale = 10;
+  }
+  const groups = new Map();
+  for (const v of visits) {
+    const key = normalizeTitleKey(v.title);
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(v);
+  }
+  let renamed = 0;
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+    const counts = new Map();
+    for (const v of group) counts.set(v.title, (counts.get(v.title) || 0) + 1);
+    // Tasatilanteessa säilytetään ensimmäisenä tallennettu kirjoitusasu (sort on vakaa).
+    const canonical = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    for (const v of group) {
+      if (v.title !== canonical) { v.title = canonical; renamed++; }
+    }
+  }
+  return { visits, renamed };
+}
+
 // ---------- Tallennus ----------
+
+let renamedAtLoad = 0;
 
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return structuredClone(DEFAULT_STATE);
     const data = JSON.parse(raw);
+    const migrated = migrateVisits(Array.isArray(data.visits) ? data.visits : []);
+    renamedAtLoad = migrated.renamed;
     return {
       settings: { ...DEFAULT_STATE.settings, ...data.settings },
-      visits: Array.isArray(data.visits) ? data.visits : [],
+      visits: migrated.visits,
     };
   } catch {
     return structuredClone(DEFAULT_STATE);
@@ -614,6 +778,20 @@ function computeSummary(rows) {
     m.snacks += v.snacks || 0;
     byTitle.set(key, m);
   }
+  // Uniikit elokuvat ja niiden tilanne: kuinka moni katsottu kerran / useammin ja
+  // kuinka monta käyntiä on uusintakäyntejä. Sama elokuva lasketaan yhdeksi nimen perusteella.
+  const films = [...byTitle.values()];
+  const uniqueMovies = films.length;
+  const watchedOnce = films.filter((m) => m.count === 1).length;
+  const uniqueStats = {
+    movies: uniqueMovies,
+    once: watchedOnce,
+    repeat: uniqueMovies - watchedOnce,
+    rewatches: films.reduce((a, m) => a + Math.max(0, m.count - 1), 0),
+    perMovie: uniqueMovies ? n / uniqueMovies : 0,
+    top: films.slice().sort((a, b) => b.count - a.count || a.title.localeCompare(b.title)).slice(0, 3),
+  };
+
   let mostWatched = null;
   let mostExpensiveWithSnacks = null;
   let maxCount = 0;
@@ -681,6 +859,7 @@ function computeSummary(rows) {
     projectedPrice: projected ? s.annualFee / projected : null,
     mostWatched,
     mostExpensiveWithSnacks,
+    unique: uniqueStats,
   };
 }
 
@@ -768,6 +947,8 @@ function renderSummary(rows, sum) {
     $('#s-most-expensive-total').textContent = '–';
   }
 
+  renderUnique(sum);
+
   const months = monthStats(rows);
   renderSnackBudget(months);
   renderSavingsChart(months, rows.length, sum);
@@ -843,17 +1024,36 @@ function renderSnackGoal(sum) {
       : t('treatGoalNoDelay', {amount: eur.format(sum.snacks + sum.other)});
 }
 
-/** Arvosanat: keskiarvo, jakauma sekä parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). */
+/** Uniikit elokuvat: määrä, käyntijakauma ja eniten katsotut. */
+function renderUnique(sum) {
+  const u = sum.unique;
+  $('#unique-count').textContent = u.movies ? String(u.movies) : '–';
+  $('#unique-label').textContent = u.movies ? t('uniqueSummary', {movies: u.movies, visits: sum.n}) : '';
+  $('#unique-sub').textContent = u.movies ? t('uniquePerMovie', {n: dec1(u.perMovie)}) : '';
+  $('#unique-bar').style.width = u.movies ? (u.once / u.movies) * 100 + '%' : '0';
+  $('#unique-once').textContent = u.movies ? u.once : '–';
+  $('#unique-repeat').textContent = u.movies ? u.repeat : '–';
+  $('#unique-rewatches').textContent = u.movies ? t('rewatches', {n: u.rewatches}) : '';
+  $('#unique-top').innerHTML = u.top.map((m) =>
+    `<li>${esc(m.title)} <span class="muted">(${m.count}×)</span></li>`).join('');
+}
+
+/** Arviot: 0–10 kokonaisarvon keskiarvo, jakauma, kysymyskohtaiset keskiarvot sekä
+ *  parhaat ja heikoimmat elokuvat (saman elokuvan käynnit keskiarvona). */
 function renderRatings(rows) {
   const el = $('#ratings');
-  const rated = rows.filter((r) => r.rating > 0);
+  const rated = rows.filter((r) => Number(r.rating) > 0);
   if (!rated.length) {
     el.innerHTML = '<p class="muted small">' + t('ratingsEmpty') + '</p>';
     return;
   }
   const fmt1 = dec1;
   const avg = rated.reduce((a, r) => a + r.rating, 0) / rated.length;
-  const dist = [5, 4, 3, 2, 1].map((v) => ({ v, count: rated.filter((r) => r.rating === v).length }));
+  // Jakauma kahden pisteen lokeroissa (0–2, 2–4, …, 8–10).
+  const dist = [8, 6, 4, 2, 0].map((lo) => ({
+    label: `${lo}–${lo + 2}`,
+    count: rated.filter((r) => r.rating >= lo && (lo === 8 ? r.rating <= 10 : r.rating < lo + 2)).length,
+  }));
   const maxCount = Math.max(...dist.map((d) => d.count));
 
   const byTitle = new Map();
@@ -865,14 +1065,29 @@ function renderRatings(rows) {
     byTitle.set(key, m);
   }
   const films = [...byTitle.values()].map((m) => ({ ...m, avg: m.sum / m.count }));
-  const byBest = (a, b) => b.avg - a.avg || a.title.localeCompare(b.title, currentLang === 'en' ? 'en' : 'fi');
+  const byBest = (a, b) => b.avg - a.avg || a.title.localeCompare(b.title);
   const best = [...films].sort(byBest).slice(0, 3);
   // Heikoimmat vasta kun arvioituja elokuvia on tarpeeksi, ettei sama elokuva näy molemmissa listoissa
   const worst = films.length >= 6 ? [...films].sort((a, b) => -byBest(a, b)).slice(0, 3) : [];
   const list = (items) =>
     items
-      .map((f) => `<li><span class="stars-small">${stars(Math.round(f.avg))}</span> ${esc(f.title)}${f.count > 1 ? ` <span class="muted">(${f.count}×, ${t('avgAbbrev')} ${fmt1(f.avg)})</span>` : ''}</li>`)
+      .map((f) => `<li><span class="score-chip">${fmt1(f.avg)} / 10</span> ${esc(f.title)}${f.count > 1 ? ` <span class="muted">(${f.count}×)</span>` : ''}</li>`)
       .join('');
+
+  // Kysymyskohtaiset keskiarvot vain niistä käynneistä, joihin on vastattu kyseiseen kysymykseen.
+  const withAnswers = rows.filter((r) => r.answers);
+  const qAverages = RATING_QUESTIONS.map((q) => {
+    const vals = withAnswers.map((r) => answerScore(q, r.answers[q.key])).filter((v) => v !== null);
+    return { q, n: vals.length, avg: vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) * 10 : null };
+  }).filter((x) => x.n > 0);
+  const qHtml = qAverages.length
+    ? `<div class="small"><strong>${t('questionAverages')}</strong></div>` +
+      qAverages.map(({ q, n, avg: qAvg }) => `<div class="q-avg-row">
+        <span>${esc(q[currentLang])}</span>
+        <div class="dist-bar"><div style="width:${qAvg.toFixed(1)}%"></div></div>
+        <span class="muted">${fmt1(qAvg)}</span>
+      </div><div class="small muted q-avg-count">${t(n === 1 ? 'answerCountOne' : 'answerCount', {n})}</div>`).join('')
+    : '';
 
   el.innerHTML = `
     <div class="rating-summary">
@@ -881,11 +1096,12 @@ function renderRatings(rows) {
     </div>
     <div class="dist">
       ${dist
-        .map((d) => `<div class="dist-row"><span>${d.v} ★</span>
+        .map((d) => `<div class="dist-row"><span>${d.label}</span>
           <div class="dist-bar"><div style="width:${maxCount ? (d.count / maxCount) * 100 : 0}%"></div></div>
           <span>${d.count}</span></div>`)
         .join('')}
     </div>
+    ${qHtml}
     <div class="small"><strong>${t('bestMovies')}</strong></div>
     <ul class="rating-list">${list(best)}</ul>
     ${worst.length ? `<div class="small"><strong>${t('worstMovies')}</strong></div><ul class="rating-list">${list(worst)}</ul>` : ''}`;
@@ -1094,7 +1310,7 @@ function renderList(rows) {
   const items = shown
     .map((r) => {
       const meta = [fmtDate(r.date), r.theater, r.note].filter(Boolean).map(esc).join(' · ');
-      const rating = r.rating ? `<span class="stars-small">${stars(r.rating)}</span> ` : '';
+      const rating = r.rating ? `<span class="score-chip">${dec1(r.rating)}/10</span> ` : '';
       const snack = r.snacks ? ` · <span class="snack">${t('snacksMeta', {amount: eur.format(r.snacks)})}</span>` : '';
       const withSnacks = r.snacks || r.other ? `<span>${t('allCosts', {amount: eur.format(r.totalAt)})}</span>` : '';
       return `<li class="visit" data-id="${r.id}">
@@ -1156,35 +1372,63 @@ function openVisit(visit) {
   form.id.value = visit?.id ?? '';
   form.date.value = visit?.date ?? todayIso();
   form.title.value = visit?.title ?? '';
+  $('#title-suggestion').hidden = true;
   // Uusi käynti: esitäytä teatteri asetuksista (paikka/masterdata) tai viimeisimmän käynnin teatterista
   form.theater.value = visit ? visit.theater || '' : state.settings.location || state.visits.at(-1)?.theater || '';
   form.snacks.value = visit?.snacks ? String(visit.snacks).replace('.', ',') : '';
   form.other.value = visit?.other ? String(visit.other).replace('.', ',') : '';
   form.note.value = visit?.note ?? '';
-  setRating(visit?.rating || 0);
+  formAnswers = { ...(visit?.answers || {}) };
+  ratingFallback = !visit?.answers && visit?.rating ? visit.rating : 0;
+  renderRatingForm();
   dialog.showModal();
   updateVisitPreview();
   if (!visit) form.title.focus();
 }
 
-function setRating(v) {
-  form.rating.value = v || '';
-  for (const b of document.querySelectorAll('#rating-stars button')) {
-    const n = Number(b.dataset.v);
-    b.classList.toggle('on', n <= v);
-    b.setAttribute('aria-checked', String(n === v));
-  }
+/** Arviokysymykset rakennetaan aina nykyisellä kielellä ja merkitään nykyiset vastaukset. */
+function renderRatingForm() {
+  const el = $('#rating-questions');
+  el.innerHTML = RATING_QUESTIONS.map((q) => {
+    const label = q[currentLang];
+    let opts;
+    if (q.type === 'choice') {
+      opts = q.options.map((o) =>
+        `<button type="button" class="q-opt" data-q="${q.key}" data-v="${o.v}">${esc(o[currentLang])}</button>`).join('');
+    } else {
+      opts = [1, 2, 3, 4, 5].map((n) => {
+        const aria = `${label}: ${n}/5 (${q.low[currentLang]} – ${q.high[currentLang]})`;
+        return `<button type="button" class="q-opt num" data-q="${q.key}" data-v="${n}" aria-label="${esc(aria)}">${n}</button>`;
+      }).join('') +
+        `<div class="q-ends small"><span>${esc(q.low[currentLang])}</span><span>${esc(q.high[currentLang])}</span></div>`;
+    }
+    return `<div class="q-row"><div class="q-label">${esc(label)}</div><div class="q-opts">${opts}</div></div>`;
+  }).join('') + `<div class="rating-total">${t('ratingTotal')}: <strong id="rating-total">–</strong></div>`;
+  updateRatingUI();
 }
 
-// Saman tähden napautus uudelleen poistaa arvosanan
-$('#rating-stars').addEventListener('click', (e) => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  const v = Number(b.dataset.v);
-  setRating(Number(form.rating.value) === v ? 0 : v);
-});
+/** Päivittää valinnat ja laskee kokonaisarvion (0–10) vastatuista kysymyksistä. */
+function updateRatingUI() {
+  for (const b of document.querySelectorAll('#rating-questions button.q-opt')) {
+    const on = String(formAnswers[b.dataset.q] ?? '') === b.dataset.v;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  }
+  const score = overallRating(formAnswers);
+  form.rating.value = score || ratingFallback || '';
+  const total = $('#rating-total');
+  if (total) total.textContent = score ? `${dec1(score)} / 10` : (ratingFallback ? `${dec1(ratingFallback)} / 10` : '–');
+}
 
-const stars = (v) => '★'.repeat(v) + '☆'.repeat(5 - v);
+// Sama vastaus uudelleen poistaa kysymyksen vastauksen. Vain vastatut kysymykset vaikuttavat arvioon.
+$('#rating-questions').addEventListener('click', (e) => {
+  const b = e.target.closest('button.q-opt');
+  if (!b) return;
+  const key = b.dataset.q;
+  const v = b.dataset.v;
+  formAnswers[key] = String(formAnswers[key] ?? '') === v ? undefined : v;
+  updateRatingUI();
+});
 
 /** Ennakoiva palaute lisäys-/muokkausdialogissa: mitä tämä käynti tekee herkkutavoitteelle.
  *  Palautte näkyy hinta hetkessä, ennen tallennusta. */
@@ -1220,6 +1464,24 @@ function updateVisitPreview() {
 form.addEventListener('input', updateVisitPreview);
 form.addEventListener('change', updateVisitPreview);
 
+/** Ehdottaa aiemmin tallennettua kirjoitusasua, jos käyttäjä kirjoittaa nimen toisin. */
+form.title.addEventListener('input', () => {
+  const sug = $('#title-suggestion');
+  const canonical = canonicalTitle(form.title.value);
+  const typed = form.title.value.trim();
+  if (canonical && canonical !== typed) {
+    sug.hidden = false;
+    sug.innerHTML = `${t('didYouMean')} <button type="button" class="link-btn" id="apply-title">${esc(canonical)}</button>`;
+    $('#apply-title').addEventListener('click', () => {
+      form.title.value = canonical;
+      sug.hidden = true;
+    });
+  } else {
+    sug.hidden = true;
+    sug.innerHTML = '';
+  }
+});
+
 $('#fab').addEventListener('click', () => openVisit(null));
 $('#cancel-visit').addEventListener('click', () => dialog.close());
 $('#visits').addEventListener('click', (e) => {
@@ -1229,13 +1491,17 @@ $('#visits').addEventListener('click', (e) => {
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
+  const typedTitle = form.title.value.trim();
+  const canonical = canonicalTitle(typedTitle);
   const data = {
     date: form.date.value,
-    title: form.title.value.trim(),
+    title: canonical,
     theater: form.theater.value.trim(),
     snacks: num(form.snacks.value),
     other: num(form.other.value),
     rating: Number(form.rating.value) || 0,
+    ratingScale: 10,
+    answers: { ...formAnswers },
     note: form.note.value.trim(),
   };
   if (!data.date || !data.title) return;
@@ -1252,8 +1518,11 @@ form.addEventListener('submit', (e) => {
   dialog.close();
   const rows = computeVisits();
   const me = rows.find((r) => r.title === data.title && r.date === data.date);
-  if (!me) toast(t('visitNotCounted'));
-  else toast(id ? t('visitSaved') : t('visitSavedNumber', {n: me.nro, price: eur.format(computeSummary(rows).movie)}));
+  let msg = !me ? t('visitNotCounted')
+    : id ? t('visitSaved')
+    : t('visitSavedNumber', {n: me.nro, price: eur.format(computeSummary(rows).movie)});
+  if (canonical !== typedTitle) msg += ' · ' + t('titleNormalized', {title: canonical});
+  toast(msg);
 });
 
 $('#delete-visit').addEventListener('click', () => {
@@ -1501,13 +1770,15 @@ async function saveToFolderNow() {
 
 function generateCSV() {
   const dec = (v) => currentLang === 'en' ? v.toFixed(2) : v.toFixed(2).replace('.', ',');
+  const rating = (v) => v.rating ? dec(v.rating) : '';
+  const answers = (v) => RATING_QUESTIONS.map((q) => v.answers?.[q.key] ?? '');
   const lines = [t('csvHeaders').split('|')];
   for (const r of computeVisits()) {
-    lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), r.rating || '', r.note || '']);
+    lines.push([r.nro, fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), dec(r.movieAt), dec(r.totalAt), rating(r), ...answers(r), r.note || '']);
   }
   // Laskemattomat käynnit mukaan ilman järjestysnumeroa ja hintoja, jotta mitään ei katoa
   for (const r of suspectVisits()) {
-    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', r.rating || '', [r.note, t('csvNotCounted')].filter(Boolean).join(' · ')]);
+    lines.push(['', fmtDate(r.date), r.title, r.theater || '', dec(r.snacks || 0), dec(r.other || 0), '', '', rating(r), ...answers(r), [r.note, t('csvNotCounted')].filter(Boolean).join(' · ')]);
   }
   // Englanninkielisessä CSV:ssä erotin on pilkku ja desimaalipiste; suomeksi puolipiste ja pilkku.
   // parseCSV tunnistaa molemmat, joten vienti ja tuonti toimivat kummalla kielellä tahansa.
@@ -1559,15 +1830,16 @@ async function restoreBackup(text) {
   }
   if (!data || !Array.isArray(data.visits)) return toast(t('importFileInvalid'));
   if (!confirm(t('restoreConfirm', {n: data.visits.length}))) return;
+  const migrated = migrateVisits(data.visits);
   state = {
     settings: { ...DEFAULT_STATE.settings, ...data.settings, cloudFolderHandle: state.settings.cloudFolderHandle },
-    visits: data.visits,
+    visits: migrated.visits,
   };
   save();
   fillSettings();
   render();
   showCloudStatus();
-  toast(t('backupRestored'));
+  toast(migrated.renamed ? t('backupRestored') + ' · ' + t('titlesUnified', {n: migrated.renamed}) : t('backupRestored'));
 }
 
 $('#export-csv').addEventListener('click', () => {
@@ -1627,6 +1899,12 @@ function rowsFromGrid(grid, sheetName) {
     theater: col(/teatteri|sali|theater|cinema/),
     note: col(/muist|huom|note/),
     rating: col(/arvosana|arvio|tahdet|rating/),
+    liked: col(/tyka|liked|enjoy/),
+    time: col(/ajankaytto|use of time/),
+    length: col(/pituus|length/),
+    bored: col(/tylsis|bored/),
+    slept: col(/nukah|asleep|slept/),
+    story: col(/tarina|story/),
   };
   if (c.date < 0) return null;
   const out = [];
@@ -1634,6 +1912,23 @@ function rowsFromGrid(grid, sheetName) {
     const title = String(row[c.title] ?? '').trim();
     const date = parseDate(row[c.date]);
     if (!title || !date) continue;
+    // Kysymysvastaukset tunnistetaan sekä suomeksi että englanniksi viedystä CSV:stä.
+    const answers = {};
+    for (const q of RATING_QUESTIONS) {
+      const raw = c[q.key] >= 0 ? String(row[c[q.key]] ?? '').trim() : '';
+      if (!raw) continue;
+      if (q.type === 'choice') {
+        const opt = q.options.find((o) => o.v === raw || o.fi === raw || o.en === raw);
+        if (opt) answers[q.key] = opt.v;
+      } else {
+        answers[q.key] = Math.min(5, Math.max(1, Math.round(num(raw))));
+      }
+    }
+    const rawRating = c.rating >= 0 ? num(row[c.rating]) : 0;
+    // Vanhat CSV:t käyttävät 1–5 tähtiä; uudet 0–10 asteikkoa (ja sisältävät vastaukset).
+    const rating = Object.keys(answers).length || rawRating > 5
+      ? Math.max(0, Math.min(10, rawRating))
+      : legacyRatingToScore(rawRating);
     out.push({
       date,
       title,
@@ -1641,7 +1936,9 @@ function rowsFromGrid(grid, sheetName) {
       other: c.other >= 0 ? num(row[c.other]) : 0,
       theater: c.theater >= 0 ? String(row[c.theater] ?? '').trim() : '',
       note: c.note >= 0 ? String(row[c.note] ?? '').trim() : '',
-      rating: c.rating >= 0 ? Math.min(5, Math.max(0, Math.round(num(row[c.rating])))) : 0,
+      rating,
+      ratingScale: 10,
+      answers,
     });
   }
   return { sheet: sheetName, rows: out };
@@ -1766,6 +2063,7 @@ $('#auto-cloud-save').checked = state.settings.autoCloudSave;
 $('#auto-local-backup').checked = state.settings.autoLocalBackup;
 render();
 remindBackup();
+if (renamedAtLoad) toast(t('titlesUnified', {n: renamedAtLoad}));
 
 // Palauta tallennettu kansio IndexedDB:stä
 restoreCloudHandle().then(() => {

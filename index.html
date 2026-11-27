@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
 </head>
 <body>
   <header class="top">
@@ -113,6 +113,25 @@
       </div>
 
       <div class="card">
+        <div class="row-between">
+          <strong data-i18n="uniqueMovies">Uniikit elokuvat</strong>
+          <span id="unique-label" class="muted small"></span>
+        </div>
+        <div class="row-between">
+          <div class="rating-avg" id="unique-count">–</div>
+          <div class="small muted" id="unique-sub"></div>
+        </div>
+        <div class="bar"><div id="unique-bar"></div></div>
+        <div class="grid unique-grid">
+          <div class="stat"><div class="muted small" data-i18n="watchedOnce">Katsottu kerran</div><div class="val" id="unique-once">–</div></div>
+          <div class="stat"><div class="muted small" data-i18n="watchedAgain">Useamman kerran</div><div class="val" id="unique-repeat">–</div></div>
+        </div>
+        <div class="small muted" id="unique-rewatches"></div>
+        <div class="small"><strong data-i18n="topMovies">Eniten katsotut</strong></div>
+        <ul class="rating-list" id="unique-top"></ul>
+      </div>
+
+      <div class="card">
         <strong data-i18n="movieStats">Elokuvatilastot</strong>
         <div class="grid">
           <div class="stat">
@@ -135,7 +154,7 @@
       </div>
 
       <div class="card">
-        <strong data-i18n="ratings">Arvosanat</strong>
+        <strong data-i18n="ratings">Arviot</strong>
         <div id="ratings"></div>
       </div>
     </section>
@@ -220,7 +239,11 @@
       <h2 id="dialog-title" data-i18n="newVisit">Uusi käynti</h2>
       <input type="hidden" name="id">
       <label><span data-i18n="dialogDate">Päivä</span><input name="date" type="date" required></label>
-      <label><span data-i18n="dialogMovie">Elokuva</span><input name="title" type="text" required list="titles" autocomplete="off"></label>
+      <label>
+        <span data-i18n="dialogMovie">Elokuva</span>
+        <input name="title" type="text" required list="titles" autocomplete="off">
+        <div id="title-suggestion" class="small" hidden></div>
+      </label>
       <datalist id="titles"></datalist>
       <label><span data-i18n="dialogTheater">Teatteri (valinnainen)</span><input name="theater" type="text" list="theaters" autocomplete="off"></label>
       <datalist id="theaters"></datalist>
@@ -229,14 +252,9 @@
         <label><span data-i18n="dialogOther">Muut kulut €</span><input name="other" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]{0,2}" placeholder="0,00" data-i18n-placeholder="zeroAmount"></label>
       </div>
       <div class="rating-field">
-        <span data-i18n="dialogRating">Arvosana (valinnainen)</span>
-        <div class="stars" id="rating-stars" role="radiogroup" aria-label="Arvosana" data-i18n-aria="dialogRating">
-          <button type="button" role="radio" data-v="1" aria-label="1 tähti" data-i18n-aria="ratingAria1">★</button>
-          <button type="button" role="radio" data-v="2" aria-label="2 tähteä" data-i18n-aria="ratingAria2">★</button>
-          <button type="button" role="radio" data-v="3" aria-label="3 tähteä" data-i18n-aria="ratingAria3">★</button>
-          <button type="button" role="radio" data-v="4" aria-label="4 tähteä" data-i18n-aria="ratingAria4">★</button>
-          <button type="button" role="radio" data-v="5" aria-label="5 tähteä" data-i18n-aria="ratingAria5">★</button>
-        </div>
+        <span data-i18n="dialogRating">Arvio (valinnainen)</span>
+        <div class="small muted" data-i18n="ratingInstructions">Vastaa haluamiisi kysymyksiin. Kokonaisarvio lasketaan vastausten keskiarvona asteikolla 0–10.</div>
+        <div id="rating-questions"></div>
         <input type="hidden" name="rating">
       </div>
       <label><span data-i18n="dialogNote">Muistiinpano</span><input name="note" type="text" placeholder="esim. 4DX, seuralainen…" data-i18n-placeholder="dialogNotePlaceholder"></label>
@@ -252,6 +270,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="app.js?v=26"></script>
+  <script src="app.js?v=27"></script>
 </body>
 </html>
