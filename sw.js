@@ -1,5 +1,5 @@
 // Sovelluksen tiedostot välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
-const CACHE = 'leffakaynnit-v27';
+const CACHE = 'leffakaynnit-v28';
 // Versionumero samaksi kuin index.html:n app.js?v= ja style.css?v=, nosta molemmat julkaistessa
 const ASSETS = [
   './',

@@ -31,7 +31,7 @@ Leffakäynnit is a detailed PWA app for tracking the value you get from your Fin
 - **Unique movies**: Number of distinct movies watched, how many were seen once vs. more than once, total repeat visits, average visits per movie and a top-3 list
 - **Most watched movie**: The movie you have seen the most times
 - **Most expensive movie**: The movie-ticket portions of visits with the same name + snacks combined
-- **Ratings**: Each visit is rated by answering up to six questions (did you like it, was it a good use of time, length too short / right / too long, did you get bored, did you fall asleep, story). Questions use a 1–5 scale (or three choices for length); unanswered questions are ignored. The overall rating is the average of the answers on a 0–10 scale. The summary shows the average, a 0–10 distribution, per-question averages and best/worst movies (visits of the same movie averaged). Several different ratings for the same movie are intentional — each is a snapshot of that moment. Old 1–5 star ratings are converted automatically (1→0, 3→5, 5→10)
+- **Ratings**: Each visit is rated by answering up to six questions (did you like it, was it a good use of time, length too short / right / too long, did you get bored, did you fall asleep, story). Questions use a 1–5 scale (or three choices for length); unanswered questions are ignored. The overall rating is the average of the answers on a 0–10 scale. The summary shows the average, a 0–10 distribution, per-question averages and best/worst movies (visits of the same movie averaged). Several different ratings for the same movie are intentional — each is a snapshot of that moment. Old 1–5 star ratings are converted automatically (1→0, 3→5, 5→10), stored permanently on first launch, and given matching questionnaire answers so question statistics work right away
 
 ### Settings
 - **Language**: Finnish (default) and English — switch by clicking the **flag image in the top-left corner** (US flag → English, Finnish flag → Suomi) or under **Settings → Kieli / Language**. The choice is saved automatically and applies to every UI text, chart label, date/number format, toast message and CSV export.
@@ -132,7 +132,7 @@ Open `tests.html` in a browser:
 - new calculation changes need their own test case in the `tests.js` file
 
 ### Service Worker update
-When publishing, bump the same number everywhere it appears: `sw.js`'s `CACHE` (`leffakaynnit-v27`), `index.html`'s `app.js?v=27` and `style.css?v=27`, and `tests.html`'s `style.css?v=27` and `tests.js?v=27` (also in `sw.js`'s `ASSETS` list), plus the `app.js?v=27` fetch in `tests.js`. The version number in the filename prevents GitHub Pages' 10-minute cache from combining new HTML with an old `app.js`.
+When publishing, bump the same number everywhere it appears: `sw.js`'s `CACHE` (`leffakaynnit-v28`), `index.html`'s `app.js?v=28` and `style.css?v=28`, and `tests.html`'s `style.css?v=28` and `tests.js?v=28` (also in `sw.js`'s `ASSETS` list), plus the `app.js?v=28` fetch in `tests.js`. The version number in the filename prevents GitHub Pages' 10-minute cache from combining new HTML with an old `app.js`.
 
 ### Publishing
 GitHub Pages publishes the `gh-pages` branch. Development is done on the `main` branch, and the release is the same commit in both:
@@ -229,4 +229,4 @@ This app was developed using modern web technologies and AI-assisted development
 
 ---
 
-**Version**: 2026.11 v27 (unique-movie statistics, questionnaire-based 0–10 ratings with automatic migration of old star ratings, movie-name autocomplete and spelling unification; Finnish and English UI with a clickable flag image in the top-left corner and a language selector in Settings; top box: latest movie and treat goal; snack forecast in the dialog, monthly snack budget, season rollover helper, calculation tests, offline Excel import and payment date (v18–v21); savings chart without forecast (v19); treat goal and snack budget (v17); savings comparison with and without snacks, monthly charts, ratings, date check, daily backup)
+**Version**: 2026.11 v28 (unique-movie statistics, questionnaire-based 0–10 ratings with automatic migration of old star ratings including generated questionnaire answers, silent movie-name unification; Finnish and English UI with a clickable flag image in the top-left corner and a language selector in Settings; top box: latest movie and treat goal; snack forecast in the dialog, monthly snack budget, season rollover helper, calculation tests, offline Excel import and payment date (v18–v21); savings chart without forecast (v19); treat goal and snack budget (v17); savings comparison with and without snacks, monthly charts, ratings, date check, daily backup)

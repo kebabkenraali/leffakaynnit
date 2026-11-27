@@ -125,7 +125,6 @@ const I18N = {
     answerCount: '{n} vastausta',
     answerCountOne: '{n} vastaus',
     didYouMean: 'Tarkoititko:',
-    titleNormalized: 'Elokuvan nimi yhdenmukaistettu: {title}',
     titlesUnified: 'Yhdenmukaistettu {n} elokuvan nimeä',
     dialogNote: 'Muistiinpano',
     dialogNotePlaceholder: 'esim. 4DX, seuralainen…',
@@ -319,7 +318,6 @@ const I18N = {
     answerCount: '{n} answers',
     answerCountOne: '{n} answer',
     didYouMean: 'Did you mean:',
-    titleNormalized: 'Movie title unified: {title}',
     titlesUnified: 'Unified the spelling of {n} movie titles',
     dialogNote: 'Note',
     dialogNotePlaceholder: 'e.g. 4DX, companion…',
@@ -598,11 +596,26 @@ function canonicalTitle(input) {
 
 /** Siirtymä vanhasta datasta: 1–5 arviot 0–10 asteikolle ja saman elokuvan nimet yhdenmukaiseen asuun. */
 function migrateVisits(visits) {
+  let ratingConverted = 0;
   for (const v of visits) {
     const r = Number(v.rating);
     // Merkki estää jo kerran muunnetun arvion muuntamisen uudelleen (3→5→10).
-    if (v.ratingScale !== 10 && !v.answers && r >= 1 && r <= 5) v.rating = legacyRatingToScore(r);
-    else v.rating = Number.isFinite(r) ? Math.max(0, Math.min(10, r)) : 0;
+    if (v.ratingScale !== 10 && !v.answers && r >= 1 && r <= 5) {
+      // Vanha tähtiarvio muutetaan 0–10 asteikoksi ja saa vastaukset kysymyksiin,
+      // jotta kysymystilastot ja muokkauslomake toimivat heti. Pituuskysymystä ei
+      // keksitä: loput viisi kysymystä antavat täsmälleen saman kokonaisarvion.
+      v.rating = legacyRatingToScore(r);
+      v.answers = {
+        liked: String(r),
+        time: String(r),
+        bored: String(6 - r),
+        slept: String(6 - r),
+        story: String(r),
+      };
+      ratingConverted++;
+    } else {
+      v.rating = Number.isFinite(r) ? Math.max(0, Math.min(10, r)) : 0;
+    }
     v.ratingScale = 10;
   }
   const groups = new Map();
@@ -623,12 +636,13 @@ function migrateVisits(visits) {
       if (v.title !== canonical) { v.title = canonical; renamed++; }
     }
   }
-  return { visits, renamed };
+  return { visits, renamed, ratingConverted };
 }
 
 // ---------- Tallennus ----------
 
 let renamedAtLoad = 0;
+let migratedOnLoad = false;
 
 function load() {
   try {
@@ -637,6 +651,7 @@ function load() {
     const data = JSON.parse(raw);
     const migrated = migrateVisits(Array.isArray(data.visits) ? data.visits : []);
     renamedAtLoad = migrated.renamed;
+    migratedOnLoad = migrated.renamed > 0 || migrated.ratingConverted > 0;
     return {
       settings: { ...DEFAULT_STATE.settings, ...data.settings },
       visits: migrated.visits,
@@ -708,6 +723,8 @@ async function restoreCloudHandle() {
 let state = load();
 currentLang = (state.settings && state.settings.lang) || 'fi';
 if (!I18N[currentLang]) currentLang = 'fi';
+// Muunnos tallennetaan heti, ettei vanhaa 1–5 arviota muunneta uudelleen joka avauksella.
+if (migratedOnLoad) save();
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const num = (v) => {
@@ -1518,11 +1535,9 @@ form.addEventListener('submit', (e) => {
   dialog.close();
   const rows = computeVisits();
   const me = rows.find((r) => r.title === data.title && r.date === data.date);
-  let msg = !me ? t('visitNotCounted')
+  toast(!me ? t('visitNotCounted')
     : id ? t('visitSaved')
-    : t('visitSavedNumber', {n: me.nro, price: eur.format(computeSummary(rows).movie)});
-  if (canonical !== typedTitle) msg += ' · ' + t('titleNormalized', {title: canonical});
-  toast(msg);
+    : t('visitSavedNumber', {n: me.nro, price: eur.format(computeSummary(rows).movie)}));
 });
 
 $('#delete-visit').addEventListener('click', () => {

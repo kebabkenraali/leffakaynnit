@@ -30,7 +30,7 @@ const eqMoney = (a, b) => eq(a, b);
 /** Extracts the calculation functions from the app.js source into a sandbox function.
  *  Returns an object: computeVisits etc. plus setState(state) to set the state. */
 async function loadCalcApi() {
-  const src = await (await fetch('app.js?v=27')).text();
+  const src = await (await fetch('app.js?v=28')).text();
 
   const fnSource = (name) => {
     const m = src.match(new RegExp('function ' + name + '\\([\\s\\S]*?\\n\\}'));
@@ -212,6 +212,15 @@ function runTests() {
     assert(eq(migrated.renamed, 2), 'renamed ' + migrated.renamed);
     assert(migrated.visits.every((v) => v.title === 'Star Wars'), 'titles not unified');
     assert(eq(migrated.visits[0].rating, 7.5), 'rating ' + migrated.visits[0].rating);
+  });
+
+  test('migrateVisits: a legacy rating gets questionnaire answers with the same score', () => {
+    const visits = [{ title: 'A', rating: 4 }];
+    const migrated = Calc.migrateVisits(visits);
+    const v = migrated.visits[0];
+    assert(eq(migrated.ratingConverted, 1), 'count ' + migrated.ratingConverted);
+    assert(v.answers.liked === '4' && v.answers.bored === '2', 'answers ' + JSON.stringify(v.answers));
+    assert(eq(Calc.overallRating(v.answers), v.rating), 'score ' + Calc.overallRating(v.answers) + ' vs ' + v.rating);
   });
 
   test('migrateVisits: migration is idempotent', () => {
