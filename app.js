@@ -160,6 +160,15 @@ const I18N = {
     addVisit: 'Lisää käynti',
     achieved: '✓ Saavutettu',
     treatBudgetPerMovie: 'herkkubudjetti {amount}/leffa',
+    treatAllowanceTitle: 'Herkkubudjetti loppukaudeksi',
+    treatAllowancePerVisit: '{amount} / käynti',
+    treatAllowanceTotal: 'Yhteensä {total} jäljellä oleville {n} käynnille',
+    treatAllowanceNext: 'Yhteensä {total}, jos teet vielä yhden käynnin',
+    treatAllowanceText: 'Kun kaudella on ennusteen mukaan {horizon} käyntiä, keskihinta kaikkia kuluja laskien jää alle sarjalipun hinnan ({ticket}). Jo ostetut herkut ja muut kulut ({spent}) on huomioitu.',
+    treatAllowanceNone: 'Herkkuihin ei jää tilaa: vuosimaksu ({fee}) sekä jo ostetut herkut ja muut kulut ({spent}) nostavat keskihinnan vähintään sarjalipun hinnan ({ticket}) tasolle.',
+    treatAllowanceBasisForecast: 'Ennuste perustuu viimeisen 30 päivän käyntitahtiin.',
+    treatAllowanceBasisNext: 'Uusia käyntejä ei ole ennusteessa, joten lasku koskee seuraavaa käyntiä.',
+    treatAllowanceEmpty: 'Lisää käyntejä ja aseta vuosimaksu sekä sarjalipun hinta, niin näet kuinka paljon herkkuihin jää tilaa.',
     movieLeft: '{n} leffa',
     moviesLeft: '{n} leffaa',
     avgPurchase: 'keskiostos {amount}',
@@ -353,6 +362,15 @@ const I18N = {
     addVisit: 'Add visit',
     achieved: '✓ Achieved',
     treatBudgetPerMovie: 'snack budget {amount}/movie',
+    treatAllowanceTitle: 'Treat budget for the rest of the season',
+    treatAllowancePerVisit: '{amount} / visit',
+    treatAllowanceTotal: '{total} in total across the {n} visits left',
+    treatAllowanceNext: '{total} in total if you make one more visit',
+    treatAllowanceText: 'With {horizon} visits forecast for the season, the average cost including all costs stays below the ticket price ({ticket}). Snacks and other costs already bought ({spent}) are included.',
+    treatAllowanceNone: 'No room left for treats: the annual fee ({fee}) plus snacks and other costs already bought ({spent}) push the average up to at least the ticket price ({ticket}).',
+    treatAllowanceBasisForecast: 'The forecast is based on the pace of the last 30 days.',
+    treatAllowanceBasisNext: 'No further visits are forecast, so the calculation applies to the next visit.',
+    treatAllowanceEmpty: 'Add visits and set the annual fee and ticket price to see how much you can spend on treats.',
     movieLeft: '{n} movie',
     moviesLeft: '{n} movies',
     avgPurchase: 'avg. purchase {amount}',
@@ -848,6 +866,25 @@ function computeSummary(rows) {
   // kallistuisi sarjalipun ostamista vastaavaksi).
   const treatBudget = s.ticketPrice > 0 && n ? s.ticketPrice - s.annualFee / n : null;
 
+  // Herkkubudjetti loppukaudeksi: paljonko herkkuihin (ja muihin kuluihin) voi vielä
+  // käyttää, jotta kauden lopun keskihinta kaikkia kuluja laskien jää ALLE sarjalipun
+  // hinnan. Huomioi jo ostetut herkut ja muut kulut sekä ennustetut jäljellä olevat
+  // käynnit. Jos ennuste ei näytä uusia käyntejä, lasketaan seuraavalle yhdelle käynnille.
+  let treatAllowance = null;
+  if (s.ticketPrice > 0 && daysLeft > 0) {
+    const horizon = Math.max(projected, n + 1);
+    const visitsLeft = horizon - n;
+    // Pyöristetään sentteihin ja vähennetään sentti, ettei keskihinta jää tasan break-eveniin.
+    const totalAllowed = Math.max(0, Math.round((horizon * s.ticketPrice - s.annualFee - extras) * 100) / 100 - 0.01);
+    treatAllowance = {
+      total: totalAllowed,
+      perVisit: totalAllowed / visitsLeft,
+      visitsLeft,
+      horizon,
+      nextVisitOnly: projected <= n,
+    };
+  }
+
   return {
     n,
     snacks,
@@ -865,6 +902,7 @@ function computeSummary(rows) {
     snackGoalLeft: snackGoalTotal != null ? snackGoalTotal - n : null,
     snackDelay: snackGoalTotal != null && breakEven ? snackGoalTotal - breakEven : null,
     treatBudget,
+    treatAllowance,
     // Kuukausitahdista: käynnit per päivä viimeisen 30 päivän ajalta + herkkujen ja muiden
     // kulujen keskiarvo. Käytetään säästökaavion ennusteviivaan (× 30 = käynnit/kk).
     monthPace: pacePeriod ? recent / pacePeriod : 0, // käynnit per päivä (viimeiset 30 pv)
@@ -927,6 +965,7 @@ function renderSummary(rows, sum) {
       : t('premiumNeed', {n: sum.breakEven - sum.n, price: eur.format(s.ticketPrice)});
 
   renderSnackGoal(sum);
+  renderTreatAllowance(sum);
 
   const suspects = suspectVisits();
   const warn = $('#date-warning');
@@ -1039,6 +1078,40 @@ function renderSnackGoal(sum) {
     sum.snackDelay > 0
       ? t('treatGoalDelay', {be: sum.breakEven, amount: eur.format(sum.snacks + sum.other), delay: sum.snackDelay})
       : t('treatGoalNoDelay', {amount: eur.format(sum.snacks + sum.other)});
+}
+
+/** Herkkubudjetti loppukaudeksi: paljonko herkkuihin voi vielä käyttää, kun sekä jo
+ *  ostetut kulut että kauden loppuun ennustetut käynnit otetaan huomioon. */
+function renderTreatAllowance(sum) {
+  const s = state.settings;
+  const card = $('#treat-allowance');
+  const a = sum.treatAllowance;
+  if (!a) {
+    card.hidden = true;
+    return;
+  }
+  card.hidden = false;
+  if (!sum.n) {
+    $('#ta-value').textContent = '–';
+    $('#ta-total').textContent = '';
+    $('#ta-text').textContent = t('treatAllowanceEmpty');
+    $('#ta-basis').textContent = '';
+    return;
+  }
+  $('#ta-basis').textContent = t(a.nextVisitOnly ? 'treatAllowanceBasisNext' : 'treatAllowanceBasisForecast');
+  if (a.total <= 0) {
+    $('#ta-value').textContent = eur.format(0);
+    $('#ta-total').textContent =
+      t('treatAllowanceNone', {fee: eur.format(s.annualFee), spent: eur.format(sum.snacks + sum.other), ticket: eur.format(s.ticketPrice)});
+    $('#ta-text').textContent = '';
+    return;
+  }
+  $('#ta-value').textContent = t('treatAllowancePerVisit', {amount: eur.format(a.perVisit)});
+  $('#ta-total').textContent = a.nextVisitOnly
+    ? t('treatAllowanceNext', {total: eur.format(a.total)})
+    : t('treatAllowanceTotal', {total: eur.format(a.total), n: a.visitsLeft});
+  $('#ta-text').textContent =
+    t('treatAllowanceText', {horizon: a.horizon, ticket: eur.format(s.ticketPrice), spent: eur.format(sum.snacks + sum.other)});
 }
 
 /** Uniikit elokuvat: määrä, käyntijakauma ja eniten katsotut. */

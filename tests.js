@@ -30,7 +30,7 @@ const eqMoney = (a, b) => eq(a, b);
 /** Extracts the calculation functions from the app.js source into a sandbox function.
  *  Returns an object: computeVisits etc. plus setState(state) to set the state. */
 async function loadCalcApi() {
-  const src = await (await fetch('app.js?v=28')).text();
+  const src = await (await fetch('app.js?v=29')).text();
 
   const fnSource = (name) => {
     const m = src.match(new RegExp('function ' + name + '\\([\\s\\S]*?\\n\\}'));
@@ -92,6 +92,12 @@ const visit = (date, title, snacks = 0, other = 0) => ({
   rating: 0,
 });
 
+/** ISO-päivämäärä suhteessa tähän päivään ( sama local-date -logiikka kuin sovelluksella). */
+const isoDay = (offsetDays) => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000 + offsetDays * 86400000).toISOString().slice(0, 10);
+};
+
 // ---------- Tests ----------
 
 function runTests() {
@@ -131,6 +137,38 @@ function runTests() {
     assert(eq(sum.snackGoalLeft, -1), 'left ' + sum.snackGoalLeft);
     assert(eqMoney(sum.treatBudget, 14.45 - 100 / 8), 'budget ' + sum.treatBudget);
     assert(eq(sum.movie, 12.5), 'movie ' + sum.movie);
+  });
+
+  test('Treat allowance: next visit can cost up to the remaining budget', () => {
+    // Kaikki käynnit yli 30 pv vanhoja → ennusteessa ei uusia käyntejä, joten budjetti
+    // koskee seuraavaa yhtä käyntiä: (n+1)*ticket - fee - spent.
+    const visits = Array.from({ length: 8 }, (_, i) => visit(isoDay(-200 + i), 'Movie'));
+    Calc.setState(makeState({
+      annualFee: 100, ticketPrice: 14.45, visits,
+      seasonStart: isoDay(-400), seasonEnd: isoDay(400),
+    }));
+    const sum = Calc.computeSummary(Calc.computeVisits());
+    assert(eq(sum.n, 8), 'n ' + sum.n);
+    assert(sum.treatAllowance != null, 'allowance missing');
+    assert(eq(sum.treatAllowance.horizon, 9), 'horizon ' + sum.treatAllowance.horizon);
+    assert(eq(sum.treatAllowance.visitsLeft, 1), 'visitsLeft ' + sum.treatAllowance.visitsLeft);
+    assert(eq(sum.treatAllowance.nextVisitOnly, true), 'nextVisitOnly');
+    assert(eqMoney(sum.treatAllowance.total, 30.04), 'total ' + sum.treatAllowance.total);
+    assert(eqMoney(sum.treatAllowance.perVisit, 30.04), 'perVisit ' + sum.treatAllowance.perVisit);
+  });
+
+  test('Treat allowance: snacks already bought reduce the budget euro for euro', () => {
+    const dates = Array.from({ length: 8 }, (_, i) => isoDay(-200 + i));
+    const stateWith = (snacks) => makeState({
+      annualFee: 100, ticketPrice: 14.45,
+      visits: dates.map((d) => visit(d, 'Movie', snacks)),
+      seasonStart: isoDay(-400), seasonEnd: isoDay(400),
+    });
+    Calc.setState(stateWith(0));
+    const a = Calc.computeSummary(Calc.computeVisits()).treatAllowance;
+    Calc.setState(stateWith(2));
+    const b = Calc.computeSummary(Calc.computeVisits()).treatAllowance;
+    assert(eqMoney(a.total - b.total, 16), 'difference ' + (a.total - b.total));
   });
 
   test('computeVisits: movieAt/totalAt accumulate in date order', () => {

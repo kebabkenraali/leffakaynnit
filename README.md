@@ -18,6 +18,7 @@ Leffakäynnit is a detailed PWA app for tracking the value you get from your Fin
 - **Snacks and other costs included**: (Annual fee + snacks + other expenses) / visits
 - **Break-even indicator**: How many visits are needed for Premium to be cheaper than the ticket book
 - **Treat goal**: How many movies you need to watch without snacks or other expenses for the average cost per visit (including all expenses) to fall below the ticket book price — and how many visits' worth of accumulated snacks have pushed the goal back. Once the goal is achieved, the app shows how much of the ticket book price is left as a snack budget for each visit
+- **Treat budget for the rest of the season (v29)**: A dedicated card showing how much you can still spend on treats (and other costs) while the all-in average stays *below* the ticket book price at the end of the season. Both the total remaining budget and the per-visit amount are shown. The calculation subtracts snacks and other costs already spent and uses the 30-day pace forecast for the remaining visits; if no further visits are forecast, it applies to the next single visit. If there is no room left, the card says so explicitly
 - **Snack impact in the add dialog (v18)**: When adding a visit, the dialog shows in real time how snacks affect things: the all-in average cost per visit after this visit, and how many visits' worth the snacks shift the treat goal
 - **Monthly snack budget (v18)**: A monthly limit configurable in Settings and a meter showing this month's snack expenses relative to the limit
 - **Savings vs. ticket books**: Comparison table in two ways — ticket only, and snacks and other expenses counted as Premium costs: expenses, €/visit, total and per-visit savings, and from which visit onward Premium pays off
@@ -132,7 +133,7 @@ Open `tests.html` in a browser:
 - new calculation changes need their own test case in the `tests.js` file
 
 ### Service Worker update
-When publishing, bump the same number everywhere it appears: `sw.js`'s `CACHE` (`leffakaynnit-v28`), `index.html`'s `app.js?v=28` and `style.css?v=28`, and `tests.html`'s `style.css?v=28` and `tests.js?v=28` (also in `sw.js`'s `ASSETS` list), plus the `app.js?v=28` fetch in `tests.js`. The version number in the filename prevents GitHub Pages' 10-minute cache from combining new HTML with an old `app.js`.
+When publishing, bump the same number everywhere it appears: `sw.js`'s `CACHE` (`leffakaynnit-v29`), `index.html`'s `app.js?v=29` and `style.css?v=29`, and `tests.html`'s `style.css?v=29` and `tests.js?v=29` (also in `sw.js`'s `ASSETS` list), plus the `app.js?v=29` fetch in `tests.js`. The version number in the filename prevents GitHub Pages' 10-minute cache from combining new HTML with an old `app.js`.
 
 ### Publishing
 GitHub Pages publishes the `gh-pages` branch. Development is done on the `main` branch, and the release is the same commit in both:
@@ -229,4 +230,4 @@ This app was developed using modern web technologies and AI-assisted development
 
 ---
 
-**Version**: 2026.11 v28 (unique-movie statistics, questionnaire-based 0–10 ratings with automatic migration of old star ratings including generated questionnaire answers, silent movie-name unification; Finnish and English UI with a clickable flag image in the top-left corner and a language selector in Settings; top box: latest movie and treat goal; snack forecast in the dialog, monthly snack budget, season rollover helper, calculation tests, offline Excel import and payment date (v18–v21); savings chart without forecast (v19); treat goal and snack budget (v17); savings comparison with and without snacks, monthly charts, ratings, date check, daily backup)
+**Version**: 2026.11 v29 (treat budget for the rest of the season: remaining € total and €/visit that keep the all-in average below the ticket price, based on already-spent costs and the 30-day forecast; unique-movie statistics, questionnaire-based 0–10 ratings with automatic migration of old star ratings including generated questionnaire answers, silent movie-name unification; Finnish and English UI with a clickable flag image in the top-left corner and a language selector in Settings; top box: latest movie and treat goal; snack forecast in the dialog, monthly snack budget, season rollover helper, calculation tests, offline Excel import and payment date (v18–v21); savings chart without forecast (v19); treat goal and snack budget (v17); savings comparison with and without snacks, monthly charts, ratings, date check, daily backup)
